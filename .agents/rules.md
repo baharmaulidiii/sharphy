@@ -1,15 +1,15 @@
 # Agent Coding Rules & Standards for Sharphy
 
-Dokumen ini mendefinisikan aturan ketat yang wajib dipatuhi oleh setiap AI Agent saat menulis atau memodifikasi kode di repositori ini.
+This document outlines strict coding standards and runtime rules that every AI Coding Agent must follow when modifying or contributing code to this repository.
 
 ---
 
-## 1. Standar C# & Framework
+## 1. C# & Framework Standards
 
-1. **C# Version:** Menggunakan `latest` C# features yang didukung oleh compiler SDK saat ini.
-2. **Nullable Reference Types:** Wajib diaktifkan (`<Nullable>enable</Nullable>`). Hindari `null!` kecuali pada interoperabilitas COM/P-Invoke yang terjustifikasi.
+1. **C# Language Version:** Always target `latest` C# language features supported by the active compiler toolset.
+2. **Nullable Reference Types:** Nullable context is strictly enabled (`<Nullable>enable</Nullable>`). Avoid null-forgiving operators (`null!`) unless interacting with legacy COM or unmanaged P/Invoke signatures where explicitly justified.
 3. **Multi-Targeting Guards:**
-   - Apabila menggunakan API baru yang hanya ada di .NET 9 atau .NET 10 (misalnya ekspansi `UnsafeAccessor` atau optimasi runtime baru), gunakan conditional compilation:
+   - When leveraging new APIs available only in .NET 9 or .NET 10 (e.g., expanded `UnsafeAccessor` signatures or new runtime telemetry), apply conditional compilation guards:
      ```csharp
      #if NET10_0_OR_GREATER
      // .NET 10 specific optimization
@@ -19,24 +19,24 @@ Dokumen ini mendefinisikan aturan ketat yang wajib dipatuhi oleh setiap AI Agent
      // .NET 8 LTS fallback
      #endif
      ```
-4. **Performance & Allocations:**
-   - Gunakan `ReadOnlySpan<byte>`, `Memory<T>`, dan `ref struct` saat membaca raw metadata biner untuk meminimalkan beban GC.
-   - Hindari memory leak saat membuka dump; pastikan `DataTarget` dan `ClrRuntime` selalu dibungkus dalam blok `using` atau di-dispose secara eksplisit.
+4. **Performance & Memory Allocations:**
+   - Prefer `ReadOnlySpan<byte>`, `Memory<T>`, and `ref struct` types when parsing raw binary metadata to minimize Garbage Collector pressure.
+   - Prevent native and unmanaged memory leaks during dump inspections: always wrap `DataTarget` and `ClrRuntime` instances in `using` declarations or explicitly dispose of them.
 
 ---
 
-## 2. Standar MCP Server (`Sharphy.Server`)
+## 2. MCP Server Protocol Standards (`Sharphy.Server`)
 
-1. **Protokol:** Ikuti spesifikasi resmi Model Context Protocol (JSON-RPC 2.0).
-2. **Error Handling:** Tool MCP tidak boleh menyebabkan server crash jika biner target korup, obfuscated, atau tidak valid. Bungkus eksekusi dalam try-catch dan kembalikan pesan error deskriptif dalam response MCP.
-3. **Streaming & Stdio:** Transport stdio tidak boleh tercemar oleh log `Console.WriteLine` biasa; semua internal diagnostics harus diarahkan ke `Console.Error.WriteLine` (stderr).
+1. **Protocol Compliance:** Adhere strictly to the official Model Context Protocol (JSON-RPC 2.0) specifications.
+2. **Resilient Error Handling:** An MCP tool must never crash the server process if a target binary is malformed, corrupted, or heavily obfuscated. Catch exceptions cleanly and return structured diagnostic error messages within the MCP tool response.
+3. **Transport Channel Purity:** When utilizing `stdio` transport, the standard output stream (`stdout`) is reserved exclusively for JSON-RPC messages. All internal diagnostic logs, warnings, and traces must be written to standard error (`stderr` via `Console.Error.WriteLine`).
 
 ---
 
-## 3. Isolasi Assembly Loading
+## 3. Isolated Assembly Loading & Sandboxing
 
-1. Saat melakukan parsing atau inspeksi terhadap biner asing yang diuji (`CrackmeDemo` atau biner pihak ketiga), gunakan `AssemblyLoadContext` terpisah:
+1. When analyzing, inspecting, or testing external assemblies (`samples/CrackmeDemo` or third-party targets), execute reflection within a collectible `AssemblyLoadContext`:
    ```csharp
    var alc = new AssemblyLoadContext("SharphyIsolatedInspectContext", isCollectible: true);
    ```
-2. Pastikan context dapat di-unload setelah proses analisis selesai untuk mencegah file lock pada disk.
+2. Unload the context once inspection completes to release file locks on disk and prevent memory leaks.

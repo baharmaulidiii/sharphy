@@ -1,102 +1,102 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SharphyMCPToolsSchema",
-  "description": "Definisi Tool MCP yang diimplementasikan oleh Sharphy.Server",
+  "description": "Formal MCP tool schema definitions implemented by Sharphy.Server",
   "tools": [
     {
       "name": "sharphy_analyze_dump",
-      "description": "Melakukan Root Cause Analysis (RCA) pada file crash dump (.dmp) Windows / Linux.",
+      "description": "Performs automated Root Cause Analysis (RCA) on Windows / Linux crash dump (.dmp) files.",
       "parameters": {
         "type": "object",
         "properties": {
-          "dumpPath": { "type": "string", "description": "Path absolut file memory dump (.dmp)" }
+          "dumpPath": { "type": "string", "description": "Absolute path to the target memory dump file (.dmp)" }
         },
         "required": ["dumpPath"]
       }
     },
     {
       "name": "sharphy_inspect_heap",
-      "description": "Memeriksa objek di managed heap, deteksi memory leak, dan analisis LOH fragmentation.",
+      "description": "Inspects managed heap objects, detects memory leaks, duplicate strings, and LOH fragmentation.",
       "parameters": {
         "type": "object",
         "properties": {
-          "dumpPath": { "type": "string", "description": "Path absolut file memory dump (.dmp)" },
-          "topObjects": { "type": "integer", "default": 20, "description": "Jumlah tipe teratas berdasarkan total byte memori" }
+          "dumpPath": { "type": "string", "description": "Absolute path to the target memory dump file (.dmp)" },
+          "topObjects": { "type": "integer", "default": 20, "description": "Top N object types ranked by total memory size" }
         },
         "required": ["dumpPath"]
       }
     },
     {
       "name": "sharphy_deadlock_detector",
-      "description": "Mendeteksi deadlock antar-thread dan sync-block lock contention pada proses/dump.",
+      "description": "Detects inter-thread deadlocks and sync-block lock contention across threads in a crash dump.",
       "parameters": {
         "type": "object",
         "properties": {
-          "dumpPath": { "type": "string", "description": "Path absolut file memory dump (.dmp)" }
+          "dumpPath": { "type": "string", "description": "Absolute path to the target memory dump file (.dmp)" }
         },
         "required": ["dumpPath"]
       }
     },
     {
       "name": "sharphy_decompile_method",
-      "description": "Mendekompresi method CIL spesifik dari file assembly menjadi kode C# modern yang bersih.",
+      "description": "Decompiles a specific CIL method from an assembly into clean, modern C# source code.",
       "parameters": {
         "type": "object",
         "properties": {
-          "assemblyPath": { "type": "string", "description": "Path absolut file assembly (.dll/.exe)" },
-          "typeName": { "type": "string", "description": "Nama tipe atau class (lengkap dengan namespace)" },
-          "methodName": { "type": "string", "description": "Nama method yang ingin didekompilasi" }
+          "assemblyPath": { "type": "string", "description": "Absolute path to the compiled assembly (.dll/.exe)" },
+          "typeName": { "type": "string", "description": "Fully qualified type or class name (including namespace)" },
+          "methodName": { "type": "string", "description": "Name of the target method to decompile" }
         },
         "required": ["assemblyPath", "typeName", "methodName"]
       }
     },
     {
       "name": "sharphy_diff_assemblies",
-      "description": "Membandingkan dua versi biner assembly untuk mendeteksi perubahan API atau logika internal.",
+      "description": "Compares two binary assembly versions to identify breaking API changes and internal logic modifications.",
       "parameters": {
         "type": "object",
         "properties": {
-          "oldAssemblyPath": { "type": "string", "description": "Path assembly versi lama" },
-          "newAssemblyPath": { "type": "string", "description": "Path assembly versi baru" }
+          "oldAssemblyPath": { "type": "string", "description": "Path to the baseline/older assembly" },
+          "newAssemblyPath": { "type": "string", "description": "Path to the updated/newer assembly" }
         },
         "required": ["oldAssemblyPath", "newAssemblyPath"]
       }
     },
     {
       "name": "sharphy_inspect_metadata",
-      "description": "Dump struktur metadata ECMA-335, generic arguments, P/Invoke signatures, dan resources.",
+      "description": "Dumps ECMA-335 type hierarchies, generic arguments, P/Invoke signatures, and embedded resources.",
       "parameters": {
         "type": "object",
         "properties": {
-          "assemblyPath": { "type": "string", "description": "Path absolut file assembly (.dll/.exe)" }
+          "assemblyPath": { "type": "string", "description": "Absolute path to the compiled assembly (.dll/.exe)" }
         },
         "required": ["assemblyPath"]
       }
     },
     {
       "name": "sharphy_clean_obfuscation",
-      "description": "Menganalisis dan merapikan pola obfuscation dasar (CFG flattening, proxy delegates).",
+      "description": "Analyzes and demangles common obfuscation patterns (CFG flattening, proxy delegates, string decrypters).",
       "parameters": {
         "type": "object",
         "properties": {
-          "assemblyPath": { "type": "string", "description": "Path assembly biner yang diobfuscate" },
-          "outputPath": { "type": "string", "description": "Path penyimpanan biner hasil pembersihan" }
+          "assemblyPath": { "type": "string", "description": "Path to the obfuscated input assembly" },
+          "outputPath": { "type": "string", "description": "Destination path for the cleaned output assembly" }
         },
         "required": ["assemblyPath", "outputPath"]
       }
     },
     {
       "name": "sharphy_patch_il",
-      "description": "Mengganti atau menyuntikkan instruksi CIL (misal nop validation) dan menyimpan biner hasil patch.",
+      "description": "Replaces or injects CIL instructions (e.g. nop-ing validation routines) and emits a patched binary.",
       "parameters": {
         "type": "object",
         "properties": {
-          "assemblyPath": { "type": "string", "description": "Path assembly target" },
-          "typeName": { "type": "string", "description": "Full name class target" },
-          "methodName": { "type": "string", "description": "Nama method target" },
-          "instructionOffset": { "type": "integer", "description": "Offset IL instruksi yang ingin diubah" },
-          "newOpCode": { "type": "string", "description": "Nama OpCode baru (misal: Nop, Ldc_I4_1, Ret)" },
-          "outputPath": { "type": "string", "description": "Path output biner ter-patch" }
+          "assemblyPath": { "type": "string", "description": "Path to the target assembly" },
+          "typeName": { "type": "string", "description": "Fully qualified class name" },
+          "methodName": { "type": "string", "description": "Target method name" },
+          "instructionOffset": { "type": "integer", "description": "IL offset of the instruction to replace" },
+          "newOpCode": { "type": "string", "description": "New CIL OpCode (e.g., Nop, Ldc_I4_1, Ret)" },
+          "outputPath": { "type": "string", "description": "Destination path for the patched binary" }
         },
         "required": ["assemblyPath", "typeName", "methodName", "instructionOffset", "newOpCode", "outputPath"]
       }

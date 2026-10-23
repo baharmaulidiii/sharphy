@@ -1,92 +1,92 @@
-# AGENT.md - AI Coding Agent Operational Blueprint for Sharphy
+# AGENTS.md - AI Coding Agent Operational Blueprint for Sharphy
 
 > **Sharphy: CLR Intelligence & Runtime Forensic Bridge**  
-> Server Model Context Protocol (MCP) native untuk mentransformasi AI coding agent menjadi diagnostisi mendalam, analis forensik memori, dan arsitek biner .NET.
+> A native Model Context Protocol (MCP) server turning AI coding agents into deep .NET runtime diagnosticians, memory forensic analysts, and binary architects.
 
-Dokumen ini adalah instruksi operasional resmi bagi AI Coding Agent (Cursor, Claude Code, Windsurf, Copilot, Antigravity) yang bekerja dalam repositori **Sharphy**.
-
----
-
-## 1. Peran & Prinsip Inti Agent
-
-Setiap Agent yang beroperasi di repo ini harus bertindak sebagai **Autonomous CLR Engineer**:
-1. **Preservasi Metadata & Standar CIL:** Utamakan pemanfaatan ECMA-335 metadata, IL low-level, SOS/ClrMD, dan Roslyn compiler API dibanding pendekatan teks heuristik biasa.
-2. **Multi-Targeting Awareness:** Seluruh kode di `src/Sharphy.Core`, `src/Sharphy.Server`, dan `src/Sharphy.Cli` wajib kompatibel dengan multi-target `.NET 8.0`, `.NET 9.0`, dan `.NET 10.0`. Gunakan preprocessor directives (`#if NET10_0_OR_GREATER`, `#if NET9_0_OR_GREATER`) jika memanfaatkan fitur BCL/CLR terbaru.
-3. **Safety & Sandboxing:** Modul unpacking atau eksekusi dinamis biner harus berjalan dalam `AssemblyLoadContext` terisolasi dan kolektibel (`isCollectible: true`) agar tidak mencemari proses induk.
-4. **Bilingual Documentation:** Pertahankan konvensi dokumentasi bilingual (`.md` berbahasa Indonesia sebagai default, `.en.md` sebagai terjemahan bahasa Inggris).
+This document serves as the official operational instructions for AI Coding Agents (Cursor, Claude Code, Windsurf, Copilot, Antigravity) working within the **Sharphy** repository.
 
 ---
 
-## 2. Struktur Repositori & Boundary Tanggung Jawab
+## 1. Core Principles & Agent Role
+
+Every Agent operating in this repository acts as an **Autonomous CLR Engineer**:
+1. **Metadata Preservation & CIL Standards:** Prioritize ECMA-335 metadata, low-level CIL instructions, SOS/ClrMD runtime inspection, and Roslyn compiler APIs over generic text heuristics.
+2. **Multi-Targeting Awareness:** All code within `src/Sharphy.Core`, `src/Sharphy.Server`, and `src/Sharphy.Cli` must support multi-targeting across `.NET 8.0`, `.NET 9.0`, and `.NET 10.0`. Use conditional compilation preprocessor directives (`#if NET10_0_OR_GREATER`, `#if NET9_0_OR_GREATER`) whenever leveraging newer BCL/CLR features.
+3. **Safety & Sandboxing:** Binary unpacking and dynamic assembly inspection must execute within an isolated, collectible `AssemblyLoadContext` (`isCollectible: true`) to avoid polluting the host runtime process or locking files on disk.
+4. **Bilingual Documentation:** Maintain bilingual documentation conventions across root Markdown files (`.md` in Indonesian as default, `.en.md` for English translations).
+
+---
+
+## 2. Repository Structure & Boundary Responsibilities
 
 ```text
 sharphy/
 ├── .agents/                    # Agent workflow definitions & skill guidelines
 ├── src/
-│   ├── Sharphy.Core/           # Mesin analisis inti:
+│   ├── Sharphy.Core/           # Core analysis engines:
 │   │                           # - Diagnostics (ClrMD, SOS)
 │   │                           # - Decompilation (ILSpy engine)
 │   │                           # - Bytecode & Metadata (Mono.Cecil, dnlib, Roslyn)
-│   ├── Sharphy.Server/         # Protokol MCP (Model Context Protocol):
+│   ├── Sharphy.Server/         # Model Context Protocol (MCP) handlers:
 │   │                           # - Stdio / SSE Transport
 │   │                           # - Tool & Resource dispatchers
-│   └── Sharphy.Cli/            # CLI executable & Global dotnet tool wrapper
+│   └── Sharphy.Cli/            # CLI executable & global dotnet tool wrapper
 ├── samples/
-│   └── CrackmeDemo/            # Testbed biner terisolasi untuk validasi fitur
+│   └── CrackmeDemo/            # Isolated testbed binary for feature validation
 ├── tests/
-│   └── Sharphy.Tests/          # Unit & integration testing multi-target
-├── Directory.Build.props       # Global properties, nullable check, warnings, target frameworks
-└── Sharphy.sln                 # Root solution
+│   └── Sharphy.Tests/          # Multi-target unit and integration testing suite
+├── Directory.Build.props       # Global properties, nullable checks, target frameworks
+└── Sharphy.sln                 # Root solution file
 ```
 
 ---
 
-## 3. Protokol Alur Kerja Pengembangan (Workflow)
+## 3. Agent Development Workflow
 
 ```
 [Agent Trigger]
        │
        ▼
-1. Research & Inspect  ───> Cek Directory.Build.props & arsitektur proyek
+1. Research & Inspect  ───> Review Directory.Build.props & project architecture
        │
        ▼
-2. Implementation      ───> Tulis kode di Sharphy.Core/Server dengan isolated context
+2. Implementation      ───> Write code in Sharphy.Core/Server with isolated context
        │
        ▼
-3. Multi-Target Verify ───> Jalankan: dotnet build Sharphy.sln
+3. Multi-Target Verify ───> Run: dotnet build Sharphy.sln
        │
        ▼
-4. Test Suite          ───> Jalankan: dotnet test Sharphy.sln
+4. Test Suite          ───> Run: dotnet test Sharphy.sln
        │
        ▼
-5. Docs & Clean Git    ───> Pastikan README / docs tetap sinkron bilingual
+5. Docs & Clean Git    ───> Ensure README / docs remain synchronized bilingually
 ```
 
 ---
 
-## 4. Standar Perintah CLI untuk Agent
+## 4. Standard CLI Commands for Agents
 
-Agen harus menggunakan perintah berikut selama siklus iterasi:
+Agents should use the following commands during iteration cycles:
 
 ```powershell
-# Restore paket
+# Restore dependencies
 dotnet restore Sharphy.sln
 
-# Build solution
+# Build solution in Debug configuration
 dotnet build Sharphy.sln -c Debug
 
-# Jalankan test lintas framework
+# Execute test suite across all targeted frameworks
 dotnet test Sharphy.sln --no-build
 
-# Jalankan CLI secara lokal
+# Run local CLI tool
 dotnet run --project src/Sharphy.Cli/Sharphy.Cli.csproj -- mcp start
 ```
 
 ---
 
-## 5. Direktori `.agents/`
+## 5. The `.agents/` Directory
 
-Folder [.agents](file:///d:/Programming/GitHub/sharphy/.agents) memuat aturan dan spesifikasi workflow otomatis:
-- `.agents/rules.md`: Aturan penulisan kode, penanganan error, dan keamanan memory dump.
-- `.agents/mcp-schema.json`: Schema definisi MCP tools yang diimplementasikan oleh `Sharphy.Server`.
-- `.agents/testing-policy.md`: Kebijakan pengujian, validasi memory dump, dan biner sample.
+The [.agents](.agents) directory contains automated workflow rules and tool schemas:
+- `.agents/rules.md`: Coding standards, memory safety, and error handling policies.
+- `.agents/mcp-schema.json`: Formal JSON schema definitions for MCP tools implemented by `Sharphy.Server`.
+- `.agents/testing-policy.md`: Testing guidelines, memory dump validation, and testbed procedures.

@@ -1,22 +1,22 @@
 # Testing Policy for AI Agents
 
-Dokumen ini memandu prosedur pengujian otomatis yang wajib dijalankan oleh AI Agent sebelum menyelesaikan tugas.
+This document defines testing standards and verification requirements that AI Agents must fulfill prior to completing any development task.
 
 ---
 
-## 1. Lingkup Pengujian
+## 1. Testing Scopes
 
 1. **Unit Testing (`tests/Sharphy.Tests`):**
-   - Menguji isolasi unit logika pada `Sharphy.Core` (parsing metadata, helper IL, dan kalkulator heap).
-   - Menjamin bahwa tool dispatching di `Sharphy.Server` memformat JSON-RPC sesuai spesifikasi.
+   - Verify isolated unit logic within `Sharphy.Core` (metadata parsing, IL manipulation helpers, heap statistics calculators).
+   - Ensure `Sharphy.Server` tool dispatchers serialize and deserialize JSON-RPC requests conforming to the MCP schema.
 2. **Sample Testbed (`samples/CrackmeDemo`):**
-   - Projek target yang sengaja dibuat untuk memvalidasi dekompilasi, forensic snapshot, dan manipulasi CIL instruksi secara aman.
+   - Target project designed to validate decompilation accuracy, memory snapshot forensic ingestion, and safe CIL instruction mutations.
 
 ---
 
-## 2. Checklist Verifikasi Agent
+## 2. Verification Checklist for Agents
 
-Sebelum melakukan commit atau memberi tahu pengguna bahwa implementasi selesai, Agent **wajib** memastikan:
-- [ ] `dotnet build Sharphy.sln` sukses dengan 0 error dan 0 warning baru.
-- [ ] `dotnet test Sharphy.sln` berhasil melewati seluruh pengujian.
-- [ ] Berkas dokumentasi ([README.md](file:///d:/Programming/GitHub/sharphy/README.md) & [README.en.md](file:///d:/Programming/GitHub/sharphy/README.en.md)) mencerminkan status terbaru jika ada penambahan MCP tools baru.
+Before committing code or concluding an operational cycle, the Agent **must** verify:
+- [ ] `dotnet build Sharphy.sln` compiles cleanly with 0 errors and 0 new warnings across supported frameworks.
+- [ ] `dotnet test Sharphy.sln` passes all test cases.
+- [ ] Documentation files ([README.md](README.md) and [README.en.md](README.en.md)) reflect updated tool listings when adding or modifying MCP tools.
