@@ -13,6 +13,7 @@
     <Authors>Bahar Maulidi</Authors>
     <Company>Sharphy Contributors</Company>
     <Product>Sharphy</Product>
+    <Description>CLR Intelligence &amp; Runtime Forensic Bridge for AI Coding Agents</Description>
     <RepositoryUrl>https://github.com/baharmaulidiii/sharphy</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
