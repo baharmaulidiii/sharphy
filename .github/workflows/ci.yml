@@ -1,0 +1,32 @@
+name: CI Build & Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        dotnet-version: [ '8.0.x', '9.0.x' ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET SDK ${{ matrix.dotnet-version }}
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+
+    - name: Restore dependencies
+      run: dotnet restore Sharphy.sln
+
+    - name: Build Solution
+      run: dotnet build Sharphy.sln --no-restore --configuration Release
+
+    - name: Test Solution
+      run: dotnet test Sharphy.sln --no-build --configuration Release --verbosity normal
