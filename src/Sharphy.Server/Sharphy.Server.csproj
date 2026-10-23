@@ -1,13 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Sharphy.Core\Sharphy.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PackageId>Sharphy.Server</PackageId>
+    <Description>Model Context Protocol (MCP) server dispatcher and protocol handlers for Sharphy CLR intelligence.</Description>
+    <PackageTags>mcp;model-context-protocol;server;stdio;sse;agent;clr</PackageTags>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>

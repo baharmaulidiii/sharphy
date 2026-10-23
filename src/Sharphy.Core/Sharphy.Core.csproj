@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PackageId>Sharphy.Core</PackageId>
+    <Description>Core diagnostics, decompiler, ECMA-335 metadata, and CIL mutation engines for Sharphy.</Description>
+    <PackageTags>clr;diagnostics;decompiler;il;clrmd;cecil;roslyn;mcp</PackageTags>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>

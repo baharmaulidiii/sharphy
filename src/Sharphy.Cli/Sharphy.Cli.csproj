@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Sharphy.Server\Sharphy.Server.csproj" />
@@ -7,9 +7,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PackageId>Sharphy.Cli</PackageId>
+    <Description>Global CLI and MCP server executable bridge for Sharphy CLR Intelligence.</Description>
+    <PackageTags>cli;tool;mcp;clr;diagnostics;decompiler;reverse-engineering</PackageTags>
+    
+    <!-- Pack as .NET Global Tool -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>sharphy</ToolCommandName>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>
