@@ -14,6 +14,7 @@ Every Agent operating in this repository acts as an **Autonomous CLR Engineer**:
 2. **Multi-Targeting Awareness:** All code within `src/Sharphy.Core`, `src/Sharphy.Server`, and `src/Sharphy.Cli` must support multi-targeting across `.NET 8.0`, `.NET 9.0`, and `.NET 10.0`. Use conditional compilation preprocessor directives (`#if NET10_0_OR_GREATER`, `#if NET9_0_OR_GREATER`) whenever leveraging newer BCL/CLR features.
 3. **Safety & Sandboxing:** Binary unpacking and dynamic assembly inspection must execute within an isolated, collectible `AssemblyLoadContext` (`isCollectible: true`) to avoid polluting the host runtime process or locking files on disk.
 4. **Bilingual Documentation:** Maintain bilingual documentation conventions across root Markdown files (`.md` in Indonesian as default, `.en.md` for English translations).
+5. **Git Commit & Push Prohibition:** Agents are strictly forbidden from executing `git commit` or `git push` to remote repositories unless explicitly instructed by the user in the prompt. All modifications must remain uncommitted in the local working directory until formal user consent.
 
 ---
 

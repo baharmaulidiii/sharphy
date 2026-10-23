@@ -40,3 +40,10 @@ This document outlines strict coding standards and runtime rules that every AI C
    var alc = new AssemblyLoadContext("SharphyIsolatedInspectContext", isCollectible: true);
    ```
 2. Unload the context once inspection completes to release file locks on disk and prevent memory leaks.
+
+---
+
+## 4. Git Operational Boundaries
+
+1. **No Unprompted Commits or Pushes:** Agents must NEVER execute `git commit` or `git push` autonomously.
+2. **Explicit User Confirmation Required:** Only stage (`git add`), commit, or push when the user explicitly issues a command or direct instruction to commit/push. Otherwise, leave all changes unstaged or uncommitted in the local working directory.
