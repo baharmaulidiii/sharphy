@@ -1,13 +1,13 @@
 <div align="center">
 
 <p align="center">
-  <b>English</b> · <a href="#">简体中文</a> · <a href="#">繁體中文</a> · <a href="#">日本語</a> · <a href="#">한국어</a> · <a href="#">Türkçe</a> · <a href="#">Русский</a> · <a href="#">Tiếng Việt</a> · <a href="#">ไทย</a> · <a href="#">Deutsch</a> · <a href="#">Español</a> · <a href="#">Français</a> · <a href="#">Українська</a> · <a href="#">Polski</a> · <a href="#">Português (Brasil)</a> · <a href="#">فارسی</a> · <a href="#">العربية</a> · <a href="#">Bahasa Indonesia</a> · <a href="#">Italiano</a> · <a href="#">Ελληνικά</a> · <a href="#">മലയാളം</a> · <a href="#">Roman Urdu</a>
+  <b>Bahasa Indonesia</b> · <a href="README.en.md">English</a>
 </p>
 
 # Sharphy: Reverse Engineer .NET
 
-### One MCP for reverse engineering across .NET assemblies, runtime memory, and CIL bytecode.
-**Inspect a type or method you like. Understand how it works, down to the IL & native runtime level.**
+### Satu MCP untuk reverse engineering seluruh assembly .NET, memory runtime, dan CIL bytecode.
+**Inspeksi tipe atau method yang Anda inginkan. Pahami cara kerjanya hingga ke tingkat instruksi CIL & native runtime.**
 
 <p align="center">
   <a href="https://www.nuget.org/packages/Sharphy.Cli"><img src="https://img.shields.io/badge/nuget-v0.1.0--preview-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
@@ -18,12 +18,12 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start"><b>Quick Start</b></a> ·
-  <a href="#core-capabilities"><b>How Sharphy Works</b></a> ·
-  <a href="#what-you-can-analyze"><b>What You Can Analyze</b></a> ·
-  <a href="#mcp-tools-catalog"><b>MCP Tools</b></a> ·
+  <a href="#quick-start"><b>Mulai Cepat</b></a> ·
+  <a href="#cara-kerja-sharphy"><b>Cara Kerja Sharphy</b></a> ·
+  <a href="#apa-yang-dapat-dianalisis"><b>Kemampuan Analisis</b></a> ·
+  <a href="#katalog-mcp-tools"><b>Katalog MCP Tools</b></a> ·
   <a href="#faq"><b>FAQ</b></a> ·
-  <a href="CONTRIBUTING.md"><b>Contributing</b></a>
+  <a href="CONTRIBUTING.md"><b>Kontribusi</b></a>
 </p>
 
 ```bash
@@ -33,36 +33,36 @@ dotnet tool install -g Sharphy.Cli
 </div>
 
 > [!CAUTION]
-> **Disclaimer & Legal Notice**
-> Sharphy is designed strictly for educational, security research, vulnerability auditing, debugging, and authorized reverse engineering. Users are solely responsible for ensuring compliance with all local laws, End User License Agreements (EULAs), and intellectual property rights. The authors and maintainers assume no liability for misuse. See [DISCLAIMER.md](DISCLAIMER.md) for full terms.
+> **Pernyataan Penyangkalan & Aspek Legal (Disclaimer)**
+> Sharphy dirancang semata-mata untuk tujuan edukasi, riset keamanan, audit kerentanan, debugging, dan reverse engineering resmi yang sah. Pengguna bertanggung jawab penuh untuk memastikan kepatuhan terhadap hukum lokal, perjanjian lisensi pengguna akhir (EULA), serta hak kekayaan intelektual perangkat lunak yang dianalisis. Pembuat dan kontributor tidak bertanggung jawab atas penyalahgunaan. Lihat [DISCLAIMER.md](DISCLAIMER.md) untuk ketentuan lengkap.
 
 > [!IMPORTANT]
-> Install and run Sharphy only from official channels: NuGet (`Sharphy.Cli`), or building directly from source at [github.com/baharmaulidiii/sharphy](https://github.com/baharmaulidiii/sharphy).
+> Unduh dan jalankan Sharphy hanya dari sumber resmi: NuGet (`Sharphy.Cli`), atau build langsung dari source code di [github.com/baharmaulidiii/sharphy](https://github.com/baharmaulidiii/sharphy).
 
 ---
 
-## What You Can Analyze
+## Apa yang Dapat Dianalisis
 
-Sharphy turns any MCP-enabled AI coding agent (Cursor, Claude Code, Windsurf, Copilot, Gemini) into an **Autonomous CLR Engineer**:
+Sharphy mengubah AI coding agent mana pun (seperti Cursor, Claude Code, Windsurf, Copilot, Gemini) menjadi seorang **Autonomous CLR Engineer**:
 
-* **Decompilation & Source Reconstruction:** Decompile assemblies, types, or nested methods into modern readable C# using ILSpy and ECMA-335 metadata parsing.
-* **CLR Crash Dump Forensics:** Load Windows/Linux memory dumps (`.dmp`), detect deadlocks, analyze threads, and track heap memory leaks.
-* **Anti-Obfuscation Unpacking:** Analyze Control Flow Graph (CFG) flattening, decrypt hidden strings, and extract tokens in isolated `AssemblyLoadContext`.
-* **CIL Instruction Mutation & Patching:** Safely replace CIL opcodes (`nop`, return values, branch targets) and re-emit assemblies without original source code.
+* **Dekomplikasi & Rekonstruksi Kode Sumber:** Mendekompresi assembly, type, atau method spesifik menjadi kode C# modern yang bersih menggunakan ILSpy engine dan ECMA-335 metadata reader.
+* **Forensik CLR Crash Dump:** Membaca memory dump Windows/Linux (`.dmp`), mendeteksi deadlock antar-thread, dan melacak memory leak pada heap.
+* **Anti-Obfuscation Unpacking:** Menganalisis CFG flattening, mendekripsi string tersembunyi, dan mengekstrak token dalam `AssemblyLoadContext` yang terisolasi.
+* **Mutasi & Patching Instruksi CIL:** Mengganti opcode instruksi CIL secara aman (`nop`, return value, branch target) dan mengompilasi ulang biner tanpa membutuhkan source code asli.
 
 ---
 
 ## Quick Start
 
-### 1. Install Global CLI Tool
+### 1. Pasang Global CLI Tool
 
 ```bash
 dotnet tool install -g Sharphy.Cli
 ```
 
-### 2. Configure Your AI Agent (Claude Code / Cursor / Windsurf)
+### 2. Hubungkan ke AI Agent Anda (Claude Code / Cursor / Windsurf)
 
-Add Sharphy to your agent's MCP configuration (`mcpServers`):
+Tambahkan Sharphy ke konfigurasi MCP client Anda (`mcpServers`):
 
 ```json
 {
@@ -75,7 +75,7 @@ Add Sharphy to your agent's MCP configuration (`mcpServers`):
 }
 ```
 
-Or run directly via `dotnet run`:
+Atau jalankan langsung dari source code melalui `dotnet run`:
 
 ```json
 {
@@ -90,26 +90,26 @@ Or run directly via `dotnet run`:
 
 ---
 
-## MCP Tools Catalog
+## Katalog MCP Tools
 
-| Tool Name | Category | Description |
+| Nama Tool | Kategori | Deskripsi |
 | :--- | :--- | :--- |
-| `sharphy_decompile_method` | Decompiler | Extracts clean, decompiled C# representation of a specific method with compiler-generated attributes. |
-| `sharphy_diff_assemblies` | Decompiler | Compares two `.dll`/`.exe` versions to identify breaking API changes and hidden alterations. |
-| `sharphy_inspect_metadata` | Metadata | Dumps ECMA-335 type hierarchies, P/Invoke signatures, attributes, and embedded resources. |
-| `sharphy_analyze_dump` | Diagnostics | Performs automated Root Cause Analysis (RCA) on crash dumps (`.dmp`). |
-| `sharphy_inspect_heap` | Diagnostics | Inspects managed heap, object retention, string duplicates, and Large Object Heap (LOH). |
-| `sharphy_deadlock_detector`| Diagnostics | Traces thread synchronization objects, monitors, and lock dependency chains. |
-| `sharphy_clean_obfuscation`| Unpacker | Cleans basic obfuscation techniques (CFG flattening, proxy delegates, string decrypters). |
-| `sharphy_extract_tokens` | Unpacker | Evaluates decryption routines within an isolated `AssemblyLoadContext`. |
-| `sharphy_patch_il` | Patching | Direct CIL instruction patcher and assembler without needing original project files. |
-| `sharphy_generate_wrapper` | Interop | Generates high-performance strongly-typed wrappers via C# `UnsafeAccessor`. |
+| `sharphy_decompile_method` | Dekompiler | Mengekstrak method CIL tertentu langsung menjadi representasi C# bersih beserta atribut internal/compiler-generated. |
+| `sharphy_diff_assemblies` | Dekompiler | Membandingkan dua assembly `.dll`/`.exe` untuk melihat breaking API changes atau logika tersembunyi. |
+| `sharphy_inspect_metadata` | Metadata | Membaca hierarki tipe ECMA-335, signature P/Invoke, attribute, dan resource bawaan. |
+| `sharphy_analyze_dump` | Diagnostik | Membaca memory dump (`.dmp`) Windows/Linux dan langsung menarik Root Cause Analysis (RCA). |
+| `sharphy_inspect_heap` | Diagnostik | Memeriksa managed heap untuk menemukan memory leak, duplikasi string, dan fragmentasi Large Object Heap (LOH). |
+| `sharphy_deadlock_detector`| Diagnostik | Melacak thread lock chain dan monitor sinkronisasi yang berpotensi hang. |
+| `sharphy_clean_obfuscation`| Unpacker | Membantu membersihkan teknik obfuscation dasar (CFG flattening, proxy delegates, string decrypters). |
+| `sharphy_extract_tokens` | Unpacker | Menjalankan rutinitas dekripsi dalam `AssemblyLoadContext` terisolasi. |
+| `sharphy_patch_il` | Patching | Mengganti instruksi CIL langsung dan mere-emit biner tanpa file projek awal. |
+| `sharphy_generate_wrapper` | Interop | Meng-generate strongly-typed wrapper C# berkinerja tinggi menggunakan `UnsafeAccessor`. |
 
 ---
 
-## Architecture & Multi-Targeting
+## Arsitektur & Multi-Targeting
 
-Sharphy is engineered to target modern .NET runtimes:
+Sharphy dirancang untuk mendukung multi-targeting pada runtime modern .NET:
 * **.NET 8.0 (LTS)**
 * **.NET 9.0 (STS)**
 * **.NET 10.0 (Preview / Latest)**
@@ -117,14 +117,14 @@ Sharphy is engineered to target modern .NET runtimes:
 ```text
 sharphy/
 ├── src/
-│   ├── Sharphy.Core/           # Core engine (ILSpy, ClrMD, Roslyn, Cecil, dnlib)
-│   ├── Sharphy.Server/         # MCP protocol dispatcher (Stdio & SSE)
-│   └── Sharphy.Cli/            # CLI launcher (dotnet tool)
+│   ├── Sharphy.Core/           # Logic bridge (ILSpy, ClrMD, Roslyn, Cecil, dnlib)
+│   ├── Sharphy.Server/         # MCP Server (Stdio & SSE protocol handlers)
+│   └── Sharphy.Cli/            # Global CLI tool (dotnet tool)
 ├── samples/
-│   └── CrackmeDemo/            # Testbed target binary
+│   └── CrackmeDemo/            # Target sample binary
 ├── tests/
-│   └── Sharphy.Tests/          # Multi-framework unit tests
-├── .github/workflows/          # CI matrix workflows (.NET 8/9/10)
+│   └── Sharphy.Tests/          # Unit tests lintas target framework
+├── .github/workflows/          # CI matrix workflow (.NET 8/9/10)
 └── README.md
 ```
 
@@ -133,23 +133,23 @@ sharphy/
 ## FAQ
 
 <details>
-<summary><b>Does Sharphy require source code?</b></summary>
-No. Sharphy operates directly on compiled CLI binaries (<code>.dll</code>, <code>.exe</code>), memory dumps (<code>.dmp</code>), or runtime memory.
+<summary><b>Apakah Sharphy membutuhkan source code asli target?</b></summary>
+Tidak. Sharphy bekerja langsung terhadap biner terkompilasi (<code>.dll</code>, <code>.exe</code>), memory dump (<code>.dmp</code>), atau memori runtime proses.
 </details>
 
 <details>
-<summary><b>Can I use Sharphy across Windows and Linux?</b></summary>
-Yes. Sharphy is built on cross-platform .NET (8/9/10) and supports both Windows and Linux memory dumps and assemblies.
+<summary><b>Apakah Sharphy bisa digunakan di Windows dan Linux?</b></summary>
+Ya. Sharphy dibangun di atas .NET cross-platform modern (8/9/10) dan mendukung pembacaan dump serta assembly baik di Windows maupun Linux.
 </details>
 
 ---
 
-## Contributing & Security
+## Kontribusi & Keamanan
 
-- Contributions are welcome! Read [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
-- For security vulnerabilities, refer to [SECURITY.md](SECURITY.md).
-- Detailed legal terms are outlined in [DISCLAIMER.md](DISCLAIMER.md).
+- Kontribusi sangat terbuka! Silakan baca panduan di [CONTRIBUTING.md](CONTRIBUTING.md).
+- Untuk pelaporan kerentanan keamanan, silakan lihat [SECURITY.md](SECURITY.md).
+- Penjelasan batasan hukum dan legalitas tercantum di [DISCLAIMER.md](DISCLAIMER.md).
 
-## License
+## Lisensi
 
-Sharphy is released under the [MIT License](LICENSE).
+Sharphy dirilis di bawah naungan [Lisensi MIT](LICENSE).
