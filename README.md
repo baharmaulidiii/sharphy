@@ -4,6 +4,8 @@
   <b>Bahasa Indonesia</b> · <a href="README.en.md">English</a>
 </p>
 
+<img src="assets/logo.svg" alt="Sharphy Logo" width="160" height="160" />
+
 # Sharphy: CLR Intelligence & Runtime Forensic Bridge
 
 ### Model Context Protocol (MCP) server native untuk mentransformasi AI coding agent menjadi diagnostisi mendalam, analis forensik memori, dan arsitek biner .NET.
