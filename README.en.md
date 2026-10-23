@@ -19,7 +19,7 @@
 
 <p align="center">
   <a href="#quick-start"><b>Quick Start</b></a> ·
-  <a href="#architecture--pillars"><b>Architecture & Pillars</b></a> ·
+  <a href="#package-ecosystem--benefits"><b>Packages & Benefits</b></a> ·
   <a href="#core-capabilities"><b>Core Capabilities</b></a> ·
   <a href="#mcp-tools-catalog"><b>MCP Tools Catalog</b></a> ·
   <a href="#faq"><b>FAQ</b></a> ·
@@ -41,7 +41,17 @@ dotnet tool install -g Sharphy.Cli
 
 ---
 
-## Core Capabilities
+## Package Ecosystem & Benefits
+
+Sharphy is designed modularly into 3 distinct packages, each providing targeted benefits:
+
+| NuGet Package | Target Type | Primary Role & Value Proposition |
+| :--- | :--- | :--- |
+| **`Sharphy.Cli`** | `.NET Global Tool` | **For Users & Terminal Agents:** Global executable command-line tool (`sharphy`) installed in a single command (`dotnet tool install -g Sharphy.Cli`). Serves as a zero-setup runner to launch the MCP server (`sharphy mcp start`) or inspect crash dumps and assemblies directly from any terminal. |
+| **`Sharphy.Core`** | `Class Library` | **For .NET Engineers & Diagnostic Builders:** Core engine encapsulating low-level CLR diagnostics (ClrMD), C# decompiler engines (ILSpy), bytecode manipulation (Mono.Cecil/dnlib), and Roslyn compilers. Fully usable as a standalone library in any .NET application without MCP dependencies. |
+| **`Sharphy.Server`** | `Class Library / Host` | **For Agent Frameworks & Runtime Hosts:** Standardized Model Context Protocol (MCP) server dispatcher implementing JSON-RPC 2.0 (Stdio & SSE). Bridges `Sharphy.Core` capabilities directly to LLM coding agents (Cursor, Claude Code, Windsurf, Copilot, etc.). |
+
+---
 
 Sharphy connects AI coding agents (Claude Code, Cursor, Windsurf, Copilot, Gemini) natively into .NET internals:
 

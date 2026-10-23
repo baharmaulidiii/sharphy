@@ -19,7 +19,7 @@
 
 <p align="center">
   <a href="#quick-start"><b>Mulai Cepat</b></a> ·
-  <a href="#arsitektur--pilar-fitur"><b>Arsitektur & Pilar</b></a> ·
+  <a href="#ekosistem-paket--manfaat"><b>Paket & Manfaat</b></a> ·
   <a href="#kemampuan-inti"><b>Kemampuan Inti</b></a> ·
   <a href="#katalog-mcp-tools"><b>Katalog MCP Tools</b></a> ·
   <a href="#faq"><b>FAQ</b></a> ·
@@ -41,7 +41,17 @@ dotnet tool install -g Sharphy.Cli
 
 ---
 
-## Kemampuan Inti
+## Ekosistem Paket & Manfaat
+
+Sharphy dibagi menjadi 3 komponen paket modular dengan peran dan manfaat spesifik:
+
+| Paket NuGet | Tipe | Manfaat & Peran Utama |
+| :--- | :--- | :--- |
+| **`Sharphy.Cli`** | `.NET Global Tool` | **Untuk User & Terminal Agent:** Alat baris perintah global (`sharphy`) yang dapat diinstal langsung di mesin apa pun (`dotnet tool install -g Sharphy.Cli`). Berfungsi sebagai launcher siap pakai untuk menjalankan server MCP (`sharphy mcp start`) atau melakukan inspeksi biner/dump langsung via CLI. |
+| **`Sharphy.Core`** | `Class Library` | **Untuk Developer & Tool Builders .NET:** Engine komprehensif yang merangkum pustaka diagnostik tingkat rendah (ClrMD), dekompilasi (ILSpy engine), manipulasi CIL bytecode (Mono.Cecil/dnlib), dan Roslyn. Dapat di-reference ke dalam aplikasi .NET apa pun tanpa dependensi MCP. |
+| **`Sharphy.Server`** | `Class Library / Host` | **Untuk Integrasi Runtime & Agent Frameworks:** Implementasi protokol standar Model Context Protocol (MCP) berbasis JSON-RPC 2.0 (Stdio & SSE transport). Memetakan kemampuan `Sharphy.Core` menjadi tools dan resources yang dapat dipanggil langsung oleh LLM coding agents (Cursor, Claude Code, Windsurf, Copilot, dll.). |
+
+---
 
 Sharphy menghubungkan AI coding agent (Claude Code, Cursor, Windsurf, Copilot, Gemini) secara native ke ekosistem internal .NET:
 
