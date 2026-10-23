@@ -50,21 +50,34 @@ jobs:
         run: dotnet restore Sharphy.sln
 
       - name: Pack All 3 Packages (Core, Server, Cli)
+        shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force -Path ./nupkgs
           dotnet pack src/Sharphy.Core/Sharphy.Core.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
           dotnet pack src/Sharphy.Server/Sharphy.Server.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
           dotnet pack src/Sharphy.Cli/Sharphy.Cli.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
+          Get-ChildItem -Path ./nupkgs -Filter *.nupkg | Select-Object FullName, Length
 
       - name: Push Packages to GitHub Packages (GitHub NuGet Registry)
+        shell: pwsh
         run: |
-          dotnet nuget push "./nupkgs/*.nupkg" --source "https://nuget.pkg.github.com/baharmaulidiii/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          $packages = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
+          foreach ($pkg in $packages) {
+            Write-Output "Pushing $($pkg.FullName) to GitHub Packages..."
+            dotnet nuget push $pkg.FullName --source "https://nuget.pkg.github.com/baharmaulidiii/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          }
 
       - name: Push Packages to NuGet.org (if secret is configured)
         if: env.NUGET_API_KEY != ''
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        shell: pwsh
         run: |
-          dotnet nuget push "./nupkgs/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY --skip-duplicate
+          $packages = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
+          foreach ($pkg in $packages) {
+            Write-Output "Pushing $($pkg.FullName) to NuGet.org..."
+            dotnet nuget push $pkg.FullName --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY --skip-duplicate
+          }
 
       - name: Upload nupkg Artifacts to Workflow Run
         uses: actions/upload-artifact@v4
