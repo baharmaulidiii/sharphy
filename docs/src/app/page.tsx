@@ -47,7 +47,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-[#30363d] bg-[#0d1117]/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="Sharphy Logo" className="h-9 w-9 drop-shadow" />
+            <img src="/logo.png" alt="Sharphy Logo" className="h-9 w-9 rounded object-contain drop-shadow" />
             <div>
               <span className="text-lg font-bold tracking-tight text-white">Sharphy</span>
               <span className="ml-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400">
