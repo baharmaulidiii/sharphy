@@ -4,7 +4,7 @@
   <a href="README.md">Bahasa Indonesia</a> · <b>English</b>
 </p>
 
-<img src="assets/logo.svg" alt="Sharphy Logo" width="160" height="160" />
+<img src="assets/logo.svg?v=2" alt="Sharphy Logo" width="160" height="160" />
 
 # Sharphy: CLR Intelligence & Runtime Forensic Bridge
 
