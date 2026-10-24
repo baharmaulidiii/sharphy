@@ -86,6 +86,17 @@
       }
     },
     {
+      "name": "sharphy_extract_tokens",
+      "description": "Extracts decryption tokens safely inside an isolated AssemblyLoadContext sandbox.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "assemblyPath": { "type": "string", "description": "Path to the target assembly" }
+        },
+        "required": ["assemblyPath"]
+      }
+    },
+    {
       "name": "sharphy_patch_il",
       "description": "Replaces or injects CIL instructions (e.g. nop-ing validation routines) and emits a patched binary.",
       "parameters": {
@@ -99,6 +110,19 @@
           "outputPath": { "type": "string", "description": "Destination path for the patched binary" }
         },
         "required": ["assemblyPath", "typeName", "methodName", "instructionOffset", "newOpCode", "outputPath"]
+      }
+    },
+    {
+      "name": "sharphy_generate_wrapper",
+      "description": "Generates strongly-typed C# wrapper using [UnsafeAccessor] or Roslyn targeting private members.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "assemblyPath": { "type": "string", "description": "Path to the target assembly" },
+          "typeName": { "type": "string", "description": "Fully qualified target type name" },
+          "outputPath": { "type": "string", "description": "Output C# source file path (.cs)" }
+        },
+        "required": ["assemblyPath", "typeName", "outputPath"]
       }
     }
   ]

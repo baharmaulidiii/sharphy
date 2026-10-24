@@ -9,6 +9,12 @@ Format dokumen ini mengacu pada standar **[Keep a Changelog](https://keepachange
 ## [Belum Dirilis] - Unreleased
 
 ### Ditambahkan (Added)
+- **Suite Pengujian Integrasi E2E MCP (`tests/Sharphy.Tests/McpE2EIntegrationTests.cs`):** Pengujian integrasi sejati yang memverifikasi aliran penuh JSON-RPC 2.0 (handshake, katalog 10 tool, dispatch pemanggilan tool, penanganan galat tool asing) serta kemurnian transmisi Stdio (stdout terisolasi tanpa polusi log diagnostik).
+- **Sinkronisasi Skema Formal MCP (`.agents/mcp-schema.json`):** Penambahan skema parameter untuk tool `sharphy_extract_tokens` dan `sharphy_generate_wrapper` sehingga genap 10 tools sesuai implementasi server.
+
+### Diperbaiki (Fixed)
+- **Isolasi Pemaketan NuGet Solution (`samples/CrackmeDemo/CrackmeDemo.csproj`):** Penambahan konfigurasi `<IsPackable>false</IsPackable>` agar eksekusi `dotnet pack Sharphy.sln` tidak mengalami error NU5026 akibat proyek demo executable.
+- **Sinkronisasi Badge NuGet Versi (`README.md`):** Pembaruan badge status ke versi `v0.1.1-preview`.
 - **Standar Komunitas GitHub & Pedoman Perilaku (`CODE_OF_CONDUCT.md`):** Pengadopsian Contributor Covenant v2.1 resmi dalam format dwibahasa (Bahasa Indonesia dan Bahasa Inggris).
 - **Templat Isu GitHub Interaktif (`.github/ISSUE_TEMPLATE/`):** Formulir GitHub Issue Forms untuk pelaporan bug (`bug_report.yml`), usulan fitur (`feature_request.yml`), dan konfigurasi rujukan keamanan (`config.yml`).
 - **Templat Pull Request Terstandarisasi (`.github/pull_request_template.md`):** Templat pengajuan PR dengan daftar periksa kepatuhan arsitektur (multi-targeting, kebersihan memori unmanaged ClrMD, sandboxing, kemurnian stdio MCP).
@@ -63,6 +69,12 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 ## [Unreleased]
 
 ### Added
+- **MCP E2E Integration Test Suite (`tests/Sharphy.Tests/McpE2EIntegrationTests.cs`):** End-to-end integration tests validating full JSON-RPC 2.0 lifecycle over Stdio streams and ensuring pure stdout output without diagnostic log pollution.
+- **Formal MCP Schema Alignment (`.agents/mcp-schema.json`):** Added complete JSON schemas for `sharphy_extract_tokens` dan `sharphy_generate_wrapper` to match the 10 cataloged tools.
+
+### Fixed
+- **Solution-Level NuGet Packability (`samples/CrackmeDemo/CrackmeDemo.csproj`):** Configured `<IsPackable>false</IsPackable>` preventing NU5026 packaging failures during solution-wide `dotnet pack`.
+- **NuGet Badge Synchronization (`README.md`):** Updated release status badge to `v0.1.1-preview`.
 - **GitHub Community Standards & Code of Conduct (`CODE_OF_CONDUCT.md`):** Adopted Contributor Covenant v2.1 in unified bilingual format.
 - **Interactive GitHub Issue Forms (`.github/ISSUE_TEMPLATE/`):** YAML Issue Forms for structured bug reports (`bug_report.yml`), feature requests (`feature_request.yml`), and contact routing (`config.yml`).
 - **Standardized Pull Request Template (`.github/pull_request_template.md`):** PR template featuring engineering & CLR architecture compliance checklists (multi-targeting, ClrMD disposal, sandbox isolation, stdio protocol purity).
