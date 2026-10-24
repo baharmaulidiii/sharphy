@@ -1,0 +1,77 @@
+name: 🐛 Laporan Bug (Bug Report)
+description: Laporkan kendala teknis, kegagalan diagnosa ClrMD, atau galat runtime pada Sharphy.
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih telah meluangkan waktu untuk melaporkan bug! 
+        *Pastikan isu ini belum pernah dilaporkan sebelumnya pada daftar Issues.*
+        *Jika ini adalah kerentanan keamanan kritis, silakan gunakan [GitHub Security Advisories](https://github.com/baharmaulidiii/sharphy/security/advisories/new).*
+  - type: textarea
+    id: description
+    attributes:
+      label: Deskripsi Masalah (Problem Description)
+      description: Penjelasan ringkas dan jelas mengenai bug atau anomali yang terjadi.
+      placeholder: Contoh: Saat memanggil tool sharphy_inspect_heap pada memory dump 64-bit, terjadi ObjectDisposedException...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Langkah-Langkah Reproduksi (Steps to Reproduce)
+      description: Langkah demi langkah untuk mereproduksi masalah ini.
+      placeholder: |
+        1. Jalankan `sharphy mcp start`
+        2. Kirim payload JSON-RPC `tools/call` dengan nama `sharphy_decompile_method`
+        3. Berikan path biner '...'
+        4. Terjadi galat...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Perilaku yang Diharapkan (Expected Behavior)
+      description: Apa yang seharusnya terjadi?
+      placeholder: Tool mengembalikan dekompilasi C# yang valid tanpa eksepsi runtime.
+    validations:
+      required: true
+  - type: textarea
+    id: logs-and-output
+    attributes:
+      label: Log & Jejak Kesalahan (Logs / Stderr Output / Callstack)
+      description: Tempelkan pesan kesalahan dari stderr atau stack trace lengkap.
+      render: shell
+  - type: dropdown
+    id: target-framework
+    attributes:
+      label: Target Framework .NET
+      description: Versi .NET runtime yang digunakan saat isu terjadi.
+      options:
+        - .NET 8.0 (LTS)
+        - .NET 9.0 (STS)
+        - .NET 10.0 (Preview / Latest)
+        - Lainnya / Multiple
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Sistem Operasi & Lingkungan (OS)
+      description: Sistem Operasi yang digunakan.
+      options:
+        - Windows (x64 / arm64)
+        - Linux (x64 / arm64)
+        - macOS (x64 / Apple Silicon)
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklists
+    attributes:
+      label: Konfirmasi & Validasi
+      options:
+        - label: Saya telah memastikan bahwa tidak ada informasi rahasia atau kredensial privat dalam log/dump yang dilampirkan.
+          required: true
+        - label: Saya telah memeriksa bahwa isu ini bukan duplikasi dari issue yang sudah ada.
+          required: true

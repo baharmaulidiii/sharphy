@@ -8,6 +8,12 @@ Format dokumen ini mengacu pada standar **[Keep a Changelog](https://keepachange
 
 ## [Belum Dirilis] - Unreleased
 
+### Ditambahkan (Added)
+- **Standar Komunitas GitHub & Pedoman Perilaku (`CODE_OF_CONDUCT.md`):** Pengadopsian Contributor Covenant v2.1 resmi dalam format dwibahasa (Bahasa Indonesia dan Bahasa Inggris).
+- **Templat Isu GitHub Interaktif (`.github/ISSUE_TEMPLATE/`):** Formulir GitHub Issue Forms untuk pelaporan bug (`bug_report.yml`), usulan fitur (`feature_request.yml`), dan konfigurasi rujukan keamanan (`config.yml`).
+- **Templat Pull Request Terstandarisasi (`.github/pull_request_template.md`):** Templat pengajuan PR dengan daftar periksa kepatuhan arsitektur (multi-targeting, kebersihan memori unmanaged ClrMD, sandboxing, kemurnian stdio MCP).
+- **Pernyataan Aksesibilitas (`ACCESSIBILITY.md`):** Komitmen kepatuhan WCAG 2.1 AA dan desain CLI ramah pembaca layar (*screen reader*).
+
 ### Direncanakan (Planned)
 - Implementasi penuh engine dekompilasi C# modern memanfaatkan `ICSharpCode.Decompiler` (ILSpy) pada tool `sharphy_decompile_method`.
 - Integrasi pustaka `Microsoft.Diagnostics.Runtime` (ClrMD) untuk audit managed heap dan analisis crash dump pada tool `sharphy_analyze_dump`, `sharphy_inspect_heap`, dan `sharphy_deadlock_detector`.
@@ -54,6 +60,12 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 ---
 
 ## [Unreleased]
+
+### Added
+- **GitHub Community Standards & Code of Conduct (`CODE_OF_CONDUCT.md`):** Adopted Contributor Covenant v2.1 in unified bilingual format.
+- **Interactive GitHub Issue Forms (`.github/ISSUE_TEMPLATE/`):** YAML Issue Forms for structured bug reports (`bug_report.yml`), feature requests (`feature_request.yml`), and contact routing (`config.yml`).
+- **Standardized Pull Request Template (`.github/pull_request_template.md`):** PR template featuring engineering & CLR architecture compliance checklists (multi-targeting, ClrMD disposal, sandbox isolation, stdio protocol purity).
+- **Accessibility Statement (`ACCESSIBILITY.md`):** Formal commitment to WCAG 2.1 AA and screen-reader-friendly CLI design.
 
 ### Planned
 - Full C# decompilation engine integration using `ICSharpCode.Decompiler` (ILSpy) for `sharphy_decompile_method`.

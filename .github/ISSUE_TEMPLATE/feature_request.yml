@@ -1,0 +1,41 @@
+name: 💡 Usulan Fitur (Feature Request)
+description: Usulkan ide baru, kapabilitas diagnostik ClrMD, atau penambahan MCP tool.
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih atas ide dan kontribusi Anda untuk mengembangkan ekosistem Sharphy!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Latar Belakang Masalah (Problem Statement)
+      description: Deskripsikan kendala atau keterbatasan saat ini yang ingin Anda selesaikan.
+      placeholder: Contoh: Saat menganalisis memory leak di GC Heap, sulit membedakan objek pinned...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solusi yang Diusulkan (Proposed Solution)
+      description: Jelaskan bagaimana fitur atau tool MCP ini seharusnya bekerja.
+      placeholder: Usulan tool MCP `sharphy_inspect_pinned_objects` yang mendeteksi handle pinned pada segmen GC...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatif yang Dipertimbangkan (Alternatives Considered)
+      description: Apakah ada pendekatan atau perkakas alternatif yang pernah Anda pertimbangkan?
+  - type: dropdown
+    id: component
+    attributes:
+      label: Komponen Terkait
+      options:
+        - Sharphy.Core (Engine Diagnostik, ClrMD, SOS, Roslyn)
+        - Sharphy.Server (Model Context Protocol, Transport, Dispatcher)
+        - Sharphy.Cli (CLI Runner, Tool Global)
+        - Dokumentasi & Testbed
+    validations:
+      required: true
