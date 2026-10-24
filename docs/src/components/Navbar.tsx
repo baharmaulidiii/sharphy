@@ -39,7 +39,7 @@ export function Navbar({ lang, setLang }: NavbarProps) {
               Sharphy
             </span>
             <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[10px] font-mono font-medium text-blue-600 dark:text-blue-400">
-              v0.1.1-preview
+              v1.0.0
             </span>
           </div>
         </a>

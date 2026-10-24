@@ -8,6 +8,17 @@ Format dokumen ini mengacu pada standar **[Keep a Changelog](https://keepachange
 
 ## [Belum Dirilis] - Unreleased
 
+## [1.0.0] - 2026-10-24
+
+### Ditambahkan (Added)
+- **Rilis Final Stable (General Availability - v1.0.0):** Pelepasan status prarilis (*preview*) ke rilis stabil penuh.
+- **Engine Dekompilasi C# Modern (`DecompilerEngine`):** Integrasi `ICSharpCode.Decompiler` (ILSpy) pada tool `sharphy_decompile_method` untuk merekonstruksi CIL bytecode menjadi sintaks C# modern secara akurat.
+- **Engine Forensik Crash Dump & Managed Heap (`DumpForensicsEngine`):** Integrasi pustaka `Microsoft.Diagnostics.Runtime` (ClrMD) pada `sharphy_analyze_dump`, `sharphy_inspect_heap`, dan `sharphy_deadlock_detector`.
+- **Engine Metadata ECMA-335 & Patcher CIL (`MetadataEngine`, `IlPatcherEngine`):** Integrasi `Mono.Cecil` untuk inspeksi biner dan mutasi instruksi CIL nyata.
+- **Engine Sandbox Kolektibel (`SandboxEngine`):** Pemuatan dinamis rakitan biner menggunakan `AssemblyLoadContext` terisolasi (`isCollectible: true`) guna mencegah kebocoran memori atau penguncian berkas.
+- **Generator Wrapper Zero-Overhead (`WrapperGeneratorEngine`):** Sintesis wrapper otomatis anggota private kelas memanfaatkan atribut `[UnsafeAccessor]` (.NET 8+).
+- **Suite Pengujian Nyata (`RealEngineTests.cs`):** Verifikasi dekompilasi, ekstraksi metadata, dan ALC sandbox langsung terhadap target biner `samples/CrackmeDemo`.
+
 ### Ditambahkan (Added)
 - **Suite Pengujian Integrasi E2E MCP (`tests/Sharphy.Tests/McpE2EIntegrationTests.cs`):** Pengujian integrasi sejati yang memverifikasi aliran penuh JSON-RPC 2.0 (handshake, katalog 10 tool, dispatch pemanggilan tool, penanganan galat tool asing) serta kemurnian transmisi Stdio (stdout terisolasi tanpa polusi log diagnostik).
 - **Sinkronisasi Skema Formal MCP (`.agents/mcp-schema.json`):** Penambahan skema parameter untuk tool `sharphy_extract_tokens` dan `sharphy_generate_wrapper` sehingga genap 10 tools sesuai implementasi server.
@@ -67,6 +78,17 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 ---
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-10-24
+
+### Added
+- **Final Stable Release (General Availability - v1.0.0):** Promoted Sharphy from preview to production-ready stable status.
+- **Modern C# Decompiler Engine (`DecompilerEngine`):** Embedded `ICSharpCode.Decompiler` (ILSpy) into `sharphy_decompile_method` for faithful CIL-to-C# source code reconstruction.
+- **Crash Dump Forensics & Heap Inspection (`DumpForensicsEngine`):** Integrated `Microsoft.Diagnostics.Runtime` (ClrMD) powering `sharphy_analyze_dump`, `sharphy_inspect_heap`, and `sharphy_deadlock_detector`.
+- **ECMA-335 Metadata & CIL Patcher (`MetadataEngine`, `IlPatcherEngine`):** Integrated `Mono.Cecil` for binary inspection and CIL instruction mutation.
+- **Collectible Sandbox Engine (`SandboxEngine`):** Safe dynamic assembly exploration via collectible `AssemblyLoadContext` (`isCollectible: true`).
+- **Zero-Overhead Wrapper Generator (`WrapperGeneratorEngine`):** Synthesizes high-performance C# accessors using `[UnsafeAccessor]` (.NET 8+).
+- **Real Engine Test Suite (`RealEngineTests.cs`):** Automated verification covering decompilation, metadata reflection, and sandboxing against `samples/CrackmeDemo`.
 
 ### Added
 - **MCP E2E Integration Test Suite (`tests/Sharphy.Tests/McpE2EIntegrationTests.cs`):** End-to-end integration tests validating full JSON-RPC 2.0 lifecycle over Stdio streams and ensuring pure stdout output without diagnostic log pollution.

@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version string to release (e.g., 0.1.1-preview or 1.0.0)'
+        description: 'Version string to release (e.g., 1.0.0 or 1.0.0)'
         required: true
-        default: '0.1.1-preview'
+        default: '1.0.0'
       publish_packages:
         description: 'Publish new package (NuGet & GitHub Packages)'
         type: boolean
@@ -98,7 +98,7 @@ jobs:
           } elseif ("${{ github.ref_name }}" -match '^v?(.*)$') {
             $rawVer = $matches[1]
           } else {
-            $rawVer = "0.1.1-preview"
+            $rawVer = "1.0.0"
           }
           $ver = $rawVer.TrimStart('v')
           $tag = "v$ver"
@@ -169,7 +169,7 @@ jobs:
           elif [[ "${{ github.ref_name }}" =~ ^v?(.*)$ ]]; then
             RAW_VER="${BASH_REMATCH[1]}"
           else
-            RAW_VER="0.1.1-preview"
+            RAW_VER="1.0.0"
           fi
           VER="${RAW_VER#v}"
           TAG="v$VER"

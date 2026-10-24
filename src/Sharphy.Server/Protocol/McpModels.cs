@@ -77,6 +77,6 @@ public sealed class McpImplementationInfo
     public string Name { get; set; } = "sharphy";
 
     [JsonPropertyName("version")]
-    public string Version { get; set; } = "0.1.0-preview";
+    public string Version { get; set; } = "1.0.0";
 }
 
