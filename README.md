@@ -21,6 +21,7 @@
   <a href="#katalog-eksplisit-10-mcp-tools"><b>Katalog 10 MCP Tools</b></a> ·
   <a href="#panduan-pemasangan--integrasi-agent"><b>Integrasi Agent</b></a> ·
   <a href="#kebijakan-keamanan--hukum"><b>Keamanan & Legalitas</b></a> ·
+  <a href="CHANGELOG.md"><b>Changelog</b></a> ·
   <a href="CONTRIBUTING.md"><b>Panduan Kontribusi</b></a>
 </p>
 
