@@ -1,9 +1,5 @@
 <div align="center">
 
-<img src="assets/Sharphy social preview.jpeg" alt="Sharphy Social Preview Banner" width="100%" />
-
-<br /><br />
-
 <img src="assets/sharphy.svg" alt="Sharphy Logo" width="120" />
 
 # Sharphy: CLR Intelligence & Runtime Forensic Bridge
