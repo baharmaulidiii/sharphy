@@ -23,9 +23,16 @@ export function Navbar({ lang, setLang, brandPrefix = '' }: NavbarProps) {
         {/* Brand Logo & Name */}
         <a href="#" className="flex items-center gap-2.5 hover:opacity-85 transition-opacity">
           <img 
-            src={`${brandPrefix}/logo.png`} 
+            src={`${brandPrefix}/sharphy.svg`} 
             alt="Sharphy Monogram" 
             className="h-7 w-7 rounded object-contain drop-shadow-sm" 
+            onError={(e) => {
+              // Fallback to relative path without prefix if basePath fails
+              const target = e.currentTarget;
+              if (target.src.includes('/sharphy.svg') && !target.src.endsWith('sharphy.svg')) {
+                target.src = 'sharphy.svg';
+              }
+            }}
           />
           <div className="flex items-center gap-2">
             <span className="font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 text-sm sm:text-base">

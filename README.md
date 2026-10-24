@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="Sharphy Logo" width="220" />
+<img src="assets/sharphy.svg" alt="Sharphy Logo" width="140" />
 
 # Sharphy: CLR Intelligence & Runtime Forensic Bridge
 
