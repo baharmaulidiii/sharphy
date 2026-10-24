@@ -13,6 +13,7 @@ Format dokumen ini mengacu pada standar **[Keep a Changelog](https://keepachange
 - **Templat Isu GitHub Interaktif (`.github/ISSUE_TEMPLATE/`):** Formulir GitHub Issue Forms untuk pelaporan bug (`bug_report.yml`), usulan fitur (`feature_request.yml`), dan konfigurasi rujukan keamanan (`config.yml`).
 - **Templat Pull Request Terstandarisasi (`.github/pull_request_template.md`):** Templat pengajuan PR dengan daftar periksa kepatuhan arsitektur (multi-targeting, kebersihan memori unmanaged ClrMD, sandboxing, kemurnian stdio MCP).
 - **Pernyataan Aksesibilitas (`ACCESSIBILITY.md`):** Komitmen kepatuhan WCAG 2.1 AA dan desain CLI ramah pembaca layar (*screen reader*).
+- **Sinkronisasi Navigasi Dokumen (`README.md`):** Penambahan badge Contributor Covenant v2.1, tautan navigasi langsung ke kode etik, dan integrasi rujukan standar komunitas, aksesibilitas, serta templat kontribusi pada kedua versi bahasa.
 
 ### Direncanakan (Planned)
 - Implementasi penuh engine dekompilasi C# modern memanfaatkan `ICSharpCode.Decompiler` (ILSpy) pada tool `sharphy_decompile_method`.
@@ -66,6 +67,7 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 - **Interactive GitHub Issue Forms (`.github/ISSUE_TEMPLATE/`):** YAML Issue Forms for structured bug reports (`bug_report.yml`), feature requests (`feature_request.yml`), and contact routing (`config.yml`).
 - **Standardized Pull Request Template (`.github/pull_request_template.md`):** PR template featuring engineering & CLR architecture compliance checklists (multi-targeting, ClrMD disposal, sandbox isolation, stdio protocol purity).
 - **Accessibility Statement (`ACCESSIBILITY.md`):** Formal commitment to WCAG 2.1 AA and screen-reader-friendly CLI design.
+- **Document Navigation Synchronization (`README.md`):** Added Contributor Covenant v2.1 badge, header navigation shortcuts, and cross-references to community standards across both language sections.
 
 ### Planned
 - Full C# decompilation engine integration using `ICSharpCode.Decompiler` (ILSpy) for `sharphy_decompile_method`.

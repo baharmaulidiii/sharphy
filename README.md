@@ -12,6 +12,7 @@
   <a href="#"><img src="https://img.shields.io/badge/MCP-10%20tools%20catalog-8A2BE2" alt="MCP Catalog" /></a>
   <a href="https://dotnet.microsoft.com/download"><img src="https://img.shields.io/badge/.NET-8%20|%209%20|%2010-512BD4?logo=dotnet&logoColor=white" alt=".NET 8/9/10" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License" /></a>
+  <a href="CODE_OF_CONDUCT.md"><img src="https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg" alt="Contributor Covenant" /></a>
   <a href="https://github.com/baharmaulidiii/sharphy"><img src="https://img.shields.io/badge/GitHub-baharmaulidiii%2Fsharphy-181717?logo=github" alt="GitHub Repo" /></a>
 </p>
 
@@ -20,9 +21,10 @@
   <a href="#ekosistem-paket--komposisi-peran"><b>Ekosistem Paket</b></a> ·
   <a href="#katalog-eksplisit-10-mcp-tools"><b>Katalog 10 MCP Tools</b></a> ·
   <a href="#panduan-pemasangan--integrasi-agent"><b>Integrasi Agent</b></a> ·
-  <a href="#kebijakan-keamanan--hukum"><b>Keamanan & Legalitas</b></a> ·
+  <a href="#standar-komunitas-kebijakan-keamanan--hukum"><b>Kebijakan & Komunitas</b></a> ·
   <a href="CHANGELOG.md"><b>Changelog</b></a> ·
-  <a href="CONTRIBUTING.md"><b>Panduan Kontribusi</b></a>
+  <a href="CONTRIBUTING.md"><b>Panduan Kontribusi</b></a> ·
+  <a href="CODE_OF_CONDUCT.md"><b>Kode Etik</b></a>
 </p>
 
 ```bash
@@ -262,10 +264,13 @@ Sharphy dibangun dengan arsitektur multi-targeting native tanpa emulasi:
 
 ---
 
-## Kebijakan Keamanan & Hukum
+## Standar Komunitas, Kebijakan Keamanan & Hukum
 
 - Tata kelola kontribusi teknis diuraikan di [CONTRIBUTING.md](CONTRIBUTING.md).
+- Pedoman perilaku komunitas dan kode etik diatur dalam [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 - Model mitigasi ancaman siber dan kanal pelaporan insiden tersedia di [SECURITY.md](SECURITY.md).
+- Komitmen aksesibilitas (WCAG 2.1 AA & pembaca layar) termaktub dalam [ACCESSIBILITY.md](ACCESSIBILITY.md).
+- Formulir pelaporan isu dan pengajuan kontribusi kode tersedia di [.github/ISSUE_TEMPLATE](.github/ISSUE_TEMPLATE) dan [.github/pull_request_template.md](.github/pull_request_template.md).
 - Batasan legalitas dan pelepasan tanggung jawab diatur dalam [DISCLAIMER.md](DISCLAIMER.md).
 - Hak cipta pustaka dependensi tertera di [THIRD_PARTY_NOTICE.md](THIRD_PARTY_NOTICE.md).
 
@@ -313,5 +318,15 @@ Mainstream AI coding agents operate purely on raw text editor heuristics, lackin
 8. `sharphy_extract_tokens`: Safe isolated execution and unpacking within collectible `AssemblyLoadContext` sandboxes.
 9. `sharphy_patch_il`: Surgical CIL opcode replacement and binary re-emitting.
 10. `sharphy_generate_wrapper`: Automated synthesis of zero-overhead C# wrappers using `[UnsafeAccessor]` or Roslyn.
+
+## Community Standards, Security & Legal Policies
+
+- **Contributing:** Engineering guidelines and workflows in [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Code of Conduct:** Community expectations and enforcement in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+- **Security Policy:** Threat model and reporting procedure in [SECURITY.md](SECURITY.md).
+- **Accessibility:** Inclusivity commitments and barrier reporting in [ACCESSIBILITY.md](ACCESSIBILITY.md).
+- **Issue Forms & PR Template:** Structured collaboration via [.github/ISSUE_TEMPLATE](.github/ISSUE_TEMPLATE) and [.github/pull_request_template.md](.github/pull_request_template.md).
+- **Legal Disclaimer & Third-Party:** Liability boundaries in [DISCLAIMER.md](DISCLAIMER.md) and license notices in [THIRD_PARTY_NOTICE.md](THIRD_PARTY_NOTICE.md).
+- **License:** Distributed under the [MIT License](LICENSE).
 
 </details>
