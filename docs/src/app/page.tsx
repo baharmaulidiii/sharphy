@@ -153,7 +153,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fdfdfd] dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors">
-      <Navbar lang={lang} setLang={handleSetLang} brandPrefix={basePath} />
+      <Navbar lang={lang} setLang={handleSetLang} />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-10 space-y-16 sm:space-y-24">
         {/* Hero Section */}

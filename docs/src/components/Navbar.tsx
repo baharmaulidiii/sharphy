@@ -9,7 +9,7 @@ interface NavbarProps {
   brandPrefix?: string;
 }
 
-export function Navbar({ lang, setLang, brandPrefix = '' }: NavbarProps) {
+export function Navbar({ lang, setLang }: NavbarProps) {
   const navItems = [
     { label: lang === 'id' ? 'Arsitektur' : 'Architecture', href: '#features' },
     { label: lang === 'id' ? 'Katalog Tools' : 'Tools Catalog', href: '#tools' },
@@ -23,14 +23,14 @@ export function Navbar({ lang, setLang, brandPrefix = '' }: NavbarProps) {
         {/* Brand Logo & Name */}
         <a href="#" className="flex items-center gap-2.5 hover:opacity-85 transition-opacity">
           <img 
-            src={`${brandPrefix}/sharphy.svg`} 
+            src="sharphy.svg" 
             alt="Sharphy Monogram" 
             className="h-7 w-7 rounded object-contain drop-shadow-sm" 
             onError={(e) => {
-              // Fallback to relative path without prefix if basePath fails
+              // Try absolute path if relative fails
               const target = e.currentTarget;
-              if (target.src.includes('/sharphy.svg') && !target.src.endsWith('sharphy.svg')) {
-                target.src = 'sharphy.svg';
+              if (target.src.endsWith('sharphy.svg') && !target.src.includes('/sharphy/')) {
+                target.src = '/sharphy/sharphy.svg';
               }
             }}
           />
