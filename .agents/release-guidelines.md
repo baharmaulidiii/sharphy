@@ -103,7 +103,19 @@ Remove-Item -Recurse -Force $tempDir
 - **AI Agent:** Berwenang melakukan pemeriksaan diff, memvalidasi build/test/pack lokal, menyinkronkan `CHANGELOG.md`, dan menyiapkan laporan rilis. **DILARANG KERAS** menjalankan `git commit`, `git push`, atau membuat git tag di remote.
 - **Repository Owner:** Berwenang penuh melakukan commit, push ke branch `main`, membuat `git tag`, dan memicu rilis GitHub.
 
-### 6.2 Langkah-Langkah Eksekusi Rilis Baru (Oleh Repo Owner)
+### 6.2 Metode A: Orkestrasi Rilis Satu Klik via GitHub Actions (Sangat Direkomendasikan)
+Repositori menyediakan workflow terpadu [`.github/workflows/release.yml`](../.github/workflows/release.yml):
+1. Kunjungi menu **Actions** di repositori GitHub:  
+   `https://github.com/baharmaulidiii/sharphy/actions/workflows/release.yml`
+2. Pilih workflow **Release Orchestrator** -> klik tombol **Run workflow**.
+3. Masukkan versi target (misal: `0.1.1-preview`), tentukan flag pre-release, dan centang deploy docs.
+4. Workflow akan secara otomatis:
+   - Memverifikasi build & pengujian unit lintas framework (.NET 8 & 10).
+   - Mem-pack dan mengunggah ketiga paket ke GitHub Packages & NuGet.org.
+   - Membuat rilis resmi di GitHub Releases dengan lampiran file `.nupkg` dan catatan rilis dari `CHANGELOG.md`.
+   - Mengompilasi dan men-deploy situs dokumentasi ke GitHub Pages.
+
+### 6.3 Metode B: Eksekusi Manual via Terminal (Alternatif)
 ```powershell
 # 1. Pastikan perubahan lokal sudah di-stage dan di-commit
 git add .
@@ -116,14 +128,12 @@ git tag -a v0.1.1-preview -m "Release v0.1.1-preview: Functional Stdio MCP Serve
 # 3. Dorong Tag ke Remote GitHub
 git push origin v0.1.1-preview
 ```
-*Catatan:* Mendorong tag dengan pola `v*` akan memicu workflow [`.github/workflows/publish-packages.yml`](../.github/workflows/publish-packages.yml) secara otomatis untuk mem-pack dan mengunggah ketiga paket ke GitHub Packages dan NuGet.org.
+*Catatan:* Mendorong tag dengan pola `v*` akan otomatis memicu `release.yml` atau `publish-packages.yml`.
 
-### 6.3 Langkah-Langkah Deploy Web Dokumentasi GitHub Pages (Oleh Repo Owner)
-Workflow [`.github/workflows/deploy-docs.yml`](../.github/workflows/deploy-docs.yml) diatur dengan pemicu manual (`workflow_dispatch`).
-1. Kunjungi menu **Actions** di repositori GitHub:  
-   `https://github.com/baharmaulidiii/sharphy/actions/workflows/deploy-docs.yml`
-2. Pilih tombol **Run workflow** pada branch `main`.
-3. GitHub Actions akan mengompilasi aplikasi Next.js di direktori `docs/` dan mempublikasikan artefak ke GitHub Pages.
+### 6.4 Deployment Mandiri Web Dokumentasi GitHub Pages
+Jika hanya ingin memperbarui situs dokumentasi tanpa merilis biner baru:
+1. Kunjungi: `https://github.com/baharmaulidiii/sharphy/actions/workflows/deploy-docs.yml`
+2. Klik tombol **Run workflow** pada branch `main`.
 
 ---
 

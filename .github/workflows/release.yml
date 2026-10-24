@@ -1,0 +1,234 @@
+name: Release Orchestrator
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version string to release (e.g., 0.1.1-preview or 1.0.0)'
+        required: true
+        default: '0.1.1-preview'
+      prerelease:
+        description: 'Mark as pre-release on GitHub Releases'
+        type: boolean
+        required: true
+        default: true
+      deploy_docs:
+        description: 'Deploy documentation portal to GitHub Pages'
+        type: boolean
+        required: true
+        default: true
+
+permissions:
+  contents: write
+  packages: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "release-${{ github.ref }}"
+  cancel-in-progress: false
+
+jobs:
+  # -------------------------------------------------------------
+  # Job 1: Build & Multi-Target Test Verification
+  # -------------------------------------------------------------
+  verify:
+    name: Verify Multi-Target Build & Tests
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK 8 & 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore Sharphy.sln
+
+      - name: Build solution in Release mode
+        run: dotnet build Sharphy.sln -c Release --no-restore
+
+      - name: Run test suite (.NET 8)
+        run: dotnet run --project tests/Sharphy.Tests/Sharphy.Tests.csproj --framework net8.0 -c Release
+
+      - name: Run test suite (.NET 10)
+        run: dotnet run --project tests/Sharphy.Tests/Sharphy.Tests.csproj --framework net10.0 -c Release
+
+  # -------------------------------------------------------------
+  # Job 2: Packaging & Publication
+  # -------------------------------------------------------------
+  publish_packages:
+    name: Package & Publish NuGet Artifacts
+    needs: verify
+    runs-on: windows-latest
+    outputs:
+      package_version: ${{ steps.versioning.outputs.version }}
+      tag_name: ${{ steps.versioning.outputs.tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK 8 & 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Determine Package Version & Tag
+        id: versioning
+        shell: pwsh
+        run: |
+          if ("${{ github.event.inputs.version }}" -ne "") {
+            $rawVer = "${{ github.event.inputs.version }}"
+          } elseif ("${{ github.ref_name }}" -match '^v?(.*)$') {
+            $rawVer = $matches[1]
+          } else {
+            $rawVer = "0.1.1-preview"
+          }
+          $ver = $rawVer.TrimStart('v')
+          $tag = "v$ver"
+          Write-Output "Resolved version: $ver"
+          Write-Output "Resolved git tag: $tag"
+          "version=$ver" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "PACKAGE_VERSION=$ver" >> $env:GITHUB_ENV
+          "TAG_NAME=$tag" >> $env:GITHUB_ENV
+
+      - name: Restore dependencies
+        run: dotnet restore Sharphy.sln
+
+      - name: Pack All 3 Packages (Core, Server, Cli)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ./nupkgs
+          dotnet pack src/Sharphy.Core/Sharphy.Core.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
+          dotnet pack src/Sharphy.Server/Sharphy.Server.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
+          dotnet pack src/Sharphy.Cli/Sharphy.Cli.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
+          Get-ChildItem -Path ./nupkgs -Filter *.nupkg | Select-Object FullName, Length
+
+      - name: Push Packages to GitHub Packages (GitHub NuGet Registry)
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
+          foreach ($pkg in $packages) {
+            Write-Output "Pushing $($pkg.FullName) to GitHub Packages..."
+            dotnet nuget push $pkg.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          }
+
+      - name: Push Packages to NuGet.org (if secret is configured)
+        if: env.NUGET_API_KEY != ''
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
+          foreach ($pkg in $packages) {
+            Write-Output "Pushing $($pkg.FullName) to NuGet.org..."
+            dotnet nuget push $pkg.FullName --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY --skip-duplicate
+          }
+
+      - name: Upload nupkgs for Release Job
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-nuget-packages
+          path: ./nupkgs/*.nupkg
+
+  # -------------------------------------------------------------
+  # Job 3: Create GitHub Release with Attached Packages
+  # -------------------------------------------------------------
+  create_release:
+    name: Create GitHub Release
+    needs: publish_packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download NuGet artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-nuget-packages
+          path: ./release-artifacts
+
+      - name: Extract Release Notes from CHANGELOG.md
+        id: changelog_extract
+        shell: bash
+        run: |
+          TAG="${{ needs.publish_packages.outputs.tag_name }}"
+          VER="${{ needs.publish_packages.outputs.package_version }}"
+          echo "Extracting release notes for version $VER ($TAG)..."
+          
+          # Attempt to extract section matching version from CHANGELOG.md
+          NOTE_FILE="release_notes.md"
+          awk "/## \[$VER\]/{flag=1;next}/## \[/{flag=0}flag" CHANGELOG.md > "$NOTE_FILE" || true
+          
+          if [ ! -s "$NOTE_FILE" ]; then
+            echo "Release $TAG of Sharphy: CLR Intelligence & Runtime Forensic Bridge for AI Coding Agents." > "$NOTE_FILE"
+          fi
+          cat "$NOTE_FILE"
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.publish_packages.outputs.tag_name }}
+          name: Release ${{ needs.publish_packages.outputs.tag_name }}
+          body_path: release_notes.md
+          prerelease: ${{ github.event.inputs.prerelease != 'false' }}
+          files: |
+            ./release-artifacts/*.nupkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # -------------------------------------------------------------
+  # Job 4: Optional Docs Deployment to GitHub Pages
+  # -------------------------------------------------------------
+  deploy_docs:
+    name: Deploy Docs to GitHub Pages
+    needs: [create_release]
+    if: github.event.inputs.deploy_docs != 'false'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Install dependencies
+        working-directory: docs
+        run: npm ci || npm install
+
+      - name: Build Next.js documentation
+        working-directory: docs
+        run: npm run build
+        env:
+          GITHUB_ACTIONS: true
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs/out
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
