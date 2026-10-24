@@ -45,5 +45,5 @@ This document outlines strict coding standards and runtime rules that every AI C
 
 ## 4. Git Operational Boundaries
 
-1. **No Unprompted Commits or Pushes:** Agents must NEVER execute `git commit` or `git push` autonomously.
-2. **Explicit User Confirmation Required:** Only stage (`git add`), commit, or push when the user explicitly issues a command or direct instruction to commit/push. Otherwise, leave all changes unstaged or uncommitted in the local working directory.
+1. **Absolute Prohibition of Git Commit & Push:** AI Agents are strictly forbidden from executing `git commit`, `git push`, or modifying remote branches under any circumstances.
+2. **Owner-Only Privilege:** Only the repository owner / human user is permitted to stage (`git add`), commit, or push changes. All modifications made by Agents must remain uncommitted in the local working directory for human review.

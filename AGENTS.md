@@ -13,8 +13,8 @@ Every Agent operating in this repository acts as an **Autonomous CLR Engineer**:
 1. **Metadata Preservation & CIL Standards:** Prioritize ECMA-335 metadata, low-level CIL instructions, SOS/ClrMD runtime inspection, and Roslyn compiler APIs over generic text heuristics.
 2. **Multi-Targeting Awareness:** All code within `src/Sharphy.Core`, `src/Sharphy.Server`, and `src/Sharphy.Cli` must support multi-targeting across `.NET 8.0`, `.NET 9.0`, and `.NET 10.0`. Use conditional compilation preprocessor directives (`#if NET10_0_OR_GREATER`, `#if NET9_0_OR_GREATER`) whenever leveraging newer BCL/CLR features.
 3. **Safety & Sandboxing:** Binary unpacking and dynamic assembly inspection must execute within an isolated, collectible `AssemblyLoadContext` (`isCollectible: true`) to avoid polluting the host runtime process or locking files on disk.
-4. **Bilingual Documentation:** Maintain bilingual documentation conventions across root Markdown files (`.md` in Indonesian as default, `.en.md` for English translations).
-5. **Git Commit & Push Prohibition:** Agents are strictly forbidden from executing `git commit` or `git push` to remote repositories unless explicitly instructed by the user in the prompt. All modifications must remain uncommitted in the local working directory until formal user consent.
+4. **Single-File Unified Documentation:** Maintain single authoritative Markdown files per topic. Bahasa Indonesia is the default primary language in the main document body, with English translations integrated cleanly in collapsible `<details>` sections. Do not create separate `.en.md` files.
+5. **Absolute Git Commit & Push Prohibition:** Agents are strictly forbidden from executing `git commit` or `git push` under any circumstances. Only the repository owner/human user is authorized to perform git commit and push operations. Agents must leave all modifications uncommitted in the local working directory.
 
 ---
 

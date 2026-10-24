@@ -1,9 +1,5 @@
 <div align="center">
 
-<p align="center">
-  <b>Bahasa Indonesia</b> · <a href="README.en.md">English</a>
-</p>
-
 <img src="assets/logo.png" alt="Sharphy Logo" width="220" />
 
 # Sharphy: CLR Intelligence & Runtime Forensic Bridge
@@ -54,6 +50,8 @@ Sharphy dibagi menjadi 3 komponen paket modular dengan peran dan manfaat spesifi
 | **`Sharphy.Server`** | `Class Library / Host` | **Untuk Integrasi Runtime & Agent Frameworks:** Implementasi protokol standar Model Context Protocol (MCP) berbasis JSON-RPC 2.0 (Stdio & SSE transport). Memetakan kemampuan `Sharphy.Core` menjadi tools dan resources yang dapat dipanggil langsung oleh LLM coding agents (Cursor, Claude Code, Windsurf, Copilot, dll.). |
 
 ---
+
+## Kemampuan Inti
 
 Sharphy menghubungkan AI coding agent (Claude Code, Cursor, Windsurf, Copilot, Gemini) secara native ke ekosistem internal .NET:
 
@@ -161,7 +159,80 @@ Ya. Seluruh engine dibangun di atas platform modern .NET 8/9/10 dan mendukung du
 - Baca panduan kontribusi di [CONTRIBUTING.md](CONTRIBUTING.md).
 - Laporan keamanan dan kerentanan dapat diajukan sesuai [SECURITY.md](SECURITY.md).
 - Syarat dan ketentuan legal tersedia di [DISCLAIMER.md](DISCLAIMER.md).
+- Informasi dependensi pihak ketiga tersedia di [THIRD_PARTY_NOTICE.md](THIRD_PARTY_NOTICE.md).
 
 ## Lisensi
 
 Sharphy dilisensikan di bawah [Lisensi MIT](LICENSE).
+
+---
+
+<details>
+<summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
+
+<div align="center">
+
+# Sharphy: CLR Intelligence & Runtime Forensic Bridge
+
+### The native Model Context Protocol (MCP) server turning AI agents into deep .NET runtime diagnosticians, binary inspectors, and CIL architects.
+**Harness rich ECMA-335 metadata, diagnose crash dumps directly from runtime memory, and navigate CIL bytecode with precision.**
+
+</div>
+
+## Package Ecosystem & Benefits
+
+| NuGet Package | Target Type | Primary Role & Value Proposition |
+| :--- | :--- | :--- |
+| **`Sharphy.Cli`** | `.NET Global Tool` | **For Users & Terminal Agents:** Global executable command-line tool (`sharphy`) installed via `dotnet tool install -g Sharphy.Cli`. Serves as a zero-setup runner to launch the MCP server (`sharphy mcp start`) or inspect crash dumps and assemblies directly. |
+| **`Sharphy.Core`** | `Class Library` | **For .NET Engineers & Diagnostic Builders:** Core engine encapsulating low-level CLR diagnostics (ClrMD), C# decompiler engines (ILSpy), bytecode manipulation (Mono.Cecil), and Roslyn compilers. Fully usable as a standalone library in any .NET application without MCP dependencies. |
+| **`Sharphy.Server`** | `Class Library / Host` | **For Agent Frameworks & Runtime Hosts:** Standardized Model Context Protocol (MCP) server dispatcher implementing JSON-RPC 2.0 (Stdio & SSE). Bridges `Sharphy.Core` capabilities directly to LLM coding agents (Cursor, Claude Code, Windsurf, Copilot, etc.). |
+
+---
+
+## Core Capabilities
+
+* **Memory Dump Forensics & CLR Telemetry:** Ingest crash dumps (`.dmp`) across Windows and Linux CoreCLR via ClrMD, detect thread deadlocks, analyze Large Object Heap (LOH) fragmentation, and pinpoint memory leaks.
+* **Source Reconstruction & Metadata Inspection:** Parse ECMA-335 hierarchies, compiler-generated attributes, and P/Invoke signatures, reconstructing clean modern C# methods via the ILSpy decompiler engine.
+* **Integrity & Unpacking Heuristics:** Detect CFG flattening patterns, resolve proxy delegates, and execute decryption wrappers safely in isolated `AssemblyLoadContext` sandboxes.
+* **CIL Instruction Mutation & Dynamic Patching:** Mutate bytecode opcodes (nop-out checks, alter branch targets) and generate high-throughput wrappers via C# `UnsafeAccessor` or Roslyn.
+
+---
+
+## Quick Start (English)
+
+### 1. Install Global CLI Tool
+```bash
+dotnet tool install -g Sharphy.Cli
+```
+
+### 2. Configure Your AI Agent
+Add Sharphy to your MCP client configuration (`mcpServers`):
+```json
+{
+  "mcpServers": {
+    "sharphy": {
+      "command": "sharphy",
+      "args": ["mcp", "start"]
+    }
+  }
+}
+```
+
+---
+
+## MCP Tools Catalog
+
+| Tool Name | Category | Description |
+| :--- | :--- | :--- |
+| `sharphy_analyze_dump` | Diagnostics | Automated Root Cause Analysis (RCA) on crash dump (`.dmp`) files. |
+| `sharphy_inspect_heap` | Diagnostics | Managed heap audit: memory leaks, object retention, and LOH fragmentation. |
+| `sharphy_deadlock_detector`| Diagnostics | Traces thread synchronization objects, monitors, and lock contention dependency chains. |
+| `sharphy_decompile_method` | Reconstruction | Decompiles target CIL methods into clean, readable C# with compiler attributes. |
+| `sharphy_diff_assemblies` | Metadata | Compares two assembly versions (`.dll`/`.exe`) to catch breaking API changes. |
+| `sharphy_inspect_metadata` | Metadata | Dumps ECMA-335 type hierarchies, native P/Invoke signatures, and generic arguments. |
+| `sharphy_clean_obfuscation`| Integrity | Analyzes and demangles standard obfuscation patterns (CFG flattening, proxy delegates). |
+| `sharphy_extract_tokens` | Integrity | Evaluates decryption routines inside an isolated `AssemblyLoadContext` sandbox. |
+| `sharphy_patch_il` | Mutation | Patches CIL instructions directly and re-emits binaries without requiring original source. |
+| `sharphy_generate_wrapper` | Mutation | Automatically synthesizes strongly-typed C# wrappers via high-performance `UnsafeAccessor`. |
+
+</details>
