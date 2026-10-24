@@ -104,16 +104,15 @@ Remove-Item -Recurse -Force $tempDir
 - **Repository Owner:** Berwenang penuh melakukan commit, push ke branch `main`, membuat `git tag`, dan memicu rilis GitHub.
 
 ### 6.2 Metode A: Orkestrasi Rilis Satu Klik via GitHub Actions (Sangat Direkomendasikan)
-Repositori menyediakan workflow terpadu [`.github/workflows/release.yml`](../.github/workflows/release.yml):
+Repositori menyediakan workflow terpadu [`.github/workflows/release.yml`](../.github/workflows/release.yml) (**Release Orchestrator**):
 1. Kunjungi menu **Actions** di repositori GitHub:  
    `https://github.com/baharmaulidiii/sharphy/actions/workflows/release.yml`
 2. Pilih workflow **Release Orchestrator** -> klik tombol **Run workflow**.
-3. Masukkan versi target (misal: `0.1.1-preview`), tentukan flag pre-release, dan centang deploy docs.
-4. Workflow akan secara otomatis:
-   - Memverifikasi build & pengujian unit lintas framework (.NET 8 & 10).
-   - Mem-pack dan mengunggah ketiga paket ke GitHub Packages & NuGet.org.
-   - Membuat rilis resmi di GitHub Releases dengan lampiran file `.nupkg` dan catatan rilis dari `CHANGELOG.md`.
-   - Mengompilasi dan men-deploy situs dokumentasi ke GitHub Pages.
+3. Sesuaikan opsi rilis melalui 3 checklist yang tersedia:
+   - ☑️ **Publish new package (NuGet & GitHub Packages)**: Mem-pack dan mengunggah biner paket NuGet.
+   - ☑️ **Mark as pre-release on GitHub Releases**: Menandai status rilis di GitHub.
+   - ☑️ **Deploy documentation portal to GitHub Pages**: Mengompilasi dan mempublikasikan situs dokumentasi ke GitHub Pages.
+4. Klik tombol hijau **Run workflow**. Semua tahapan yang Anda centang akan dieksekusi secara otomatis dan terisolasi.
 
 ### 6.3 Metode B: Eksekusi Manual via Terminal (Alternatif)
 ```powershell
@@ -128,12 +127,7 @@ git tag -a v0.1.1-preview -m "Release v0.1.1-preview: Functional Stdio MCP Serve
 # 3. Dorong Tag ke Remote GitHub
 git push origin v0.1.1-preview
 ```
-*Catatan:* Mendorong tag dengan pola `v*` akan otomatis memicu `release.yml` atau `publish-packages.yml`.
-
-### 6.4 Deployment Mandiri Web Dokumentasi GitHub Pages
-Jika hanya ingin memperbarui situs dokumentasi tanpa merilis biner baru:
-1. Kunjungi: `https://github.com/baharmaulidiii/sharphy/actions/workflows/deploy-docs.yml`
-2. Klik tombol **Run workflow** pada branch `main`.
+*Catatan:* Mendorong tag dengan pola `v*` akan otomatis memicu `release.yml`.
 
 ---
 

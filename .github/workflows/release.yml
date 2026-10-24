@@ -10,6 +10,11 @@ on:
         description: 'Version string to release (e.g., 0.1.1-preview or 1.0.0)'
         required: true
         default: '0.1.1-preview'
+      publish_packages:
+        description: 'Publish new package (NuGet & GitHub Packages)'
+        type: boolean
+        required: true
+        default: true
       prerelease:
         description: 'Mark as pre-release on GitHub Releases'
         type: boolean
@@ -62,11 +67,12 @@ jobs:
         run: dotnet run --project tests/Sharphy.Tests/Sharphy.Tests.csproj --framework net10.0 -c Release
 
   # -------------------------------------------------------------
-  # Job 2: Packaging & Publication
+  # Job 2: Packaging & Publication (Conditional)
   # -------------------------------------------------------------
   publish_packages:
     name: Package & Publish NuGet Artifacts
     needs: verify
+    if: github.event.inputs.publish_packages != 'false'
     runs-on: windows-latest
     outputs:
       package_version: ${{ steps.versioning.outputs.version }}
@@ -143,18 +149,37 @@ jobs:
           path: ./nupkgs/*.nupkg
 
   # -------------------------------------------------------------
-  # Job 3: Create GitHub Release with Attached Packages
+  # Job 3: Create GitHub Release (If Packages Published or Tagged)
   # -------------------------------------------------------------
   create_release:
     name: Create GitHub Release
-    needs: publish_packages
+    needs: [verify, publish_packages]
+    if: always() && needs.verify.result == 'success' && (needs.publish_packages.result == 'success' || github.event.inputs.publish_packages == 'false')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download NuGet artifacts
+      - name: Determine Version & Tag
+        id: release_meta
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            RAW_VER="${{ github.event.inputs.version }}"
+          elif [[ "${{ github.ref_name }}" =~ ^v?(.*)$ ]]; then
+            RAW_VER="${BASH_REMATCH[1]}"
+          else
+            RAW_VER="0.1.1-preview"
+          fi
+          VER="${RAW_VER#v}"
+          TAG="v$VER"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VER" >> $GITHUB_OUTPUT
+
+      - name: Download NuGet artifacts (if published)
+        if: needs.publish_packages.result == 'success'
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: release-nuget-packages
           path: ./release-artifacts
@@ -163,11 +188,10 @@ jobs:
         id: changelog_extract
         shell: bash
         run: |
-          TAG="${{ needs.publish_packages.outputs.tag_name }}"
-          VER="${{ needs.publish_packages.outputs.package_version }}"
+          TAG="${{ steps.release_meta.outputs.tag }}"
+          VER="${{ steps.release_meta.outputs.version }}"
           echo "Extracting release notes for version $VER ($TAG)..."
           
-          # Attempt to extract section matching version from CHANGELOG.md
           NOTE_FILE="release_notes.md"
           awk "/## \[$VER\]/{flag=1;next}/## \[/{flag=0}flag" CHANGELOG.md > "$NOTE_FILE" || true
           
@@ -179,8 +203,8 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.publish_packages.outputs.tag_name }}
-          name: Release ${{ needs.publish_packages.outputs.tag_name }}
+          tag_name: ${{ steps.release_meta.outputs.tag }}
+          name: Release ${{ steps.release_meta.outputs.tag }}
           body_path: release_notes.md
           prerelease: ${{ github.event.inputs.prerelease != 'false' }}
           files: |
@@ -189,11 +213,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # -------------------------------------------------------------
-  # Job 4: Optional Docs Deployment to GitHub Pages
+  # Job 4: Deploy Docs to GitHub Pages (Conditional)
   # -------------------------------------------------------------
   deploy_docs:
     name: Deploy Docs to GitHub Pages
-    needs: [create_release]
+    needs: [verify]
     if: github.event.inputs.deploy_docs != 'false'
     runs-on: ubuntu-latest
     environment:
