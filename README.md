@@ -4,24 +4,24 @@
 
 # Sharphy: CLR Intelligence & Runtime Forensic Bridge
 
-### Model Context Protocol (MCP) server native untuk mentransformasi AI coding agent menjadi diagnostisi mendalam, analis forensik memori, dan arsitek biner .NET.
-**Eksploitasi kekayaan metadata ECMA-335, analisis crash dump langsung dari runtime, dan navigasi bytecode CIL secara presisi.**
+### Model Context Protocol (MCP) Server Native untuk Mentransformasi AI Coding Agent Menjadi Diagnostisi Tingkat Tinggi, Analis Forensik Memori, dan Arsitek Biner Runtime .NET.
+**Pemanfaatan Semantik Metadata ECMA-335, Analisis Crash Dump Langsung Lintas Sistem Operasi, dan Rekonstruksi Bytecode CIL Secara Rigid.**
 
 <p align="center">
   <a href="https://www.nuget.org/packages/Sharphy.Cli"><img src="https://img.shields.io/badge/nuget-v0.1.0--preview-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/MCP-tool%20catalog-8A2BE2" alt="MCP Catalog" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/MCP-10%20tools%20catalog-8A2BE2" alt="MCP Catalog" /></a>
   <a href="https://dotnet.microsoft.com/download"><img src="https://img.shields.io/badge/.NET-8%20|%209%20|%2010-512BD4?logo=dotnet&logoColor=white" alt=".NET 8/9/10" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License" /></a>
   <a href="https://github.com/baharmaulidiii/sharphy"><img src="https://img.shields.io/badge/GitHub-baharmaulidiii%2Fsharphy-181717?logo=github" alt="GitHub Repo" /></a>
 </p>
 
 <p align="center">
-  <a href="#quick-start"><b>Mulai Cepat</b></a> ·
-  <a href="#ekosistem-paket--manfaat"><b>Paket & Manfaat</b></a> ·
-  <a href="#kemampuan-inti"><b>Kemampuan Inti</b></a> ·
-  <a href="#katalog-mcp-tools"><b>Katalog MCP Tools</b></a> ·
-  <a href="#faq"><b>FAQ</b></a> ·
-  <a href="CONTRIBUTING.md"><b>Kontribusi</b></a>
+  <a href="#ikhtisar-arsitektur--filosofi"><b>Ikhtisar & Arsitektur</b></a> ·
+  <a href="#ekosistem-paket--komposisi-peran"><b>Ekosistem Paket</b></a> ·
+  <a href="#katalog-eksplisit-10-mcp-tools"><b>Katalog 10 MCP Tools</b></a> ·
+  <a href="#panduan-pemasangan--integrasi-agent"><b>Integrasi Agent</b></a> ·
+  <a href="#kebijakan-keamanan--hukum"><b>Keamanan & Legalitas</b></a> ·
+  <a href="CONTRIBUTING.md"><b>Panduan Kontribusi</b></a>
 </p>
 
 ```bash
@@ -31,49 +31,193 @@ dotnet tool install -g Sharphy.Cli
 </div>
 
 > [!CAUTION]
-> **Pernyataan Penyangkalan & Aspek Legal (Disclaimer)**
-> Sharphy dirancang khusus untuk riset keamanan, diagnostik runtime, audit kerentanan, investigasi insiden, dan analisis biner yang sah secara hukum. Pengguna bertanggung jawab penuh mematuhi hukum yang berlaku, EULA, serta hak cipta perangkat lunak target. Pengembang dan kontributor tidak bertanggung jawab atas penyalahgunaan. Lihat [DISCLAIMER.md](DISCLAIMER.md).
+> **Pernyataan Penyangkalan Hukum & Batasan Tanggung Jawab (Legal Disclaimer)**
+> Sharphy dirancang dan didistribusikan secara eksklusif untuk tujuan riset keamanan siber beriktikad baik (*good-faith security research*), audit diagnostik kegagalan produksi, analisis kerentanan, investigasi insiden, serta rekayasa balik perangkat lunak yang sah menurut hukum. Pengguna memikul tanggung jawab perdata dan pidana secara mandiri atas kepatuhan terhadap yurisdiksi hukum lokal, Perjanjian Lisensi Pengguna Akhir (EULA), dan hak kekayaan intelektual (HAKI) pihak ketiga. Segala bentuk penyalahgunaan berada di luar tanggung jawab pengembang. Rujukan lengkap: [DISCLAIMER.md](DISCLAIMER.md).
 
 > [!IMPORTANT]
-> Dapatkan dan jalankan Sharphy hanya dari sumber terpercaya: NuGet (`Sharphy.Cli`), atau build langsung dari repositori resmi di [github.com/baharmaulidiii/sharphy](https://github.com/baharmaulidiii/sharphy).
+> Unduh dan jalankan Sharphy hanya dari kanal distribusi resmi: repositori NuGet terverifikasi (`Sharphy.Cli`) atau melalui kompilasi kode sumber langsung dari repositori resmi di [github.com/baharmaulidiii/sharphy](https://github.com/baharmaulidiii/sharphy).
 
 ---
 
-## Ekosistem Paket & Manfaat
+## Ikhtisar Arsitektur & Filosofi
 
-Sharphy dibagi menjadi 3 komponen paket modular dengan peran dan manfaat spesifik:
+Sebagian besar AI coding agent (*Claude Code*, *Cursor*, *Windsurf*, *Copilot*) memiliki keterbatasan fundamental: mereka hanya beroperasi pada tataran heuristik teks mentah di editor, tanpa akses observabilitas terhadap struktur runtime internal Common Language Runtime (CLR). Saat menghadapi kerusakan sistem berupa crash memori, deadlock antar-thread, anomali Large Object Heap (LOH), atau kebutuhan audit biner pihak ketiga tanpa kode sumber, AI agent konvensional mengalami kebutaan diagnostik (*runtime blindness*).
 
-| Paket NuGet | Tipe | Manfaat & Peran Utama |
-| :--- | :--- | :--- |
-| **`Sharphy.Cli`** | `.NET Global Tool` | **Untuk User & Terminal Agent:** Alat baris perintah global (`sharphy`) yang dapat diinstal langsung di mesin apa pun (`dotnet tool install -g Sharphy.Cli`). Berfungsi sebagai launcher siap pakai untuk menjalankan server MCP (`sharphy mcp start`) atau melakukan inspeksi biner/dump langsung via CLI. |
-| **`Sharphy.Core`** | `Class Library` | **Untuk Developer & Tool Builders .NET:** Engine komprehensif yang merangkum pustaka diagnostik tingkat rendah (ClrMD), dekompilasi (ILSpy engine), manipulasi CIL bytecode (Mono.Cecil/dnlib), dan Roslyn. Dapat di-reference ke dalam aplikasi .NET apa pun tanpa dependensi MCP. |
-| **`Sharphy.Server`** | `Class Library / Host` | **Untuk Integrasi Runtime & Agent Frameworks:** Implementasi protokol standar Model Context Protocol (MCP) berbasis JSON-RPC 2.0 (Stdio & SSE transport). Memetakan kemampuan `Sharphy.Core` menjadi tools dan resources yang dapat dipanggil langsung oleh LLM coding agents (Cursor, Claude Code, Windsurf, Copilot, dll.). |
+**Sharphy** bertindak sebagai jembatan forensik runtime deterministik berbasis standar **Model Context Protocol (MCP)**. Menggunakan kanal komunikasi JSON-RPC 2.0 melalui protokol Stdio yang terisolasi secara murni, Sharphy mengekspos mesin diagnostik tingkat rendah Microsoft ke antarmuka pemikiran semantik LLM tingkat tinggi.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   AI Coding Agent Client                    │
+│           (Cursor / Claude Code / Windsurf / LLM)           │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ JSON-RPC 2.0 over Stdio
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Sharphy.Server (Host)                    │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │  Kanal Stdio Purni (stdout: Payload / stderr: Log)  │   │
+│   │  JSON-RPC Dispatcher & Tool Registry (10 Tools)     │   │
+│   └──────────────────────────┬──────────────────────────┘   │
+└──────────────────────────────┼──────────────────────────────┘
+                               │ Strongly-Typed In-Process Calls
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Sharphy.Core Engine                     │
+│  ┌───────────────────────┐       ┌───────────────────────┐  │
+│  │   ClrMD Forensics     │       │     ILSpy Engine      │  │
+│  │ (Crash Dump & Heap)   │       │ (C# Decompilation)    │  │
+│  ├───────────────────────┤       ├───────────────────────┤  │
+│  │   Mono.Cecil Engine   │       │   Roslyn & Sandbox    │  │
+│  │ (Metadata & Mutation) │       │ (UnsafeAccessor & ALC)│  │
+│  └───────────────────────┘       └───────────────────────┘  │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ Deterministic Low-Level Inspection
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Target Analisis Runtime                    │
+│  • File Crash Dump Windows / Linux (.dmp / ELF dump)        │
+│  • Rakitan Biner Terkompilasi (.dll / .exe ECMA-335)        │
+│  • Proses Runtime Aktif & Isolasi AssemblyLoadContext       │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Kemampuan Inti
+## Ekosistem Paket & Komposisi Peran
 
-Sharphy menghubungkan AI coding agent (Claude Code, Cursor, Windsurf, Copilot, Gemini) secara native ke ekosistem internal .NET:
+Solusi Sharphy disusun ke dalam 3 proyek modular dengan batas tanggung jawab yang tegas:
 
-* **Forensik Memory Dump & CLR Telemetry:** Membaca crash dump (`.dmp`) lintas OS (Windows/Linux) via ClrMD, mendeteksi deadlock antar-thread, menganalisis fragmentasi LOH (Large Object Heap), dan melacak memory leak.
-* **Rekonstruksi Kode & Inspeksi Metadata:** Membaca hierarki ECMA-335, atribut compiler, P/Invoke, dan merekonstruksi method CIL menjadi representasi C# modern yang bersih via ILSpy engine.
-* **Unpacking & Integritas Biner:** Mendeteksi pola CFG flattening, proxy delegates, dan mengeksekusi decryptor secara terisolasi menggunakan `AssemblyLoadContext`.
-* **Mutasi CIL & Dynamic Patching:** Modifikasi instruksi CIL (opcode replacement, bypass validasi internal) dan menghasilkan wrapper performa tinggi menggunakan `UnsafeAccessor` atau Roslyn.
+| Paket / Modul | Bentuk Distribusi | Target Konsumen | Peran Teknis & Batasan Arsitektural |
+| :--- | :--- | :--- | :--- |
+| **`Sharphy.Cli`** | `.NET Global Tool` | Pengguna Akhir & Terminal Agent | Titik masuk eksekusi perintah baris (*command-line entry point*). Bertindak sebagai launcher instan untuk menjalankan server host MCP (`sharphy mcp start`) atau utilitas inspeksi kilat tanpa konfigurasi manual. |
+| **`Sharphy.Server`** | `Class Library / Host` | Agent Frameworks & Runtime Hosts | Mengimplementasikan spesifikasi resmi Model Context Protocol (MCP) berbasis JSON-RPC 2.0. Memisahkan aliran data: `stdout` didedikasikan 100% untuk frame JSON-RPC, sementara seluruh log diagnostik internal diarahkan ke `stderr`. |
+| **`Sharphy.Core`** | `Class Library Engine` | Arsitek & Tool Builders .NET | Engine analitis tanpa dependensi antarmuka MCP. Mengabstraksi pustaka diagnostik sistem tingkat rendah: `Microsoft.Diagnostics.Runtime` (ClrMD), `ICSharpCode.Decompiler` (ILSpy), `Mono.Cecil`, dan `Microsoft.CodeAnalysis.CSharp` (Roslyn). |
 
 ---
 
-## Quick Start
+## Katalog Eksplisit 10 MCP Tools
 
-### 1. Pasang Global CLI Tool
+Sharphy menyediakan 10 instrumen analisis deterministik yang dipetakan ke dalam 4 pilar forensik utama:
 
+### Pilar 1: Diagnostik Runtime & Forensik Memori (ClrMD Engine)
+
+#### 1. `sharphy_analyze_dump`
+* **Tujuan Operasional:** Menjalankan *Root Cause Analysis* (RCA) otomatis terhadap file crash dump memori Windows (`.dmp`) dan Linux CoreCLR ELF dumps.
+* **Parameter Masukan:**
+  * `dumpPath` (*string, wajib*): Path absolut menuju berkas crash dump.
+* **Mekanisme Internal:** Membuka `DataTarget`, menginisialisasi `ClrRuntime`, mengekstraksi thread penyebab crash (*crashing thread*), mengurai struktur `ClrException` beserta rantai `InnerException`, men-decode kode status HRESULT, serta memetakan *mixed-mode call stack* (gabungan managed dan unmanaged frame).
+* **Nilai Forensik:** Menyajikan ringkasan deterministik akar kegagalan fatal aplikasi secara instan kepada agen AI tanpa perlu membuka debugger WinDbg atau lldb secara manual.
+
+#### 2. `sharphy_inspect_heap`
+* **Tujuan Operasional:** Mengaudit alokasi memori *managed heap*, melacak retensi objek penyebab *memory leak*, mendeteksi pemborosan duplikasi string, serta mengidentifikasi fragmentasi pada Large Object Heap (LOH) dan Pinned Object Heap (POH).
+* **Parameter Masukan:**
+  * `dumpPath` (*string, wajib*): Path absolut menuju berkas crash dump.
+  * `topObjects` (*integer, opsional, default: 20*): Batas jumlah tipe objek teratas yang diurutkan berdasarkan akumulasi konsumsi memori.
+* **Mekanisme Internal:** Melakukan traversal penuh terhadap tabel segmen GC, menghitung metrik agregat per `ClrType`, menganalisis penumpukan objek berumur panjang pada Generasi 2, dan memeriksa rantai GC Roots yang menahan objek dari proses pembersihan.
+* **Nilai Forensik:** AI agent memperoleh visibilitas komprehensif mengenai struktur objek yang memonopoli memori dan akar penyebab kenaikan konsumsi RAM tak terkendali.
+
+#### 3. `sharphy_deadlock_detector`
+* **Tujuan Operasional:** Mendeteksi kondisi saling kunci antar-thread (*inter-thread deadlock*) dan kontensi ekstrem pada monitor sinkronisasi.
+* **Parameter Masukan:**
+  * `dumpPath` (*string, wajib*): Path absolut menuju berkas crash dump.
+* **Mekanisme Internal:** Memindai seluruh struktur tabel `SyncBlock` pada CLR, mengevaluasi properti kepemilikan kunci monitor (`Monitor.Enter`), membangun representasi *Wait-For Graph* (WFG) terarah, serta menjalankan algoritma pendeteksi siklus tertutup (*cycle-finding algorithm*).
+* **Nilai Forensik:** Mengidentifikasi secara spesifik Thread ID mana yang saling mengunci sumber daya dan baris instruksi penyebab pembekuan (*freezing*) proses aplikasi.
+
+---
+
+### Pilar 2: Rekonstruksi Logika & Analisis Metadata (ILSpy & Cecil Engines)
+
+#### 4. `sharphy_decompile_method`
+* **Tujuan Operasional:** Merekonstruksi instruksi bytecode CIL dari suatu metode biner menjadi kode sumber C# modern yang bersih, terstruktur, dan mudah dipahami.
+* **Parameter Masukan:**
+  * `assemblyPath` (*string, wajib*): Path absolut menuju berkas rakitan biner (`.dll` atau `.exe`).
+  * `typeName` (*string, wajib*): Nama tipe atau kelas lengkap disertai namespace (contoh: `Contoso.Security.LicenseValidator`).
+  * `methodName` (*string, wajib*): Nama metode target yang ingin didekompilasi.
+* **Mekanisme Internal:** Memanfaatkan mesin dekompilasi ILSpy (`ICSharpCode.Decompiler`) untuk memulihkan konstruksi sintaksis tingkat tinggi, termasuk pemulihan mesin *async/await state machine*, *pattern matching*, *local functions*, ekspresi lambda, serta atribut kompilasi.
+* **Nilai Forensik:** AI agent dapat membaca dan menalar implementasi algoritma biner internal tanpa ketersediaan repositori kode sumber asli.
+
+#### 5. `sharphy_diff_assemblies`
+* **Tujuan Operasional:** Mengomparasikan dua rilis atau versi biner rakitan untuk mendeteksi perubahan API yang merusak (*breaking changes*), alterasi visibilitas tipe, dan mutasi logika internal.
+* **Parameter Masukan:**
+  * `oldAssemblyPath` (*string, wajib*): Path rakitan versi baseline/lama.
+  * `newAssemblyPath` (*string, wajib*): Path rakitan versi teranyar.
+* **Mekanisme Internal:** Mengurai definisi metadata ECMA-335 pada kedua berkas biner, membandingkan signature publik type/method/event/property, serta mendeteksi divergensi struktur IL body pada metode dengan signature identik.
+* **Nilai Forensik:** Memastikan kompatibilitas biner lintas versi serta mendeteksi modifikasi tak terduga pada dependensi pihak ketiga.
+
+#### 6. `sharphy_inspect_metadata`
+* **Tujuan Operasional:** Mengekstraksi struktur arsitektur metadata ECMA-335 secara rigid dan menyeluruh dari suatu rakitan biner.
+* **Parameter Masukan:**
+  * `assemblyPath` (*string, wajib*): Path absolut menuju berkas rakitan biner target.
+* **Mekanisme Internal:** Membaca header CLR, mengekstrak hierarki pewarisan tipe (`TypeDef`, `TypeRef`), definisi argumen generik, daftar atribut kustom, impor fungsi native platform P/Invoke (`DllImport`), serta manifest sumber daya tersemat (*embedded resources*).
+* **Nilai Forensik:** Memberikan gambaran arsitektur biner secara komprehensif bagi audit keamanan antarmuka dan integritas dependensi native.
+
+---
+
+### Pilar 3: Integritas Biner & Sandbox Deobfuscation (ALC & Cecil)
+
+#### 7. `sharphy_clean_obfuscation`
+* **Tujuan Operasional:** Menganalisis, memetakan, dan merapikan teknik pengaburan kode (*obfuscation*) yang umum ditemukan pada biner .NET.
+* **Parameter Masukan:**
+  * `assemblyPath` (*string, wajib*): Path rakitan ter-obfuscate.
+  * `outputPath` (*string, wajib*): Path penyimpanan untuk biner hasil rekonstruksi.
+* **Mekanisme Internal:** Menganalisis topologi Control Flow Graph (CFG) untuk meratakan percabangan dispatcher buatan (*CFG flattening removal*), mengidentifikasi pola proxy delegates, serta mendeteksi stub enkripsi string.
+* **Nilai Forensik:** Memulihkan keterbacaan kode biner yang diproteksi secara agresif sehingga dapat diaudit dengan aman.
+
+#### 8. `sharphy_extract_tokens`
+* **Tujuan Operasional:** Mengekstraksi token dekripsi atau mengeksekusi rutin unpacking dinamis di dalam lingkungan terisolasi yang aman.
+* **Parameter Masukan:**
+  * `assemblyPath` (*string, wajib*): Path menuju berkas biner target.
+* **Mekanisme Internal:** Memuat rakitan ke dalam `AssemblyLoadContext` kolektibel khusus (`isCollectible: true`). Seluruh refleksi dan evaluasi token berjalan dalam sandbox memori tertutup, yang kemudian di-unload secara penuh dari memori proses host untuk mencegah kebocoran referensi atau penguncian file biner di disk.
+* **Nilai Forensik:** Menjamin keamanan proses host Sharphy dan agent saat menganalisis biner yang tidak tepercaya (*untrusted binaries*).
+
+---
+
+### Pilar 4: Mutasi Bytecode & Interop Akselerasi (Cecil & UnsafeAccessor)
+
+#### 9. `sharphy_patch_il`
+* **Tujuan Operasional:** Memodifikasi, mengganti, atau menyuntikkan instruksi bytecode CIL pada metode tertentu dan memancarkan (*re-emit*) berkas biner terpatch yang valid.
+* **Parameter Masukan:**
+  * `assemblyPath` (*string, wajib*): Path rakitan biner asli.
+  * `typeName` (*string, wajib*): Nama tipe kelas target.
+  * `methodName` (*string, wajib*): Nama metode yang akan dimutasi.
+  * `instructionOffset` (*integer, wajib*): Offset IL spesifik instruksi yang ingin diubah.
+  * `newOpCode` (*string, wajib*): Nama OpCode CIL pengganti (misal: `Nop`, `Ldc_I4_1`, `Ret`).
+  * `outputPath` (*string, wajib*): Path keluaran untuk rakitan biner baru.
+* **Mekanisme Internal:** Memuat biner via `Mono.Cecil`, menavigasi `MethodBody.Instructions`, menghitung ulang penanda lompatan instruksi cabang (*branch targets* dan *exception handlers*), menyuntikkan opcode target, dan menyimpan ulang rakitan dengan integritas PE checksum yang valid.
+* **Nilai Forensik:** Memungkinkan patching diagnostik cepat (misal: bypass pengujian integritas sementara untuk mengisolasi galat biner pihak ketiga).
+
+#### 10. `sharphy_generate_wrapper`
+* **Tujuan Operasional:** Menghasilkan kode pembungkus C# biner yang sangat cepat (*zero-overhead*) untuk mengakses status internal atau private anggota kelas tanpa refleksi tradisional.
+* **Parameter Masukan:**
+  * `assemblyPath` (*string, wajib*): Path rakitan target.
+  * `typeName` (*string, wajib*): Nama tipe target yang ingin dibungkus.
+  * `outputPath` (*string, wajib*): Path berkas kode sumber C# (`.cs`) yang dihasilkan.
+* **Mekanisme Internal:** Memindai seluruh anggota private/internal tipe target dan mensintesis definisi atribut `[UnsafeAccessor]` (.NET 8+) atau kelas interop Roslyn strongly-typed.
+* **Nilai Forensik:** Memungkinkan interop performa tinggi dengan komponen pustaka tertutup tanpa terkena penalti performa reflection.
+
+---
+
+## Panduan Pemasangan & Integrasi Agent
+
+### 1. Pemasangan Global CLI Tool
+Pasang Sharphy secara global pada mesin pengembang Anda:
 ```bash
 dotnet tool install -g Sharphy.Cli
 ```
+Verifikasi status instalasi dan versi framework runtime aktif:
+```bash
+sharphy --version
+# Output: Sharphy CLI v0.1.0-preview [.NET 8.0 (LTS)]
+```
 
-### 2. Hubungkan ke AI Agent Anda (Claude Code / Cursor / Windsurf)
+### 2. Integrasi ke Claude Code
+Jalankan pendaftaran server MCP ke Claude Code CLI:
+```bash
+claude mcp add sharphy -- sharphy mcp start
+```
 
-Tambahkan konfigurasi Sharphy ke client MCP Anda (`mcpServers`):
-
+### 3. Integrasi ke Cursor / Windsurf
+Buka berkas konfigurasi MCP (`claude_desktop_config.json` atau pengaturan MCP Cursor) dan tambahkan entri berikut:
 ```json
 {
   "mcpServers": {
@@ -85,14 +229,22 @@ Tambahkan konfigurasi Sharphy ke client MCP Anda (`mcpServers`):
 }
 ```
 
-Atau jalankan langsung dari source code lokal melalui `dotnet run`:
-
+Bagi pengembang yang ingin menjalankan langsung dari *source tree* lokal:
 ```json
 {
   "mcpServers": {
     "sharphy": {
       "command": "dotnet",
-      "args": ["run", "--project", "D:/Programming/GitHub/sharphy/src/Sharphy.Cli/Sharphy.Cli.csproj", "--", "mcp", "start"]
+      "args": [
+        "run",
+        "--project",
+        "D:/Programming/GitHub/sharphy/src/Sharphy.Cli/Sharphy.Cli.csproj",
+        "--framework",
+        "net8.0",
+        "--",
+        "mcp",
+        "start"
+      ]
     }
   }
 }
@@ -100,70 +252,25 @@ Atau jalankan langsung dari source code lokal melalui `dotnet run`:
 
 ---
 
-## Katalog MCP Tools
+## Matriks Multi-Targeting
 
-| Nama Tool | Kategori | Deskripsi |
-| :--- | :--- | :--- |
-| `sharphy_analyze_dump` | Diagnostik | Analisis otomatis Root Cause Analysis (RCA) pada file crash dump (`.dmp`). |
-| `sharphy_inspect_heap` | Diagnostik | Audit managed heap: memory leak, retensi objek, duplikasi string, dan LOH fragmentation. |
-| `sharphy_deadlock_detector`| Diagnostik | Pelacakan deadlock dan contention monitor lock antar thread secara mendalam. |
-| `sharphy_decompile_method` | Rekonstruksi | Dekompilasi method CIL spesifik menjadi kode C# bersih beserta atribut kompilernya. |
-| `sharphy_diff_assemblies` | Metadata | Komparasi dua versi assembly `.dll`/`.exe` untuk melacak breaking API changes dan alterasi internal. |
-| `sharphy_inspect_metadata` | Metadata | Inspeksi struktur type ECMA-335, signature native P/Invoke, generic arguments, dan resource tersemat. |
-| `sharphy_clean_obfuscation`| Integritas | Analisis dan perapian teknik obfuscation dasar (CFG flattening, proxy calls). |
-| `sharphy_extract_tokens` | Integritas | Penelusuran decryption token dalam sandbox `AssemblyLoadContext` terisolasi. |
-| `sharphy_patch_il` | Mutasi | Patching instruksi CIL langsung dan re-emit biner tanpa memerlukan source code awal. |
-| `sharphy_generate_wrapper` | Mutasi | Otomatisasi pembuatan strongly-typed C# wrapper melalui `UnsafeAccessor` performa tinggi. |
+Sharphy dibangun dengan arsitektur multi-targeting native tanpa emulasi:
+* **.NET 8.0 (LTS):** Kompatibilitas jangka panjang untuk lingkungan perusahaan dan infrastruktur server stabil.
+* **.NET 9.0 (STS):** Optimasi runtime terkini dan penyempurnaan alokasi memori GC.
+* **.NET 10.0 (Latest):** Fitur runtime eksperimental terdepan dan pemanfaatan compiler API termodern.
 
 ---
 
-## Arsitektur & Multi-Targeting
+## Kebijakan Keamanan & Hukum
 
-Sharphy dirancang untuk multi-targeting lintas framework modern .NET:
-* **.NET 8.0 (LTS)**
-* **.NET 9.0 (STS)**
-* **.NET 10.0 (Preview / Latest)**
-
-```text
-sharphy/
-├── src/
-│   ├── Sharphy.Core/           # CLR Diagnostics, ILSpy, ClrMD, Roslyn, Cecil
-│   ├── Sharphy.Server/         # MCP Protocol Layer (Stdio & SSE Transport)
-│   └── Sharphy.Cli/            # Global CLI Launcher
-├── samples/
-│   └── CrackmeDemo/            # Testbed binary untuk verifikasi agent
-├── tests/
-│   └── Sharphy.Tests/          # Unit & integration testing
-├── .github/workflows/          # CI matrix build & test pipeline
-└── README.md
-```
-
----
-
-## FAQ
-
-<details>
-<summary><b>Apakah Sharphy memerlukan source code asli untuk menganalisis?</b></summary>
-Tidak. Sharphy bekerja langsung pada biner terkompilasi (.dll, .exe), crash dump memori (.dmp), atau proses runtime aktif.
-</details>
-
-<details>
-<summary><b>Apakah Sharphy berjalan di Windows dan Linux?</b></summary>
-Ya. Seluruh engine dibangun di atas platform modern .NET 8/9/10 dan mendukung dump Windows maupun Linux CoreCLR ELF dumps.
-</details>
-
----
-
-## Kontribusi & Keamanan
-
-- Baca panduan kontribusi di [CONTRIBUTING.md](CONTRIBUTING.md).
-- Laporan keamanan dan kerentanan dapat diajukan sesuai [SECURITY.md](SECURITY.md).
-- Syarat dan ketentuan legal tersedia di [DISCLAIMER.md](DISCLAIMER.md).
-- Informasi dependensi pihak ketiga tersedia di [THIRD_PARTY_NOTICE.md](THIRD_PARTY_NOTICE.md).
+- Tata kelola kontribusi teknis diuraikan di [CONTRIBUTING.md](CONTRIBUTING.md).
+- Model mitigasi ancaman siber dan kanal pelaporan insiden tersedia di [SECURITY.md](SECURITY.md).
+- Batasan legalitas dan pelepasan tanggung jawab diatur dalam [DISCLAIMER.md](DISCLAIMER.md).
+- Hak cipta pustaka dependensi tertera di [THIRD_PARTY_NOTICE.md](THIRD_PARTY_NOTICE.md).
 
 ## Lisensi
 
-Sharphy dilisensikan di bawah [Lisensi MIT](LICENSE).
+Proyek Sharphy didistribusikan di bawah naungan [Lisensi MIT](LICENSE).
 
 ---
 
@@ -174,65 +281,36 @@ Sharphy dilisensikan di bawah [Lisensi MIT](LICENSE).
 
 # Sharphy: CLR Intelligence & Runtime Forensic Bridge
 
-### The native Model Context Protocol (MCP) server turning AI agents into deep .NET runtime diagnosticians, binary inspectors, and CIL architects.
-**Harness rich ECMA-335 metadata, diagnose crash dumps directly from runtime memory, and navigate CIL bytecode with precision.**
+### Native Model Context Protocol (MCP) Server Empowering AI Coding Agents as Advanced .NET Runtime Diagnosticians, Memory Forensics Analysts, and Binary Architects.
+**Harnessing ECMA-335 Metadata Semantics, Cross-Platform Memory Crash Dump Telemetry, and Rigid CIL Bytecode Navigation.**
 
 </div>
 
-## Package Ecosystem & Benefits
+## Architecture Overview & Philosophy
 
-| NuGet Package | Target Type | Primary Role & Value Proposition |
-| :--- | :--- | :--- |
-| **`Sharphy.Cli`** | `.NET Global Tool` | **For Users & Terminal Agents:** Global executable command-line tool (`sharphy`) installed via `dotnet tool install -g Sharphy.Cli`. Serves as a zero-setup runner to launch the MCP server (`sharphy mcp start`) or inspect crash dumps and assemblies directly. |
-| **`Sharphy.Core`** | `Class Library` | **For .NET Engineers & Diagnostic Builders:** Core engine encapsulating low-level CLR diagnostics (ClrMD), C# decompiler engines (ILSpy), bytecode manipulation (Mono.Cecil), and Roslyn compilers. Fully usable as a standalone library in any .NET application without MCP dependencies. |
-| **`Sharphy.Server`** | `Class Library / Host` | **For Agent Frameworks & Runtime Hosts:** Standardized Model Context Protocol (MCP) server dispatcher implementing JSON-RPC 2.0 (Stdio & SSE). Bridges `Sharphy.Core` capabilities directly to LLM coding agents (Cursor, Claude Code, Windsurf, Copilot, etc.). |
+Mainstream AI coding agents operate purely on raw text editor heuristics, lacking visibility into CLR runtime internals. When encountering memory crash dumps, synchronization deadlocks, or closed-source third-party binaries, agents suffer from runtime blindness.
 
----
+**Sharphy** serves as a deterministic runtime forensic bridge implementing the Model Context Protocol (MCP) standard. Over a pure Stdio transport channel, Sharphy bridges low-level CLR diagnostics to high-level semantic AI reasoning.
 
-## Core Capabilities
+## Package Ecosystem
 
-* **Memory Dump Forensics & CLR Telemetry:** Ingest crash dumps (`.dmp`) across Windows and Linux CoreCLR via ClrMD, detect thread deadlocks, analyze Large Object Heap (LOH) fragmentation, and pinpoint memory leaks.
-* **Source Reconstruction & Metadata Inspection:** Parse ECMA-335 hierarchies, compiler-generated attributes, and P/Invoke signatures, reconstructing clean modern C# methods via the ILSpy decompiler engine.
-* **Integrity & Unpacking Heuristics:** Detect CFG flattening patterns, resolve proxy delegates, and execute decryption wrappers safely in isolated `AssemblyLoadContext` sandboxes.
-* **CIL Instruction Mutation & Dynamic Patching:** Mutate bytecode opcodes (nop-out checks, alter branch targets) and generate high-throughput wrappers via C# `UnsafeAccessor` or Roslyn.
+| Package | Type | Target Audience | Value Proposition |
+| :--- | :--- | :--- | :--- |
+| **`Sharphy.Cli`** | `.NET Global Tool` | End Users & Agents | Global CLI launcher (`sharphy mcp start`) providing zero-configuration operational startup. |
+| **`Sharphy.Server`** | `Class Library / Host` | Hosts & Frameworks | Pure JSON-RPC 2.0 MCP server host mapping `Sharphy.Core` engines to agent tool catalogs over Stdio. |
+| **`Sharphy.Core`** | `Class Library` | CLR Engineers | Core engine wrapping ClrMD, ILSpy decompiler, Mono.Cecil, and Roslyn without MCP dependencies. |
 
----
+## 10 MCP Tools Catalog Summary
 
-## Quick Start (English)
-
-### 1. Install Global CLI Tool
-```bash
-dotnet tool install -g Sharphy.Cli
-```
-
-### 2. Configure Your AI Agent
-Add Sharphy to your MCP client configuration (`mcpServers`):
-```json
-{
-  "mcpServers": {
-    "sharphy": {
-      "command": "sharphy",
-      "args": ["mcp", "start"]
-    }
-  }
-}
-```
-
----
-
-## MCP Tools Catalog
-
-| Tool Name | Category | Description |
-| :--- | :--- | :--- |
-| `sharphy_analyze_dump` | Diagnostics | Automated Root Cause Analysis (RCA) on crash dump (`.dmp`) files. |
-| `sharphy_inspect_heap` | Diagnostics | Managed heap audit: memory leaks, object retention, and LOH fragmentation. |
-| `sharphy_deadlock_detector`| Diagnostics | Traces thread synchronization objects, monitors, and lock contention dependency chains. |
-| `sharphy_decompile_method` | Reconstruction | Decompiles target CIL methods into clean, readable C# with compiler attributes. |
-| `sharphy_diff_assemblies` | Metadata | Compares two assembly versions (`.dll`/`.exe`) to catch breaking API changes. |
-| `sharphy_inspect_metadata` | Metadata | Dumps ECMA-335 type hierarchies, native P/Invoke signatures, and generic arguments. |
-| `sharphy_clean_obfuscation`| Integrity | Analyzes and demangles standard obfuscation patterns (CFG flattening, proxy delegates). |
-| `sharphy_extract_tokens` | Integrity | Evaluates decryption routines inside an isolated `AssemblyLoadContext` sandbox. |
-| `sharphy_patch_il` | Mutation | Patches CIL instructions directly and re-emits binaries without requiring original source. |
-| `sharphy_generate_wrapper` | Mutation | Automatically synthesizes strongly-typed C# wrappers via high-performance `UnsafeAccessor`. |
+1. `sharphy_analyze_dump`: Automated Root Cause Analysis (RCA) on Windows and Linux CoreCLR crash dumps.
+2. `sharphy_inspect_heap`: Deep managed heap inspection, GC generation audits, memory leak detection, and LOH analysis.
+3. `sharphy_deadlock_detector`: Traces Monitor locks and SyncBlock synchronization cycles across threads.
+4. `sharphy_decompile_method`: Reconstructs CIL bytecode into idiomatic modern C# source code via ILSpy.
+5. `sharphy_diff_assemblies`: Compares binary assemblies to identify breaking API changes and bytecode divergence.
+6. `sharphy_inspect_metadata`: Comprehensive ECMA-335 metadata hierarchy, P/Invoke imports, and resource dumper.
+7. `sharphy_clean_obfuscation`: Demangles Control Flow Graph (CFG) flattening and resolves proxy delegates.
+8. `sharphy_extract_tokens`: Safe isolated execution and unpacking within collectible `AssemblyLoadContext` sandboxes.
+9. `sharphy_patch_il`: Surgical CIL opcode replacement and binary re-emitting.
+10. `sharphy_generate_wrapper`: Automated synthesis of zero-overhead C# wrappers using `[UnsafeAccessor]` or Roslyn.
 
 </details>

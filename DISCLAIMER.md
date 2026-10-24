@@ -1,40 +1,58 @@
-# Pernyataan Penyangkalan & Aspek Legal (Disclaimer)
+# Pernyataan Penyangkalan Hukum & Batasan Tanggung Jawab (Legal Disclaimer)
 
-Sharphy adalah jembatan diagnostik runtime, forensik memori, dan analisis biner CLR yang dirancang semata-mata untuk tujuan **edukasi, riset keamanan, audit kerentanan, investigasi insiden, serta rekayasa perangkat lunak yang sah dan berwenang**.
-
----
-
-## 1. Penggunaan Berizin & Tanggung Jawab Hukum
-- Pengguna bertanggung jawab secara mandiri dan penuh untuk memastikan bahwa penggunaan Sharphy mematuhi seluruh peraturan perundang-undangan lokal, nasional, maupun internasional yang berlaku.
-- Pengguna wajib menaati Perjanjian Lisensi Pengguna Akhir (EULA), *Terms of Service*, serta hak kekayaan intelektual (hak cipta dan paten) dari setiap aplikasi, biner (`.dll`/`.exe`), atau memory dump yang diperiksa, didekompilasi, atau dimutasi menggunakan perangkat lunak ini.
-- Dilarang keras menggunakan Sharphy untuk tindakan perusakan, bypass lisensi komersial tanpa hak, distribusi malware, atau aktivitas ilegal lainnya.
+Dokumen ini memuat syarat-syarat hukum, batasan peruntukan, dan pelepasan tanggung jawab formal yang mengikat setiap individu, entitas korporasi, maupun agen otomasi yang mengakses, mengompilasi, atau mengoperasikan perangkat lunak **Sharphy**.
 
 ---
 
-## 2. Batasan Tanggung Jawab (No Liability)
-- Perangkat lunak ini disediakan *"sebagaimana adanya"* (AS-IS), tanpa jaminan dalam bentuk apa pun, baik tersurat maupun tersirat.
-- Penulis, pembuat, dan kontributor Sharphy tidak bertanggung jawab atas segala bentuk kerugian, kerusakan data, kegagalan sistem, sanksi hukum, atau tuntutan pihak ketiga yang timbul akibat penggunaan atau penyalahgunaan perangkat lunak ini.
+## 1. Peruntukan Sah & Riset Keamanan Beriktikad Baik
+
+Sharphy dikembangkan dan didistribusikan semata-mata sebagai instrumen teknik tingkat lanjut untuk:
+1. **Analisis Forensik Insiden Siber:** Investigasi kebocoran memori, insiden crash aplikasi produksi, dan audit forensik kegagalan sistem.
+2. **Riset Keamanan Beriktikad Baik (*Good-Faith Security Research*):** Pengujian ketahanan perangkat lunak, evaluasi kerentanan internal, dan audit kepatuhan biner.
+3. **Pendidikan & Rekayasa Kompilasi:** Pembelajaran mendalam mengenai arsitektur mesin virtual Common Language Runtime (CLR), spesifikasi standar metadata ECMA-335, dan bytecode CIL.
+
+---
+
+## 2. Kepatuhan Hukum & Penghormatan Hak Kekayaan Intelektual (HAKI)
+
+- **Kewajiban Pengguna:** Pengguna wajib memastikan secara mandiri bahwa setiap pengoperasian Sharphy (termasuk tindakan inspeksi, dekompilasi metode, pembongkaran biner, atau mutasi bytecode) mematuhi seluruh hukum nasional dan internasional yang berlaku di yurisdiksi masing-masing.
+- **Perjanjian Lisensi & EULA:** Pengguna terikat secara hukum untuk menghormati klausul Perjanjian Lisensi Pengguna Akhir (*End User License Agreement* / EULA), *Terms of Service*, serta hak cipta dan paten atas biner pihak ketiga yang diuji.
+- **Larangan Aktivitas Ilegal:** Dilarang keras menyalahgunakan Sharphy untuk:
+  - Melewati proteksi lisensi komersial (*unauthorized software cracking*).
+  - Melakukan rekayasa balik ilegal yang melanggar hak cipta pemegang perangkat lunak.
+  - Memfasilitasi pengembangan, injeksi, atau penyebaran perangkat lunak perusak (*malware*).
+
+---
+
+## 3. Pelepasan Tanggung Jawab Mutlak (Absolute Limitation of Liability)
+
+- **Ketentuan "Sebagaimana Adanya" (*AS-IS Basis*):** Perangkat lunak ini disediakan secara cuma-cuma tanpa jaminan komersial, jaminan ketiadaan cacat, maupun jaminan kesesuaian untuk tujuan tertentu.
+- **Bebas Tuntutan Kerugian:** Dalam kondisi apa pun, para pembuat, kontributor, dan pemilik hak cipta Sharphy **TIDAK BERTANGGUNG JAWAB** atas segala bentuk kerugian langsung, tidak langsung, insidental, khusus, atau konsekuensial (termasuk namun tidak terbatas pada: kerusakan sistem berkas, hilangnya data bisnis, interupsi operasional, sanksi administratif, atau gugatan hukum pihak ketiga) yang timbul akibat penggunaan, interpretasi hasil, atau penyalahgunaan perangkat lunak ini.
 
 ---
 
 <details>
 <summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
 
-# Disclaimer & Legal Notice
+# Legal Disclaimer & Express Limitation of Liability
 
-Sharphy is a CLR runtime diagnostic, memory forensics, and binary analysis bridge designed strictly for **educational, security research, vulnerability auditing, incident investigation, and authorized software engineering purposes**.
+This document establishes binding legal terms, authorized use constraints, and formal liability waivers governing any individual, corporate entity, or automated agent utilizing **Sharphy**.
 
----
+## 1. Authorized Use & Good-Faith Research
 
-## 1. Authorized Use & Legal Compliance
-- Users are solely and independently responsible for ensuring that their use of Sharphy complies with all applicable local, state, national, and international laws and regulations.
-- Users must strictly adhere to End User License Agreements (EULAs), Terms of Service, and intellectual property rights (copyrights, patents, and trade secrets) governing any software, binaries (`.dll`/`.exe`), or memory dumps analyzed, decompiled, or patched with this tool.
-- Using Sharphy for unauthorized cracking, bypassing commercial licensing mechanisms without permission, malware dissemination, or any illicit activities is strictly prohibited.
+Sharphy is engineered exclusively for legitimate software engineering endeavors:
+- Incident response and production crash dump diagnostics.
+- Good-faith security audits and vulnerability research.
+- Academic study of ECMA-335 metadata and CLR virtual machine internals.
 
----
+## 2. Compliance & Intellectual Property Rights
 
-## 2. Limitation of Liability (No Liability)
-- This software is provided *"as is"*, without warranty of any kind, express or implied.
-- In no event shall the authors, maintainers, or contributors of Sharphy be held liable for any damages, data corruption, system outages, legal penalties, or claims arising from the use or misuse of this software.
+- Users bear sole and unconditional responsibility for ensuring that all disassembly, decompilation, and bytecode mutation operations comply with all relevant local and international copyright and cybercrime legislation.
+- Users must abide by third-party End User License Agreements (EULAs) and trade secret protections.
+- Utilizing Sharphy for unauthorized license tampering, commercial cracking, or malware development is strictly prohibited.
+
+## 3. Express Limitation of Liability
+
+This software is provided "AS-IS", without warranty of any kind, express or implied. Under no circumstances shall the authors, maintainers, or copyright holders be held liable for any damages, data losses, operational disruptions, or third-party litigations arising from the use or misuse of this software.
 
 </details>

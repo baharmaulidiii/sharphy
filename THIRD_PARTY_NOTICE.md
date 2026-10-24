@@ -1,52 +1,48 @@
-# Pemberitahuan Pihak Ketiga (Third-Party Notices)
+# Pemberitahuan Pihak Ketiga & Atribusi Lisensi (Third-Party Notices)
 
-Dokumen ini berisi informasi atribusi, lisensi, dan pemberitahuan hak cipta atas komponen, pustaka sumber terbuka (*open-source software*), dan dependensi pihak ketiga yang digunakan atau diintegrasikan dalam proyek **Sharphy**.
+Dokumen ini memuat deklarasi atribusi, kepemilikan hak cipta, dan teks lisensi resmi atas seluruh pustaka sumber terbuka (*open-source software*) yang diintegrasikan atau dijadikan fondasi teknologi pada proyek **Sharphy**.
 
-Sharphy berterima kasih kepada komunitas sumber terbuka dan para pembuat pustaka luar biasa berikut:
-
----
-
-## Daftar Komponen & Pustaka Pihak Ketiga
-
-### 1. Microsoft.Diagnostics.Runtime (ClrMD)
-- **Deskripsi:** Pustaka diagnostik mendalam untuk inspeksi proses runtime .NET Core / .NET Framework dan crash dump (`.dmp`). Digunakan pada modul analisis memori, deteksi deadlock, dan audit managed heap.
-- **Pengembang / Pemilik:** .NET Foundation and Contributors / Microsoft Corporation
-- **Repositori:** [https://github.com/microsoft/clrmd](https://github.com/microsoft/clrmd)
-- **Lisensi:** [MIT License](https://github.com/microsoft/clrmd/blob/main/LICENSE.TXT)
-- **Pernyataan Hak Cipta:** Copyright (c) .NET Foundation and Contributors. All rights reserved.
+Pengembang Sharphy menyampaikan apresiasi mendalam kepada komunitas sumber terbuka dan para arsitek perangkat lunak di balik empat pilar pustaka utama berikut:
 
 ---
 
-### 2. ICSharpCode.Decompiler (ILSpy Engine)
-- **Deskripsi:** Mesin dekompilasi bytecode CIL .NET modern yang menghasilkan kode C# bersih dan terstruktur. Digunakan pada modul rekonstruksi kode dan analisis metode biner.
-- **Pengembang / Pemilik:** Daniel Grunwald, David Srbecky, Ed Harvey, Siegfried Pammer, Artur Zgodzinski, dan kontributor ILSpy
-- **Repositori:** [https://github.com/icsharpcode/ILSpy](https://github.com/icsharpcode/ILSpy)
-- **Lisensi:** [MIT License](https://github.com/icsharpcode/ILSpy/blob/master/doc/license.txt)
-- **Pernyataan Hak Cipta:** Copyright (c) 2011-2025 AlphaSierraPapa for the SharpDevelop team.
+## 1. Komponen Pustaka Pihak Ketiga
+
+### 1.1 Microsoft.Diagnostics.Runtime (ClrMD)
+- **Cakupan Penggunaan Teknis:** Digunakan pada modul forensik memori (`Sharphy.Core`), mencakup analisis crash dump lintas platform Windows dan Linux (`sharphy_analyze_dump`), penelusuran graf objek managed heap dan segmentasi GC (`sharphy_inspect_heap`), serta traversal rantai `SyncBlock` untuk deteksi siklus deadlock (`sharphy_deadlock_detector`).
+- **Pemegang Hak Cipta:** Copyright (c) .NET Foundation and Contributors / Microsoft Corporation.
+- **Tautan Repositori:** [https://github.com/microsoft/clrmd](https://github.com/microsoft/clrmd)
+- **Ketentuan Lisensi:** [MIT License](https://github.com/microsoft/clrmd/blob/main/LICENSE.TXT)
 
 ---
 
-### 3. Mono.Cecil
-- **Deskripsi:** Pustaka komprehensif untuk memeriksa, memodifikasi, dan menghasilkan assembly biner serta bytecode CIL ECMA-335. Digunakan pada modul inspeksi metadata, deobfuscation, dan mutasi/patching instruksi CIL.
-- **Pengembang / Pemilik:** Jb Evain and Contributors
-- **Repositori:** [https://github.com/jbevain/cecil](https://github.com/jbevain/cecil)
-- **Lisensi:** [MIT License](https://github.com/jbevain/cecil/blob/master/LICENSE.txt)
-- **Pernyataan Hak Cipta:** Copyright (c) 2008 - 2018 Jb Evain. Copyright (c) 2008 - 2011 Novell, Inc.
+### 1.2 ICSharpCode.Decompiler (Mesin ILSpy)
+- **Cakupan Penggunaan Teknis:** Digunakan pada modul rekonstruksi kode (`Sharphy.Core`), memfasilitasi transformasi bytecode CIL tingkat rendah menjadi kode sumber C# modern yang bersih dan terstruktur (`sharphy_decompile_method`), termasuk rekonstruksi *state machine* asinkron dan atribut kompilasi.
+- **Pemegang Hak Cipta:** Copyright (c) 2011-2025 AlphaSierraPapa for the SharpDevelop team, Daniel Grunwald, David Srbecky, Ed Harvey, Siegfried Pammer, Artur Zgodzinski, dan kontributor ILSpy.
+- **Tautan Repositori:** [https://github.com/icsharpcode/ILSpy](https://github.com/icsharpcode/ILSpy)
+- **Ketentuan Lisensi:** [MIT License](https://github.com/icsharpcode/ILSpy/blob/master/doc/license.txt)
 
 ---
 
-### 4. Microsoft.CodeAnalysis.CSharp (Roslyn)
-- **Deskripsi:** Kompiler C# modern dan API analisis kode statis. Digunakan untuk analisis semantik, validasi tipe, dan pembuatan wrapper strongly-typed tingkat tinggi.
-- **Pengembang / Pemilik:** .NET Foundation and Contributors / Microsoft Corporation
-- **Repositori:** [https://github.com/dotnet/roslyn](https://github.com/dotnet/roslyn)
-- **Lisensi:** [MIT License](https://github.com/dotnet/roslyn/blob/main/License.txt)
-- **Pernyataan Hak Cipta:** Copyright (c) .NET Foundation and Contributors. All rights reserved.
+### 1.3 Mono.Cecil
+- **Cakupan Penggunaan Teknis:** Digunakan pada modul inspeksi metadata dan manipulasi biner (`Sharphy.Core`), mencakup pembacaan tabel metadata ECMA-335 (`sharphy_inspect_metadata`), komparasi perbedaan signature biner (`sharphy_diff_assemblies`), analisis deobfuscation (`sharphy_clean_obfuscation`), serta penyuntikan atau mutasi instruksi CIL opcode secara presisi (`sharphy_patch_il`).
+- **Pemegang Hak Cipta:** Copyright (c) 2008 - 2018 Jb Evain. Copyright (c) 2008 - 2011 Novell, Inc.
+- **Tautan Repositori:** [https://github.com/jbevain/cecil](https://github.com/jbevain/cecil)
+- **Ketentuan Lisensi:** [MIT License](https://github.com/jbevain/cecil/blob/master/LICENSE.txt)
 
 ---
 
-## Teks Lisensi Standar (MIT License)
+### 1.4 Microsoft.CodeAnalysis.CSharp (Roslyn Compiler Platform)
+- **Cakupan Penggunaan Teknis:** Digunakan pada modul sintesis wrapper dan analisis semantik tipe (`Sharphy.Core`), mencakup pembuatan interop strongly-typed berbasis C# modern dan generasi atribut `[UnsafeAccessor]` berperforma tinggi (`sharphy_generate_wrapper`).
+- **Pemegang Hak Cipta:** Copyright (c) .NET Foundation and Contributors / Microsoft Corporation.
+- **Tautan Repositori:** [https://github.com/dotnet/roslyn](https://github.com/dotnet/roslyn)
+- **Ketentuan Lisensi:** [MIT License](https://github.com/dotnet/roslyn/blob/main/License.txt)
 
-Komponen-komponen di atas dilisensikan di bawah persyaratan Lisensi MIT (kecuali dinyatakan lain secara spesifik pada masing-masing sub-komponen aslinya):
+---
+
+## 2. Salinan Teks Lisensi Standar (MIT License)
+
+Komponen-komponen perangkat lunak di atas didistribusikan di bawah persyaratan Lisensi MIT sebagaimana tertera di bawah ini:
 
 ```text
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -73,151 +69,34 @@ SOFTWARE.
 <details>
 <summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
 
-# Third-Party Notices
+# Third-Party Notices & Licensing Attributions
 
-This document contains attribution, licensing, and copyright notices for third-party open-source software (OSS) libraries and components utilized or integrated within the **Sharphy** project.
+This document contains licensing acknowledgments, copyright claims, and official legal texts for third-party open-source components integrated into **Sharphy**.
 
-Sharphy acknowledges and thanks the open-source community and the authors of the following libraries:
+## 1. Third-Party Library Components
 
----
-
-## List of Third-Party Libraries & Components
-
-### 1. Microsoft.Diagnostics.Runtime (ClrMD)
-- **Description:** Advanced diagnostics library for inspecting .NET Core / .NET Framework runtime processes and crash dump files (`.dmp`). Utilized in memory dump forensics, deadlock detection, and managed heap inspection.
-- **Author / Copyright Holder:** .NET Foundation and Contributors / Microsoft Corporation
-- **Repository:** [https://github.com/microsoft/clrmd](https://github.com/microsoft/clrmd)
+### 1.1 Microsoft.Diagnostics.Runtime (ClrMD)
+- **Technical Role:** Powers runtime memory dump forensics, managed heap segment traversals, and thread lock synchronization graph detection.
+- **Copyright:** Copyright (c) .NET Foundation and Contributors / Microsoft Corporation.
 - **License:** [MIT License](https://github.com/microsoft/clrmd/blob/main/LICENSE.TXT)
-- **Copyright Statement:** Copyright (c) .NET Foundation and Contributors. All rights reserved.
 
----
-
-### 2. ICSharpCode.Decompiler (ILSpy Engine)
-- **Description:** Modern .NET CIL bytecode decompiler engine producing clean, idiomatic C# source code. Utilized in code reconstruction and method disassembly modules.
-- **Author / Copyright Holder:** Daniel Grunwald, David Srbecky, Ed Harvey, Siegfried Pammer, Artur Zgodzinski, and ILSpy contributors
-- **Repository:** [https://github.com/icsharpcode/ILSpy](https://github.com/icsharpcode/ILSpy)
+### 1.2 ICSharpCode.Decompiler (ILSpy Engine)
+- **Technical Role:** Core CIL method decompilation engine reconstructing modern idiomatic C# code from binary assemblies.
+- **Copyright:** Copyright (c) 2011-2025 AlphaSierraPapa, Daniel Grunwald, and ILSpy contributors.
 - **License:** [MIT License](https://github.com/icsharpcode/ILSpy/blob/master/doc/license.txt)
-- **Copyright Statement:** Copyright (c) 2011-2025 AlphaSierraPapa for the SharpDevelop team.
 
----
-
-### 3. Mono.Cecil
-- **Description:** Comprehensive library to inspect, modify, and emit ECMA-335 assemblies and CIL bytecode. Utilized in metadata inspection, deobfuscation, and CIL instruction patching/rewriting.
-- **Author / Copyright Holder:** Jb Evain and Contributors
-- **Repository:** [https://github.com/jbevain/cecil](https://github.com/jbevain/cecil)
+### 1.3 Mono.Cecil
+- **Technical Role:** ECMA-335 metadata parsing, binary assembly diffing, and surgical CIL instruction bytecode patching.
+- **Copyright:** Copyright (c) 2008 - 2018 Jb Evain, Novell Inc.
 - **License:** [MIT License](https://github.com/jbevain/cecil/blob/master/LICENSE.txt)
-- **Copyright Statement:** Copyright (c) 2008 - 2018 Jb Evain. Copyright (c) 2008 - 2011 Novell, Inc.
 
----
-
-### 4. Microsoft.CodeAnalysis.CSharp (Roslyn)
-- **Description:** C# compiler and static analysis platform. Utilized for semantic analysis, type verification, and strongly-typed interop wrapper generation.
-- **Author / Copyright Holder:** .NET Foundation and Contributors / Microsoft Corporation
-- **Repository:** [https://github.com/dotnet/roslyn](https://github.com/dotnet/roslyn)
+### 1.4 Microsoft.CodeAnalysis.CSharp (Roslyn)
+- **Technical Role:** Semantic code synthesis and strongly-typed `[UnsafeAccessor]` interop code generation.
+- **Copyright:** Copyright (c) .NET Foundation and Contributors / Microsoft Corporation.
 - **License:** [MIT License](https://github.com/dotnet/roslyn/blob/main/License.txt)
-- **Copyright Statement:** Copyright (c) .NET Foundation and Contributors. All rights reserved.
 
----
+## 2. Standard MIT License Text
 
-## Standard License Text (MIT License)
-
-The aforementioned components are licensed under the terms of the MIT License (unless otherwise specifically noted in their upstream components):
-
-```text
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+*(See text included above in standard form).*
 
 </details>
----
-
-<details>
-<summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
-
-# Third-Party Notices
-
-This document contains attribution, licensing, and copyright notices for third-party open-source software (OSS) libraries and components utilized or integrated within the **Sharphy** project.
-
-Sharphy acknowledges and thanks the open-source community and the authors of the following libraries:
-
----
-
-## List of Third-Party Libraries & Components
-
-### 1. Microsoft.Diagnostics.Runtime (ClrMD)
-- **Description:** Advanced diagnostics library for inspecting .NET Core / .NET Framework runtime processes and crash dump files (`.dmp`). Utilized in memory dump forensics, deadlock detection, and managed heap inspection.
-- **Author / Copyright Holder:** .NET Foundation and Contributors / Microsoft Corporation
-- **Repository:** [https://github.com/microsoft/clrmd](https://github.com/microsoft/clrmd)
-- **License:** [MIT License](https://github.com/microsoft/clrmd/blob/main/LICENSE.TXT)
-- **Copyright Statement:** Copyright (c) .NET Foundation and Contributors. All rights reserved.
-
----
-
-### 2. ICSharpCode.Decompiler (ILSpy Engine)
-- **Description:** Modern .NET CIL bytecode decompiler engine producing clean, idiomatic C# source code. Utilized in code reconstruction and method disassembly modules.
-- **Author / Copyright Holder:** Daniel Grunwald, David Srbecky, Ed Harvey, Siegfried Pammer, Artur Zgodzinski, and ILSpy contributors
-- **Repository:** [https://github.com/icsharpcode/ILSpy](https://github.com/icsharpcode/ILSpy)
-- **License:** [MIT License](https://github.com/icsharpcode/ILSpy/blob/master/doc/license.txt)
-- **Copyright Statement:** Copyright (c) 2011-2025 AlphaSierraPapa for the SharpDevelop team.
-
----
-
-### 3. Mono.Cecil
-- **Description:** Comprehensive library to inspect, modify, and emit ECMA-335 assemblies and CIL bytecode. Utilized in metadata inspection, deobfuscation, and CIL instruction patching/rewriting.
-- **Author / Copyright Holder:** Jb Evain and Contributors
-- **Repository:** [https://github.com/jbevain/cecil](https://github.com/jbevain/cecil)
-- **License:** [MIT License](https://github.com/jbevain/cecil/blob/master/LICENSE.txt)
-- **Copyright Statement:** Copyright (c) 2008 - 2018 Jb Evain. Copyright (c) 2008 - 2011 Novell, Inc.
-
----
-
-### 4. Microsoft.CodeAnalysis.CSharp (Roslyn)
-- **Description:** C# compiler and static analysis platform. Utilized for semantic analysis, type verification, and strongly-typed interop wrapper generation.
-- **Author / Copyright Holder:** .NET Foundation and Contributors / Microsoft Corporation
-- **Repository:** [https://github.com/dotnet/roslyn](https://github.com/dotnet/roslyn)
-- **License:** [MIT License](https://github.com/dotnet/roslyn/blob/main/License.txt)
-- **Copyright Statement:** Copyright (c) .NET Foundation and Contributors. All rights reserved.
-
----
-
-## Standard License Text (MIT License)
-
-The aforementioned components are licensed under the terms of the MIT License (unless otherwise specifically noted in their upstream components):
-
-```text
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-</details>
-

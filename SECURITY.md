@@ -1,64 +1,79 @@
-# Kebijakan Keamanan Sharphy
+# Kebijakan Keamanan & Model Mitigasi Ancaman (Security Policy)
 
-Kami memprioritaskan keamanan dan integritas proyek Sharphy dengan sangat serius.
-
----
-
-## Versi yang Didukung
-
-Pembaruan keamanan aktif disediakan untuk versi-versi berikut:
-
-| Versi | Didukung |
-| :--- | :--- |
-| `0.1.x` (Preview) | :white_check_mark: |
+Keamanan, integritas biner, dan proteksi lingkungan komputasi pengguna merupakan prioritas tertinggi dalam perancangan ekosistem **Sharphy**. Sebagai instrumen diagnostik runtime tingkat rendah, Sharphy dirancang dengan model ancaman (*threat modeling*) yang kokoh untuk mencegah risiko eksekusi kode berbahaya.
 
 ---
 
-## Melaporkan Celah / Kerentanan Keamanan
+## 1. Versi Terkelola & Siklus Pembaruan Keamanan
 
-Jika Anda menemukan potensi celah keamanan atau kerentanan pada Sharphy:
+Dukungan pembaruan keamanan aktif diberikan kepada versi terkelola berikut:
 
-1. **JANGAN membuat issue publik di GitHub.**
-2. Silakan laporkan secara privat melalui fitur **GitHub Security Advisories** pada repositori ini atau hubungi tim pengembang secara langsung.
-3. Cantumkan informasi detail mengenai:
-   - Deskripsi dan dampak dari kerentanan.
-   - Langkah-langkah atau script/binary POC (Proof of Concept) untuk mereproduksi temuan.
-   - Versi SDK .NET dan arsitektur OS yang terdampak.
+| Lini Rilis | Status Dukungan | Kebijakan Patch Keamanan |
+| :--- | :--- | :--- |
+| `0.1.x` (Prarilis / Preview) | :white_check_mark: Didukung Penuh | Penambalan aktif terhadap kerentanan kritis, ketergantungan paket pihak ketiga, dan stabilitas server MCP. |
+| `< 0.1.0` | :x: Dihentikan | Tidak didukung. Pengguna diharapkan memperbarui ke versi prarilis teranyar. |
 
-Kami akan menanggapi laporan Anda dalam kurun waktu sesegera mungkin dan mengoordinasikan rilis patch sebelum informasi kerentanan dipublikasikan.
+---
+
+## 2. Model Ancaman & Lapisan Pertahanan Arsitektural
+
+Dalam fungsinya menganalisis biner dan memory dump, Sharphy menerapkan mitigasi defensif proaktif terhadap vektor ancaman berikut:
+
+### 2.1 Analisis Biner Tidak Tepercaya (*Untrusted Binary Ingestion*)
+- **Vektor Ancaman:** Biner yang diaudit berpotensi memuat konstruktor tipe statis (`.cctor`) yang dirancang jahat untuk mengeksekusi payload ketika tipe dimuat melalui mekanisme refleksi konvensional.
+- **Lapisan Mitigasi:** Sharphy mengandalkan pembacaan metadata statis tanpa eksekusi via `Mono.Cecil`. Apabila eksekusi dinamis dibutuhkan (misalnya pada tool `sharphy_extract_tokens`), pemuatan diisolasi secara ketat di dalam `AssemblyLoadContext` kolektibel tersendiri (`isCollectible: true`) yang langsung dimusnahkan setelah eksekusi.
+
+### 2.2 Penanganan Crash Dump Raksasa & Kehabisan Sumber Daya (*Resource Exhaustion / DoS*)
+- **Vektor Ancaman:** Berkas crash dump memori berukuran puluhan gigabyte dapat memicu kondisi kehabisan memori (*Out of Memory* / OOM) pada host server jika dipetakan sekaligus ke RAM.
+- **Lapisan Mitigasi:** Engine forensik ClrMD memanfaatkan pemetaan memori virtual bertahap (*lazy virtual memory mapping*) dan penelusuran segmen selektif, sehingga membatasi pemuatan hanya pada struktur data atau segmen yang sedang diaudit.
+
+### 2.3 Pencegahan Eksfiltrasi Data via Kanal MCP
+- **Vektor Ancaman:** Penyisipan payload berbahaya melalui parameter masukan JSON-RPC untuk mengintersepsi kanal komunikasi atau membaca berkas sembarangan (*path traversal*).
+- **Lapisan Mitigasi:** Seluruh masukan path absolut divalidasi dan dinormalisasi secara ketat sebelum diteruskan ke mesin I/O sistem berkas lokal.
+
+---
+
+## 3. Tata Cara Pelaporan Kerentanan & Pengungkapan Terkoordinasi
+
+Apabila Anda mengidentifikasi celah keamanan, kelemahan isolasi sandbox, atau potensi kerentanan lainnya pada Sharphy:
+
+1. **JANGAN membuat issue publik atau memublikasikan eksploitasi di forum publik sebelum perbaikan dirilis.**
+2. Laporkan temuan Anda secara privat dan rahasia melalui mekanisme resmi **GitHub Security Advisories** pada repositori ini:
+   * Kunjungi: [https://github.com/baharmaulidiii/sharphy/security/advisories/new](https://github.com/baharmaulidiii/sharphy/security/advisories/new)
+3. Sertakan informasi komprehensif berikut:
+   - Ringkasan teknis dan potensi dampak kerentanan.
+   - Langkah-langkah reproduksi terperinci (*step-by-step reproduction guide*).
+   - Kode sampel, konfigurasi agen, atau berkas biner Proof-of-Concept (POC) minimal.
+   - Versi .NET SDK, arsitektur CPU, dan Sistem Operasi yang digunakan saat pengujian.
+
+Tim pengembang akan merespons laporan dalam waktu maksimal 48 jam kerja untuk memverifikasi temuan, mengoordinasikan jadwal penambalan (*Coordinated Vulnerability Disclosure*), serta memberikan atribusi penghargaan dalam catatan rilis keamanan.
 
 ---
 
 <details>
 <summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
 
-# Security Policy
+# Security Policy & Threat Modeling
 
-We take the security and integrity of Sharphy very seriously.
+Security and process integrity are foundational tenets of the **Sharphy** project. As a low-level runtime diagnostic bridge, Sharphy incorporates proactive threat mitigation strategies against malicious code execution vectors.
 
----
+## 1. Supported Versions
 
-## Supported Versions
+| Release Line | Status | Security Patch Policy |
+| :--- | :--- | :--- |
+| `0.1.x` (Preview) | :white_check_mark: Supported | Active security patches for critical vulnerabilities and MCP server stability. |
+| `< 0.1.0` | :x: Deprecated | Unsupported. Please upgrade to the latest preview release. |
 
-Active security updates are provided for the following versions:
+## 2. Architectural Threat Mitigations
 
-| Version | Supported |
-| :--- | :--- |
-| `0.1.x` (Preview) | :white_check_mark: |
+- **Untrusted Binary Ingestion:** Static parsing is enforced via `Mono.Cecil` without executing module constructors. Dynamic execution runs strictly inside collectible `AssemblyLoadContext` sandboxes.
+- **Memory Exhaustion (DoS):** ClrMD virtual memory paging ensures large memory dumps are analyzed incrementally without overwhelming host physical RAM.
+- **MCP Channel Purity:** Rigid absolute path normalization prevents unauthorized file path traversal attacks.
 
----
+## 3. Reporting a Vulnerability
 
-## Reporting a Vulnerability
-
-If you identify a security vulnerability in Sharphy:
-
-1. **Please DO NOT report security issues via public GitHub issues.**
-2. Report privately via **GitHub Security Advisories** on this repository or contact the project maintainers directly.
-3. Please include:
-   - A clear description and impact of the vulnerability.
-   - Step-by-step instructions or POC (Proof of Concept) binary to reproduce the behavior.
-   - Affected .NET SDK version and operating system architecture.
-
-We will acknowledge receipt promptly and coordinate a fix and release before any public disclosure.
+Please do not report vulnerabilities via public GitHub issues. Submit reports privately through **GitHub Security Advisories**:
+- Advisory Portal: [https://github.com/baharmaulidiii/sharphy/security/advisories/new](https://github.com/baharmaulidiii/sharphy/security/advisories/new)
+- Maintainers acknowledge reports within 48 business hours following standard Coordinated Vulnerability Disclosure (CVD) timelines.
 
 </details>

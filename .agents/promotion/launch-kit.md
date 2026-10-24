@@ -1,77 +1,76 @@
-# Sharphy Launch & Community Promotion Kit
+# Panduan Publikasi & Rilis Komunitas Sharphy (Launch Kit)
 
-Dokumen ini berisi materi siap pakai (copy-paste) untuk mempublikasikan dan memviralkan **Sharphy** ke berbagai komunitas developer global.
+Dokumen ini menyediakan materi komunikasi resmi dan format publikasi siap pakai (*ready-to-deploy announcements*) untuk memperkenalkan **Sharphy** kepada komunitas perekayasa perangkat lunak, peneliti keamanan, dan ekosistem AI coding agent global.
 
 ---
 
-## 1. Pengaturan Repository GitHub (About Section)
+## 1. Konfigurasi Metadata Repositori GitHub
 
-Buka: https://github.com/baharmaulidiii/sharphy -> Klik tombol ⚙️ di samping panel **About**:
+Akses pengaturan repositori pada tautan https://github.com/baharmaulidiii/sharphy -> panel **About**:
 
-- **Description:**
+* **Deskripsi Singkat (*Description*):**
   ```text
-  CLR Intelligence & Runtime Forensic Bridge for AI Coding Agents (Model Context Protocol / MCP)
+  CLR Intelligence & Runtime Forensic Bridge for AI Coding Agents (Native Model Context Protocol / MCP)
   ```
-- **Website:**
+* **Tautan Dokumentasi (*Website*):**
   ```text
   https://baharmaulidiii.github.io/sharphy/
   ```
-- **Topics (Ketik satu per satu lalu Enter):**
+* **Label Topik (*Topics*):**
   `mcp` `model-context-protocol` `dotnet` `csharp` `clr` `reverse-engineering` `forensics` `memory-dump` `decompiler` `ilspy` `clrmd` `roslyn` `ai-agent` `claude-code` `cursor`
 
 ---
 
-## 2. Reddit Post (`r/dotnet`)
+## 2. Draf Komunikasi Reddit (`r/dotnet`)
 
-- **Subreddit:** `r/dotnet`
-- **Post Title:**
+* **Target Komunitas:** `r/dotnet`
+* **Judul Postingan (*Title*):**
   ```text
-  Show r/dotnet: Sharphy – Turn AI coding agents into CLR engineers (MCP server for deep runtime diagnostics, crash dumps, and CIL decompilation)
+  Sharphy: Native MCP Server Turning AI Coding Agents into Autonomous CLR Runtime Engineers
   ```
-- **Post Content:**
+* **Isi Postingan (*Body*):**
   ```markdown
-  Hey r/dotnet! 👋
+  Hello .NET Community! 👋
 
-  While working with LLM coding agents (Cursor, Claude Code, Copilot), I noticed they are largely blind to compiled .NET internals—they only see raw text in the editor, but cannot inspect memory dumps, decompile external assemblies, or diagnose CLR runtime issues directly.
+  While utilizing AI coding agents (Claude Code, Cursor, Windsurf, Copilot), a major engineering hurdle emerges: agents operate solely on source text heuristics and remain blind to compiled CLR runtime internals. They cannot diagnose crash dumps, inspect managed heaps, or evaluate bytecode without tedious external manual steps.
 
-  To solve this, I built **Sharphy**: an open-source native Model Context Protocol (MCP) server designed to bridge AI coding agents directly with the CLR:
+  To bridge this gap deterministically, I developed **Sharphy**: an open-source, native Model Context Protocol (MCP) server designed to connect AI coding agents directly to .NET runtime internals.
 
-  ⚡ **Key Capabilities:**
-  - **Memory Dump Forensics:** Ingest Windows & Linux CoreCLR `.dmp` files via ClrMD, detect thread deadlocks, analyze managed heaps, and trace LOH fragmentation.
-  - **CIL Decompilation & Metadata:** Reconstruct clean modern C# methods and inspect ECMA-335 metadata using the ILSpy engine.
-  - **Isolated Unpacking:** Run decryption routines in collectible `AssemblyLoadContext` sandboxes.
-  - **CIL Instruction Mutation:** Safely patch opcodes and generate high-throughput wrappers via `UnsafeAccessor`.
-  - **Multi-Targeting:** Native support across .NET 8, 9, and 10.
+  ### ⚡ Key Capabilities:
+  1. **Memory Dump Forensics:** Automated Root Cause Analysis (RCA) on Windows and Linux CoreCLR `.dmp` files via Microsoft ClrMD.
+  2. **Heap & Deadlock Diagnostics:** Traversal of GC segments, LOH fragmentation analysis, and thread synchronization Wait-For Graphs.
+  3. **High-Fidelity Decompilation:** Reconstructing clean, modern C# methods from compiled assemblies via the ILSpy decompiler engine.
+  4. **Bytecode Mutation & Sandboxing:** Surgical CIL instruction patching and isolated unpacking inside collectible `AssemblyLoadContext` sandboxes.
+  5. **Pure Stdio Transport:** Standard JSON-RPC 2.0 communication with zero overhead.
 
-  📦 GitHub: https://github.com/baharmaulidiii/sharphy  
-  🌐 Docs: https://baharmaulidiii.github.io/sharphy/
+  📦 **GitHub:** https://github.com/baharmaulidiii/sharphy  
+  🌐 **Documentation:** https://baharmaulidiii.github.io/sharphy/
 
-  Would love to hear feedback and thoughts from the .NET community!
+  Looking forward to your technical feedback, architectural critiques, and thoughts!
   ```
 
 ---
 
-## 3. Reddit Post (`r/ClaudeAI` & `r/LocalLLaMA`)
+## 3. Draf Komunikasi Komunitas AI (`r/ClaudeAI` & `r/LocalLLaMA`)
 
-- **Subreddit:** `r/ClaudeAI` / `r/LocalLLaMA`
-- **Post Title:**
+* **Target Komunitas:** `r/ClaudeAI` / `r/LocalLLaMA`
+* **Judul Postingan (*Title*):**
   ```text
-  I built an MCP server that gives Claude and Cursor native CLR / .NET reverse engineering and crash dump forensic powers
+  Empowering Claude Code and Cursor with Native .NET CLR Reverse Engineering & Memory Forensics (Sharphy MCP)
   ```
-- **Post Content:**
+* **Isi Postingan (*Body*):**
   ```markdown
-  Hi all,
+  Hi everyone,
 
-  Most MCP tools focus on web search or database queries. I wanted to give AI coding agents deep low-level systems engineering abilities, specifically for the .NET CLR ecosystem.
+  Most MCP tools focus on web browsing, documentation scraping, or database integrations. I built an MCP server focused entirely on deep, low-level systems engineering for the .NET runtime ecosystem.
 
-  Meet **Sharphy**:
-  It turns your Claude Code, Cursor, or Windsurf agent into an autonomous CLR engineer that can:
-  - Read `.dmp` crash dumps and perform automated Root Cause Analysis.
-  - Decompile method bytecode directly from `.dll` binaries.
-  - Trace thread lock deadlocks and memory leaks.
-  - Inspect ECMA-335 metadata hierarchies.
+  **Sharphy** gives your agent direct observability over compiled assemblies and runtime memory dumps:
+  - Perform Root Cause Analysis (RCA) on fatal application crash dumps.
+  - Inspect managed heap object retention and detect memory leaks.
+  - Decompile method bytecode directly into idiomatic C#.
+  - Safely extract tokens and decrypt logic inside memory-isolated sandboxes.
 
-  You can install it as a global dotnet tool or run it directly:
+  Get started instantly via NuGet or source:
   ```json
   {
     "mcpServers": {
@@ -83,53 +82,44 @@ Buka: https://github.com/baharmaulidiii/sharphy -> Klik tombol ⚙️ di samping
   }
   ```
 
-  Check out the repo here: https://github.com/baharmaulidiii/sharphy  
-  Feedback and stars are warmly welcome!
+  Check out the repository: https://github.com/baharmaulidiii/sharphy
   ```
 
 ---
 
-## 4. Hacker News Submission (Show HN)
+## 4. Pengajuan Hacker News (Show HN)
 
-- **URL:** https://news.ycombinator.com/submit
-- **Title:**
+* **Tautan Pengajuan:** https://news.ycombinator.com/submit
+* **Format Judul (*Title*):**
   ```text
-  Show HN: Sharphy – CLR intelligence and memory forensics bridge for AI agents
+  Show HN: Sharphy – CLR runtime intelligence and memory forensics bridge for AI agents
   ```
-- **URL / Text:**
+* **Tautan Sasaran (*URL*):**
   ```text
   https://github.com/baharmaulidiii/sharphy
   ```
 
 ---
 
-## 5. Submission Pull Request ke "Awesome MCP Servers"
+## 5. Pendaftaran Kurasi Awesome MCP Servers
 
-Daftarkan Sharphy ke repositori kurasi MCP terbesar agar ribuan developer menemukannya:
-
-1. **punkpeye/awesome-mcp-servers** (https://github.com/punkpeye/awesome-mcp-servers)
-   - Edit section `Development & Debugging Tools`:
-   ```markdown
-   - [Sharphy](https://github.com/baharmaulidiii/sharphy) - CLR intelligence, runtime memory forensics, and CIL decompilation bridge for .NET binaries.
-   ```
-2. **appcypher/awesome-mcp-servers** (https://github.com/appcypher/awesome-mcp-servers)
-   - Tambahkan entri di kategori `Developer Tools` / `Diagnostics`.
+Ajukan Pull Request ke repositori kurasi MCP global:
+* **Repositori Sasaran:** `punkpeye/awesome-mcp-servers` (https://github.com/punkpeye/awesome-mcp-servers)
+* **Kategori Penempatan:** `Development & Debugging Tools`
+* **Teks Entri PR:**
+  ```markdown
+  - [Sharphy](https://github.com/baharmaulidiii/sharphy) - Native Model Context Protocol (MCP) server providing deep CLR runtime intelligence, memory crash dump forensics, and CIL decompilation for AI coding agents.
+  ```
 
 ---
 
-## 6. X (Twitter) & LinkedIn Launch Thread
+<details>
+<summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
 
-```text
-🚀 Excited to launch Sharphy: A native Model Context Protocol (MCP) server turning AI coding agents into deep .NET CLR diagnosticians and reverse engineers!
+# Sharphy Launch & Community Promotion Kit
 
-🔍 What it does:
-• Crash dump (.dmp) forensics via ClrMD
-• CIL method decompilation via ILSpy
-• Heap leak & deadlock detection
-• Multi-target (.NET 8/9/10)
+This document provides official promotional materials, publication templates, and community submission drafts to introduce **Sharphy** across developer forums, Reddit, Hacker News, and awesome-mcp catalogs.
 
-Try it out: https://github.com/baharmaulidiii/sharphy
-Docs: https://baharmaulidiii.github.io/sharphy/
+*(Refer to complete templates and submission copy above).*
 
-#dotnet #csharp #mcp #ai #claude #cursor #opensource
-```
+</details>
