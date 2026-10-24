@@ -60,7 +60,11 @@ sharphy/
 4. Test Suite          ───> Run: dotnet test Sharphy.sln
        │
        ▼
-5. Docs & Clean Git    ───> Ensure README / docs remain synchronized bilingually
+5. Packaging Dry-Run   ───> Validate nupkg generation via dotnet pack
+       │
+       ▼
+6. Impact & Docs Sync  ───> Evaluate Tri-Pillar Matrix, update CHANGELOG.md,
+                            and output standard Release Assessment Report
 ```
 
 ---
@@ -89,5 +93,44 @@ dotnet run --project src/Sharphy.Cli/Sharphy.Cli.csproj -- mcp start
 
 The [.agents](.agents) directory contains automated workflow rules and tool schemas:
 - `.agents/rules.md`: Coding standards, memory safety, and error handling policies.
+- `.agents/release-guidelines.md`: Official release governance, SemVer policies, package publication, and GitHub Pages deployment rules.
 - `.agents/mcp-schema.json`: Formal JSON schema definitions for MCP tools implemented by `Sharphy.Server`.
 - `.agents/testing-policy.md`: Testing guidelines, memory dump validation, and testbed procedures.
+
+---
+
+## 6. Post-Development Release Assessment Protocol
+
+Every AI Coding Agent completing work in this repository is strictly required to execute a **Change Impact Detection** evaluation against the last published Git tag and present the standardized report in its concluding response:
+
+### 6.1 Tri-Pillar Change Impact Matrix
+1. **Core & Server Engine (`src/Sharphy.Core/**`, `src/Sharphy.Server/**`, `src/Sharphy.Cli/**`):** Requires a new Git tag and NuGet deployment (`publish-packages.yml`).
+2. **Documentation Portal (`docs/**`, `assets/**`):** Requires manual trigger of the GitHub Pages deployment workflow (`deploy-docs.yml`).
+3. **Repository Specifications (`*.md` at root, `.agents/**`):** Requires synchronizing `CHANGELOG.md` under `[Belum Dirilis] - Unreleased`.
+
+### 6.2 Mandatory Concluding Output Template
+```markdown
+### 📋 Laporan Evaluasi Rilis & Deployment (Agent Release Assessment)
+- **Status Perubahan sejak Rilis Terakhir (<latest_tag>):** [Summary of changed paths]
+- **Kebutuhan Rilis Git Baru:** [YA / TIDAK] -> Rekomendasi Versi: <vX.Y.Z-preview>
+- **Kebutuhan Deploy Paket NuGet:** [YA / TIDAK] -> Paket: (Sharphy.Cli, Sharphy.Server, Sharphy.Core)
+- **Kebutuhan Deploy GitHub Pages:** [YA / TIDAK] -> Direktori: (docs/)
+- **Verifikasi Lokal:**
+  - Build multi-targeting (.NET 8/9/10): BERHASIL
+  - Protocol & Unit Tests: 100% LOLOS
+  - Validasi Packaging (dotnet pack): VALID
+- **Instruksi Eksekusi untuk Repo Owner:**
+  ```powershell
+  # 1. Commit and push changes
+  git add .
+  git commit -m "..."
+  git push origin main
+
+  # 2. Tag and publish packages (if required)
+  git tag -a v0.1.1-preview -m "Release v0.1.1-preview: ..."
+  git push origin v0.1.1-preview
+
+  # 3. Deploy documentation portal (if required)
+  # Trigger GitHub Pages workflow via GitHub Web UI
+  ```
+```

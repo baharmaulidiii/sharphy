@@ -47,3 +47,12 @@ This document outlines strict coding standards and runtime rules that every AI C
 
 1. **Absolute Prohibition of Git Commit & Push:** AI Agents are strictly forbidden from executing `git commit`, `git push`, or modifying remote branches under any circumstances.
 2. **Owner-Only Privilege:** Only the repository owner / human user is permitted to stage (`git add`), commit, or push changes. All modifications made by Agents must remain uncommitted in the local working directory for human review.
+
+---
+
+## 5. Post-Development Release Assessment & Lifecycle Protocol
+
+1. **Mandatory Impact Detection:** At the conclusion of every development session, the Agent must evaluate modified files against the **Tri-Pillar Change Impact Detection Matrix** defined in [`.agents/release-guidelines.md`](release-guidelines.md).
+2. **Changelog Synchronization:** If any functionality under `src/` or documentation under `docs/` is modified, the Agent must record concise, bilingual entries in [`CHANGELOG.md`](../CHANGELOG.md) under `[Belum Dirilis] - Unreleased`.
+3. **Packaging Dry-Run:** If modifications touch `src/Sharphy.Core`, `src/Sharphy.Server`, or `src/Sharphy.Cli`, the Agent must verify packaging viability (`dotnet pack -c Release`) to ensure `nupkg` generation produces no fatal warnings.
+4. **Mandatory Reporting Block:** The Agent must include the standardized Release Assessment Report in its final response, detailing whether a new Git release, NuGet deployment, or GitHub Pages deployment is required.

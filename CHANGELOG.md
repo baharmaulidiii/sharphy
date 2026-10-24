@@ -16,6 +16,15 @@ Format dokumen ini mengacu pada standar **[Keep a Changelog](https://keepachange
 
 ---
 
+## [0.1.1-preview] - 2026-10-24
+
+### Ditambahkan (Added)
+- **Pedoman Manajemen Perilisan & Deployment (`.agents/release-guidelines.md`):** Penetapan kebijakan resmi penomoran versi SemVer 2.0.0, matriks deteksi perubahan tri-pilar (Core/Server, Docs, Metadata), dan SOP eksekusi rilis serta deployment portal dokumentasi.
+- **Protokol Deteksi Rilis untuk AI Agent:** Aturan baku pada `AGENTS.md` dan `.agents/rules.md` yang mewajibkan seluruh AI Coding Agent melakukan audit dampak perubahan dan menyajikan laporan evaluasi rilis standar di akhir setiap siklus pengerjaan.
+- **Penyelarasan Versi CLI Runner:** Pembaruan string versi `Sharphy.Cli --version` menjadi `0.1.1-preview`.
+
+---
+
 ## [0.1.0-preview] - 2026-10-24
 
 ### Ditambahkan (Added)
@@ -51,6 +60,15 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 - In-depth runtime forensics via `Microsoft.Diagnostics.Runtime` (ClrMD) for `sharphy_analyze_dump`, `sharphy_inspect_heap`, and `sharphy_deadlock_detector`.
 - Bytecode manipulation and binary re-emitting via `Mono.Cecil` for `sharphy_patch_il` and `sharphy_clean_obfuscation`.
 - Zero-overhead interop wrapper generation utilizing `[UnsafeAccessor]` (.NET 8+) for `sharphy_generate_wrapper`.
+
+---
+
+## [0.1.1-preview] - 2026-10-24
+
+### Added
+- **Release Management & Deployment Guidelines (`.agents/release-guidelines.md`):** Formal SemVer 2.0.0 policies, tri-pillar change impact detection matrix, and step-by-step SOPs for NuGet packages and GitHub Pages deployment.
+- **AI Agent Lifecycle Protocols:** Operational mandates in `AGENTS.md` and `.agents/rules.md` requiring AI coding agents to perform automated impact assessments and generate standardized concluding reports.
+- **CLI Runner Version Synchronization:** Aligned `Sharphy.Cli --version` response string to `0.1.1-preview`.
 
 ---
 

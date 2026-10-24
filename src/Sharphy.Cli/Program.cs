@@ -15,7 +15,7 @@ public static class Program
 
         if (args[0] is "-v" or "--version" or "version")
         {
-            Console.WriteLine($"Sharphy CLI v0.1.0-preview [{RuntimeEnvironment.FrameworkVersion}]");
+            Console.WriteLine($"Sharphy CLI v0.1.1-preview [{RuntimeEnvironment.FrameworkVersion}]");
             return 0;
         }
 
