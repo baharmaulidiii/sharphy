@@ -174,12 +174,13 @@ public sealed class ToolRegistry
                     return Task.FromResult(McpToolCallResult.CreateError("Parameters 'oldAssemblyPath' and 'newAssemblyPath' are required."));
                 }
 
-                var sw = new StringWriter();
-                sw.WriteLine($"=== Sharphy Binary Diff: {Path.GetFileName(oldP)} vs {Path.GetFileName(newP)} ===");
-                sw.WriteLine($"Old Binary: {oldP} (Exists: {File.Exists(oldP)})");
-                sw.WriteLine($"New Binary: {newP} (Exists: {File.Exists(newP)})");
-                sw.WriteLine("Structural API signatures evaluated: No breaking changes detected in public interface.");
-                return Task.FromResult(McpToolCallResult.CreateSuccess(sw.ToString()));
+                if (!File.Exists(oldP) || !File.Exists(newP))
+                {
+                    return Task.FromResult(McpToolCallResult.CreateError($"One or both assembly files were not found on disk: '{oldP}', '{newP}'."));
+                }
+
+                var diffReport = BinaryDiffEngine.CompareAssemblies(oldP, newP);
+                return Task.FromResult(McpToolCallResult.CreateSuccess(diffReport));
             });
 
         // 6. sharphy_inspect_metadata
@@ -237,8 +238,13 @@ public sealed class ToolRegistry
                     return Task.FromResult(McpToolCallResult.CreateError("Parameters 'assemblyPath' and 'outputPath' are required."));
                 }
 
-                return Task.FromResult(McpToolCallResult.CreateSuccess(
-                    $"[Sharphy Deobfuscator] Obfuscation Analyzer processed {asm}. CFG analysis clean. Target output: {output}."));
+                if (!File.Exists(asm))
+                {
+                    return Task.FromResult(McpToolCallResult.CreateError($"Assembly was not found at '{asm}'."));
+                }
+
+                var cleanReport = ObfuscationAnalyzerEngine.AnalyzeAndCleanObfuscation(asm, output);
+                return Task.FromResult(McpToolCallResult.CreateSuccess(cleanReport));
             });
 
         // 8. sharphy_extract_tokens

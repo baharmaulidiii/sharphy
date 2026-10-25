@@ -61,4 +61,38 @@ public class RealEngineTests
             if (File.Exists(tempOutput)) File.Delete(tempOutput);
         }
     }
+
+    [Fact]
+    public void BinaryDiffEngine_ComparesAssemblyWithSelf_ReportsZeroBreakingChanges()
+    {
+        Assert.True(File.Exists(SampleAssemblyPath));
+
+        var diff = BinaryDiffEngine.CompareAssemblies(SampleAssemblyPath, SampleAssemblyPath);
+
+        Assert.NotNull(diff);
+        Assert.Contains("Sharphy ECMA-335 Binary Diff Analysis", diff);
+        Assert.Contains("FULLY COMPATIBLE", diff);
+        Assert.Contains("Breaking Changes Detected     : 0", diff);
+    }
+
+    [Fact]
+    public void ObfuscationAnalyzerEngine_AnalyzesCrackmeDemo_Successfully()
+    {
+        Assert.True(File.Exists(SampleAssemblyPath));
+
+        var tempOutput = Path.Combine(Path.GetTempPath(), $"CleanedDemo_{Guid.NewGuid():N}.dll");
+        try
+        {
+            var analysis = ObfuscationAnalyzerEngine.AnalyzeAndCleanObfuscation(SampleAssemblyPath, tempOutput);
+
+            Assert.NotNull(analysis);
+            Assert.Contains("Deobfuscation & Anti-Tamper Forensics", analysis);
+            Assert.Contains("CFG Switch Flattening Instances", analysis);
+            Assert.True(File.Exists(tempOutput));
+        }
+        finally
+        {
+            if (File.Exists(tempOutput)) File.Delete(tempOutput);
+        }
+    }
 }
