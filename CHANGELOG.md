@@ -8,6 +8,14 @@ Format dokumen ini mengacu pada standar **[Keep a Changelog](https://keepachange
 
 ## [Belum Dirilis] - Unreleased
 
+## [1.0.2] - 2026-10-25
+
+### Ditambahkan (Added)
+- **Dokumentasi Khusus NuGet Gallery (`PACKAGE_README.md`):** Pembuatan berkas dokumentasi mandiri berbahasa Inggris murni yang ringkas, berorientasi nilai guna, dan bersih dari tag HTML rumit agar halaman publik di NuGet.org tampil profesional dan mudah dipahami.
+- **Penyelarasan Paket Mandiri (`Self-Contained CLI Bundle`):** Penegasan arsitektur bahwa `Sharphy.Cli` secara mandiri telah mengemas seluruh dependensi engine `Sharphy.Core` dan `Sharphy.Server`.
+
+---
+
 ## [1.0.1] - 2026-10-25
 
 ### Ditambahkan (Added)

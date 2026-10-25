@@ -19,11 +19,11 @@
     
     <!-- NuGet Package Icon & Readme -->
     <PackageIcon>sharphy.png</PackageIcon>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>PACKAGE_README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)assets\sharphy.png" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)assets\sharphy.png')" />
-    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)README.md')" />
+    <None Include="$(MSBuildThisFileDirectory)PACKAGE_README.md" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)PACKAGE_README.md')" />
   </ItemGroup>
 </Project>
