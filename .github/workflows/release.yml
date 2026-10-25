@@ -2,16 +2,14 @@ name: Release Orchestrator
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
   workflow_dispatch:
     inputs:
       version:
         description: 'Version string to release (e.g., 1.0.0 or 1.0.0)'
-        required: false
-        default: ''
+        required: true
+        default: '1.0.0'
       publish_packages:
         description: 'Publish new package (NuGet & GitHub Packages)'
         type: boolean
@@ -76,10 +74,13 @@ jobs:
     needs: verify
     if: github.event.inputs.publish_packages != 'false'
     runs-on: windows-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
     outputs:
       package_version: ${{ steps.versioning.outputs.version }}
       tag_name: ${{ steps.versioning.outputs.tag }}
-      should_publish: ${{ steps.versioning.outputs.should_publish }}
 
     steps:
       - name: Checkout repository (fetch full history for tags)
@@ -100,16 +101,10 @@ jobs:
         run: |
           if ("${{ github.event.inputs.version }}" -ne "") {
             $rawVer = "${{ github.event.inputs.version }}"
-          } elseif ("${{ github.ref_name }}" -match '^v?(.*)$' -and "${{ github.ref_type }}" -eq "tag") {
+          } elseif ("${{ github.ref_name }}" -match '^v?(.*)$') {
             $rawVer = $matches[1]
           } else {
-            # Extract latest released version from CHANGELOG.md (first line matching '## [X.Y.Z]')
-            $changelog = Get-Content CHANGELOG.md -Raw
-            if ($changelog -match '##\s*\[(\d+\.\d+\.\d+[^\]]*)\]') {
-              $rawVer = $matches[1]
-            } else {
-              $rawVer = "1.0.0"
-            }
+            $rawVer = "1.0.0"
           }
           $ver = $rawVer.TrimStart('v')
           $tag = "v$ver"
@@ -117,37 +112,15 @@ jobs:
           Write-Output "Resolved version: $ver"
           Write-Output "Resolved git tag: $tag"
 
-          # Check if tag exists
-          $tagExists = $(git tag -l $tag)
-          $shouldPublish = "true"
-          if ($tagExists -and "${{ github.ref_type }}" -ne "tag" -and "${{ github.event_name }}" -ne "workflow_dispatch") {
-            Write-Output "Tag $tag already exists in repository. Skipping release publication on main branch push."
-            $shouldPublish = "false"
-          }
-
           "version=$ver" >> $env:GITHUB_OUTPUT
           "tag=$tag" >> $env:GITHUB_OUTPUT
-          "should_publish=$shouldPublish" >> $env:GITHUB_OUTPUT
           "PACKAGE_VERSION=$ver" >> $env:GITHUB_ENV
           "TAG_NAME=$tag" >> $env:GITHUB_ENV
 
-      - name: Auto-Create Git Tag if Triggered on Main
-        if: steps.versioning.outputs.should_publish == 'true' && github.ref_type != 'tag'
-        shell: pwsh
-        run: |
-          $tag = "${{ steps.versioning.outputs.tag }}"
-          Write-Output "Creating and pushing tag $tag..."
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a $tag -m "Release $tag by GitHub Actions"
-          git push origin $tag
-
       - name: Restore dependencies
-        if: steps.versioning.outputs.should_publish == 'true'
         run: dotnet restore Sharphy.sln
 
       - name: Pack All 3 Packages (Core, Server, Cli)
-        if: steps.versioning.outputs.should_publish == 'true'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path ./nupkgs
@@ -157,7 +130,6 @@ jobs:
           Get-ChildItem -Path ./nupkgs -Filter *.nupkg | Select-Object FullName, Length
 
       - name: Push Packages to GitHub Packages (GitHub NuGet Registry)
-        if: steps.versioning.outputs.should_publish == 'true'
         shell: pwsh
         run: |
           $packages = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
@@ -167,15 +139,12 @@ jobs:
           }
 
       - name: NuGet Login via OIDC (Trusted Publishing)
-        if: steps.versioning.outputs.should_publish == 'true'
         id: nuget-login
         uses: NuGet/login@v1
-        continue-on-error: true
         with:
           user: baharmaulidiii
 
       - name: Push Packages to NuGet.org (Trusted Publishing / OIDC)
-        if: steps.versioning.outputs.should_publish == 'true'
         shell: pwsh
         run: |
           $apiKey = "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
@@ -184,8 +153,8 @@ jobs:
           }
 
           if ([string]::IsNullOrWhiteSpace($apiKey)) {
-            Write-Warning "⚠️ Autentikasi NuGet tidak tersedia (OIDC token kosong dan secret NUGET_API_KEY tidak diset). Melewati push NuGet.org."
-            exit 0
+            Write-Error "Autentikasi NuGet tidak tersedia (OIDC token kosong dan secret NUGET_API_KEY tidak diset)."
+            exit 1
           }
 
           $packages = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
@@ -195,7 +164,6 @@ jobs:
           }
 
       - name: Upload nupkgs for Release Job
-        if: steps.versioning.outputs.should_publish == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: release-nuget-packages
@@ -207,7 +175,7 @@ jobs:
   create_release:
     name: Create GitHub Release
     needs: [verify, publish_packages]
-    if: always() && needs.verify.result == 'success' && needs.publish_packages.outputs.should_publish == 'true'
+    if: always() && needs.verify.result == 'success' && (needs.publish_packages.result == 'success' || github.event.inputs.publish_packages == 'false')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -217,8 +185,15 @@ jobs:
         id: release_meta
         shell: bash
         run: |
-          TAG="${{ needs.publish_packages.outputs.tag_name }}"
-          VER="${{ needs.publish_packages.outputs.package_version }}"
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            RAW_VER="${{ github.event.inputs.version }}"
+          elif [[ "${{ github.ref_name }}" =~ ^v?(.*)$ ]]; then
+            RAW_VER="${BASH_REMATCH[1]}"
+          else
+            RAW_VER="1.0.0"
+          fi
+          VER="${RAW_VER#v}"
+          TAG="v$VER"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "version=$VER" >> $GITHUB_OUTPUT
 
