@@ -13,7 +13,9 @@ Every Agent operating in this repository acts as an **Autonomous CLR Engineer**:
 1. **Metadata Preservation & CIL Standards:** Prioritize ECMA-335 metadata, low-level CIL instructions, SOS/ClrMD runtime inspection, and Roslyn compiler APIs over generic text heuristics.
 2. **Multi-Targeting Awareness:** All code within `src/Sharphy.Core`, `src/Sharphy.Server`, and `src/Sharphy.Cli` must support multi-targeting across `.NET 8.0`, `.NET 9.0`, and `.NET 10.0`. Use conditional compilation preprocessor directives (`#if NET10_0_OR_GREATER`, `#if NET9_0_OR_GREATER`) whenever leveraging newer BCL/CLR features.
 3. **Safety & Sandboxing:** Binary unpacking and dynamic assembly inspection must execute within an isolated, collectible `AssemblyLoadContext` (`isCollectible: true`) to avoid polluting the host runtime process or locking files on disk.
-4. **Single-File Unified Documentation:** Maintain single authoritative Markdown files per topic. Bahasa Indonesia is the default primary language in the main document body, with English translations integrated cleanly in collapsible `<details>` sections. Do not create separate `.en.md` files.
+4. **Repository Language vs. Interaction Language Boundary:**
+   - **Repository Artifacts (100% Pure English):** All codebase files, C# XML documentation, inline code comments, git commit messages, GitHub templates, release notes, and documentation markdown files across the entire repository MUST be written exclusively in standard, idiomatic English (`en-US`). No other language or bilingual collapsible tags are permitted inside repository artifacts.
+   - **Human-to-Agent Interaction (Bahasa Indonesia):** When communicating with the Repository Owner (Bahar Maulidi), the Agent MUST converse, provide reasoning updates, and present the final `Laporan Evaluasi Rilis & Deployment` in **Bahasa Indonesia**.
 5. **Absolute Git Commit & Push Prohibition:** Agents are strictly forbidden from executing `git commit` or `git push` under any circumstances. Only the repository owner/human user is authorized to perform git commit and push operations. Agents must leave all modifications uncommitted in the local working directory.
 
 ---
@@ -51,7 +53,7 @@ sharphy/
 1. Research & Inspect  ───> Review Directory.Build.props & project architecture
        │
        ▼
-2. Implementation      ───> Write code in Sharphy.Core/Server with isolated context
+2. Implementation      ───> Write pure English code/comments in Sharphy.Core/Server
        │
        ▼
 3. Multi-Target Verify ───> Run: dotnet build Sharphy.sln
@@ -84,7 +86,7 @@ dotnet build Sharphy.sln -c Debug
 dotnet test Sharphy.sln --no-build
 
 # Run local CLI tool
-dotnet run --project src/Sharphy.Cli/Sharphy.Cli.csproj -- mcp start
+dotnet run --project src/Sharphy.Cli/Sharphy.Cli.csproj --framework net8.0 -- mcp start
 ```
 
 ---
@@ -101,18 +103,18 @@ The [.agents](.agents) directory contains automated workflow rules and tool sche
 
 ## 6. Post-Development Release Assessment Protocol
 
-Every AI Coding Agent completing work in this repository is strictly required to execute a **Change Impact Detection** evaluation against the last published Git tag and present the standardized report in its concluding response:
+Every AI Coding Agent completing work in this repository is strictly required to execute a **Change Impact Detection** evaluation against the last published Git tag and present the standardized report in **Bahasa Indonesia** in its concluding response:
 
 ### 6.1 Tri-Pillar Change Impact Matrix
 1. **Core & Server Engine (`src/Sharphy.Core/**`, `src/Sharphy.Server/**`, `src/Sharphy.Cli/**`):** Requires a new Git tag and NuGet deployment (`publish-packages.yml`).
 2. **Documentation Portal (`docs/**`, `assets/**`):** Requires manual trigger of the GitHub Pages deployment workflow (`deploy-docs.yml`).
-3. **Repository Specifications (`*.md` at root, `.agents/**`):** Requires synchronizing `CHANGELOG.md` under `[Belum Dirilis] - Unreleased`.
+3. **Repository Specifications (`*.md` at root, `.agents/**`):** Requires synchronizing `CHANGELOG.md` under `[Belum Dirilis] - Unreleased` or the designated release section.
 
-### 6.2 Mandatory Concluding Output Template
+### 6.2 Mandatory Concluding Output Template (Bahasa Indonesia)
 ```markdown
 ### 📋 Laporan Evaluasi Rilis & Deployment (Agent Release Assessment)
 - **Status Perubahan sejak Rilis Terakhir (<latest_tag>):** [Summary of changed paths]
-- **Kebutuhan Rilis Git Baru:** [YA / TIDAK] -> Rekomendasi Versi: <vX.Y.Z-preview>
+- **Kebutuhan Rilis Git Baru:** [YA / TIDAK] -> Rekomendasi Versi: <vX.Y.Z>
 - **Kebutuhan Deploy Paket NuGet:** [YA / TIDAK] -> Paket: (Sharphy.Cli, Sharphy.Server, Sharphy.Core)
 - **Kebutuhan Deploy GitHub Pages:** [YA / TIDAK] -> Direktori: (docs/)
 - **Verifikasi Lokal:**
@@ -127,7 +129,7 @@ Every AI Coding Agent completing work in this repository is strictly required to
   git push origin main
 
   # 2. Tag and publish packages (Automated via GitHub Actions)
-  # Go to GitHub Actions -> Release Orchestrator -> Run workflow (Input version, e.g., 1.0.3)
+  # Go to GitHub Actions -> Release Orchestrator -> Run workflow (Input version, e.g., 1.0.4)
   # GitHub Actions automatically packs, publishes to NuGet, and generates the git tag & release.
 
   # 3. Deploy documentation portal (if required)

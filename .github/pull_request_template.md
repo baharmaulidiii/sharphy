@@ -1,58 +1,29 @@
-## 📝 Deskripsi Perubahan (Change Description)
-<!-- Jelaskan ringkasan perubahan, motivasi, dan masalah yang diselesaikan oleh PR ini. -->
-
-## 🔗 Issue Terkait (Related Issue)
-<!-- Tautkan issue yang diselesaikan, contoh: Closes #12 atau Fixes #34 -->
-Closes #
-
----
-
-## 🏷️ Jenis Perubahan (Type of Change)
-<!-- Centang salah satu atau lebih yang relevan dengan menandai [x] -->
-- [ ] 🐛 **Perbaikan Bug** (*non-breaking change* yang memperbaiki kesalahan/anomali)
-- [ ] ✨ **Fitur Baru** (*non-breaking change* yang menambahkan fungsionalitas baru)
-- [ ] ⚡ **Optimasi Performa** (perbaikan alokasi memori, latensi MCP, dsb.)
-- [ ] 💥 **Breaking Change** (perubahan yang dapat memengaruhi kompatibilitas ke belakang)
-- [ ] 📚 **Dokumentasi** (pembaruan berkas dokumentasi atau markdown)
-- [ ] 🧪 **Pengujian / CI** (penambahan unit test baru atau pembaruan alur GitHub Actions)
-
----
-
-## ✅ Checklist Verifikasi Rekayasa (Engineering Checklist)
-<!-- Pastikan seluruh item berikut telah divalidasi sebelum mengajukan PR -->
-- [ ] **Multi-Targeting Clean Build:** Solusi berhasil dikompilasi pada seluruh target kerangka kerja (`net8.0`, `net9.0`, `net10.0`) dengan 0 Warning dan 0 Error (`dotnet build Sharphy.sln`).
-- [ ] **Unit Tests:** Seluruh rangkaian pengujian lolos 100% (`dotnet test Sharphy.sln`).
-- [ ] **Disiplin Memori Unmanaged:** Komponen diagnostik runtime native (ClrMD `DataTarget`, `ClrRuntime`, dsb.) dibungkus dalam deklarasi `using` deklaratif atau dilepas secara deterministik via `.Dispose()`.
-- [ ] **Isolasi Sandbox:** Pemrosesan biner tidak tepercaya dieksekusi dalam `AssemblyLoadContext` kolektibel (`isCollectible: true`) dan dibongkar (*unloaded*) setelah selesai.
-- [ ] **Kemurnian Stdio MCP:** Tidak ada pesan log atau jejak galat yang bocor ke `stdout`. Seluruh log diagnostik dialirkan ke `stderr`.
-- [ ] **Dokumentasi Terintegrasi:** Berkas markdown diperbarui dengan format dwibahasa (Bahasa Indonesia sebagai teks utama, bahasa Inggris di dalam collapsible section `<details>`).
-
----
-
-<details>
-<summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
-
 ## 📝 Change Description
-<!-- Provide a concise summary of the changes and the rationale behind them. -->
+<!-- Provide a concise summary of the changes, architectural motivation, and the problem solved by this PR. -->
 
 ## 🔗 Related Issue
 <!-- Link related issue, e.g., Closes #12 or Fixes #34 -->
 Closes #
 
+---
+
 ## 🏷️ Type of Change
-- [ ] 🐛 **Bug fix** (non-breaking change fixing an issue)
-- [ ] ✨ **New feature** (non-breaking change adding functionality)
-- [ ] ⚡ **Performance optimization** (memory allocation, MCP latency, etc.)
-- [ ] 💥 **Breaking change** (fix or feature causing existing functionality to break)
-- [ ] 📚 **Documentation** (documentation or markdown updates)
-- [ ] 🧪 **Tests / CI** (new unit tests or CI workflow updates)
+<!-- Select all applicable options with an [x] -->
+- [ ] 🐛 **Bug fix** (non-breaking change which fixes an issue)
+- [ ] ✨ **New feature** (non-breaking change which adds functionality)
+- [ ] ⚡ **Performance optimization** (memory allocation, GC pressure, or MCP latency improvements)
+- [ ] 💥 **Breaking change** (fix or feature that would cause existing functionality to not work as expected)
+- [ ] 📚 **Documentation** (updates to documentation or markdown files)
+- [ ] 🧪 **Tests / CI** (new unit tests, integration tests, or workflow modifications)
+
+---
 
 ## ✅ Engineering Checklist
-- [ ] **Multi-Targeting Clean Build:** Solution builds cleanly on all targets (`net8.0`, `net9.0`, `net10.0`) with 0 warnings and 0 errors (`dotnet build Sharphy.sln`).
-- [ ] **Unit Tests:** All unit test suites pass 100% (`dotnet test Sharphy.sln`).
-- [ ] **Unmanaged Memory Discipline:** ClrMD/native diagnostic resources are properly disposed of using `using` declarations or `.Dispose()`.
-- [ ] **Sandboxed Isolation:** Untrusted assemblies are inspected within an isolated collectible `AssemblyLoadContext` (`isCollectible: true`) and unloaded promptly.
-- [ ] **MCP Stdio Protocol Purity:** No debug logs or text output are written to `stdout`. All diagnostics are routed through `stderr`.
-- [ ] **Documentation Sync:** Markdown docs maintain single-file bilingual format (Indonesian as primary body, English in collapsible `<details>`).
-
-</details>
+<!-- Ensure all items have been fulfilled prior to opening the PR -->
+- [ ] **Multi-Targeting Clean Build:** Solution compiles cleanly across all target frameworks (`net8.0`, `net9.0`, `net10.0`) with 0 Warnings and 0 Errors (`dotnet build Sharphy.sln`).
+- [ ] **Unit Tests:** 100% of tests pass cleanly (`dotnet test Sharphy.sln`).
+- [ ] **Unmanaged Memory Discipline:** Native runtime diagnostic instances (ClrMD `DataTarget`, `ClrRuntime`) are properly wrapped in `using` declarations or disposed deterministically.
+- [ ] **Sandbox Isolation:** Untrusted binary inspections execute inside a collectible `AssemblyLoadContext` (`isCollectible: true`) and are unloaded immediately upon completion.
+- [ ] **MCP Stdio Purity:** Standard output (`stdout`) is strictly reserved for JSON-RPC payloads; all diagnostic logs are directed to `stderr`.
+- [ ] **English Purity:** All code comments, XML documentation, and markdown files are written in pure English.
+- [ ] **DCO 1.1 Sign-Off:** Commits are signed off (`git commit -s`).

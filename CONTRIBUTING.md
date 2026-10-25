@@ -1,119 +1,130 @@
-# Panduan Berkontribusi untuk Sharphy
+# Contributing Guidelines for Sharphy
 
-Dokumen ini menetapkan protokol rekayasa perangkat lunak, standar arsitektur tingkat rendah, serta kebijakan kontribusi kode yang berlaku secara mengikat bagi seluruh kontributor manusia maupun agen pengembang (*AI Coding Agents*) pada repositori **Sharphy**.
+This document outlines mandatory engineering standards, low-level architecture policies, and contribution guidelines for human engineers and AI coding agents operating on the **Sharphy** repository.
 
 ---
 
-## 1. Prinsip Utama & Standar Rekayasa
+## 1. Core Engineering Principles
 
-Sebagai repositori yang menangani diagnostik memori internal dan manipulasi bytecode CIL, setiap kontribusi wajib memenuhi empat pilar rekayasa berikut:
+As a specialized bridge handling internal virtual machine memory forensics and CIL bytecode manipulation, every contribution must satisfy four fundamental engineering pillars:
 
-### 1.1 Manajemen Memori Unmanaged & Pencegahan Kebocoran
-- Objek diagnostik runtime seperti `DataTarget`, `ClrRuntime`, dan `ClrHeap` mengalokasikan sumber daya native tingkat rendah yang berada di luar jangkauan GC reguler.
-- Setiap instansiasi komponen ClrMD **wajib** dibungkus dalam pernyataan `using` deklaratif atau dilepaskan secara eksplisit melalui pemanggilan `.Dispose()`.
-- Penggunaan tipe `ReadOnlySpan<byte>`, `ReadOnlyMemory<byte>`, dan `ref struct` sangat diutamakan dalam pembacaan header metadata biner PE/COFF guna meminimalkan tekanan GC (*zero-allocation philosophy*).
+### 1.1 Unmanaged Memory Discipline & Leak Prevention
+- Low-level diagnostic components (such as Microsoft ClrMD `DataTarget`, `ClrRuntime`, and `ClrHeap`) allocate unmanaged native resources outside regular GC tracking.
+- Every ClrMD instance **must** be enclosed in a `using` declaration or deterministically released via `.Dispose()`.
+- Use `ReadOnlySpan<byte>`, `ReadOnlyMemory<byte>`, and `ref struct` types when parsing binary PE/COFF metadata headers to maintain zero-allocation runtime performance.
 
-### 1.2 Isolasi Biner & Sandboxing Lingkungan Eksekusi
-- Pemeriksaan atau pengeksekusian biner pihak ketiga tidak tepercaya (*untrusted binaries*) dilarang keras dimuat langsung ke dalam konteks eksekusi default proses host (`AssemblyLoadContext.Default`).
-- Seluruh inspeksi dinamis wajib dijalankan di dalam instansi `AssemblyLoadContext` kolektibel tersendiri:
+### 1.2 Binary Isolation & Sandboxed Execution
+- Never load untrusted third-party assemblies directly into the host process default execution context (`AssemblyLoadContext.Default`).
+- All dynamic inspection and token extraction must execute within an isolated collectible `AssemblyLoadContext`:
   ```csharp
   var isolatedContext = new AssemblyLoadContext("SharphySandbox", isCollectible: true);
   try
   {
-      // Jalankan evaluasi atau inspeksi biner terisolasi di sini
+      // Execute isolated reflection or evaluation here
   }
   finally
   {
       isolatedContext.Unload();
   }
   ```
-- Pastikan unloading berhasil secara deterministik untuk mencegah penguncian berkas (*file locks*) pada media penyimpanan dan pencemaran ruang memori host.
+- Ensure context unloading completes cleanly to eliminate persistent disk file locks and host memory pollution.
 
-### 1.3 Multi-Targeting Lintas Kerangka Kerja (.NET 8, 9, 10)
-- Setiap modifikasi kode pada `Sharphy.Core`, `Sharphy.Server`, dan `Sharphy.Cli` harus berhasil dikompilasi secara bersih pada ketiga target kerangka kerja: `.NET 8.0 (LTS)`, `.NET 9.0 (STS)`, dan `.NET 10.0 (Latest)`.
-- Jika memanfaatkan fitur runtime atau API compiler teranyar, gunakan direktif kompilasi kondisional (*preprocessor guards*):
+### 1.3 Multi-Targeting Architecture (.NET 8, 9, 10)
+- All codebase modifications in `Sharphy.Core`, `Sharphy.Server`, and `Sharphy.Cli` must compile with 0 warnings and 0 errors across `.NET 8.0 (LTS)`, `.NET 9.0 (STS)`, and `.NET 10.0 (Latest)`.
+- Apply conditional compilation preprocessor guards when leveraging newer BCL or runtime features:
   ```csharp
   #if NET10_0_OR_GREATER
-  // Implementasi performa tinggi teranyar .NET 10
+  // .NET 10 high-performance optimizations
   #elif NET9_0_OR_GREATER
-  // Implementasi khusus .NET 9
+  // .NET 9 specific implementations
   #else
-  // Fallback standar .NET 8 LTS
+  // .NET 8 LTS baseline fallback
   #endif
   ```
 
-### 1.4 Kemurnian Kanal Komunikasi Stdio (Model Context Protocol)
-- Pada proyek `Sharphy.Server`, aliran keluaran standar (`Console.Out`) didedikasikan secara eksklusif untuk transmisi payload protokol JSON-RPC 2.0.
-- Dilarang keras menuliskan pesan log, jejak eksepsi, atau teks *debugging* ke `stdout`. Seluruh instrumentasi dan diagnostik internal wajib disalurkan melalui `stderr` (`Console.Error.WriteLine`).
+### 1.4 Transport Channel Purity (Model Context Protocol)
+- For the `Sharphy.Server` project, the standard output stream (`Console.Out`) is dedicated exclusively to transmitting JSON-RPC 2.0 payloads.
+- Never write diagnostic logs, print statements, or unhandled exceptions to `stdout`. All instrumentation, telemetry, and debugging output must be routed to `stderr` (`Console.Error.WriteLine`).
 
 ---
 
-## 2. Lingkungan Pengembangan Lokal
+## 2. Local Development Environment
 
-### Prasyarat Perangkat Lunak
-1. [.NET SDK 8.0+](https://dotnet.microsoft.com/download) (direkomendasikan memiliki instalasi SDK 8.0 dan 10.0 untuk memvalidasi multi-target penuh).
-2. Git CLI versi 2.40 ke atas.
+### Prerequisites
+1. [.NET SDK 8.0+](https://dotnet.microsoft.com/download) (installing SDK 8.0 and 10.0 is recommended to test the full multi-targeting matrix).
+2. Git CLI version 2.40 or newer.
 
-### Alur Eksekusi Perintah Standar
+### Standard Commands
 ```powershell
-# Memulihkan dependensi paket
+# Restore package dependencies
 dotnet restore Sharphy.sln
 
-# Mengompilasi seluruh solusi dalam konfigurasi Debug
+# Build solution in Debug configuration
 dotnet build Sharphy.sln -c Debug
 
-# Menjalankan suite pengujian unit secara lengkap
+# Run the full unit testing suite
 dotnet test Sharphy.sln
 
-# Menjalankan server MCP secara lokal melalui CLI
+# Run the local MCP server via CLI
 dotnet run --project src/Sharphy.Cli/Sharphy.Cli.csproj --framework net8.0 -- mcp start
 ```
 
 ---
 
-## 3. Alur Kerja Kontribusi & Pengajuan Pull Request (PR)
+## 3. Pull Request & Contribution Workflow
 
-1. **Pembuatan Branch Spesifik:**
-   - Buat branch baru dari `main` dengan konvensi penamaan standar:
-     * `feat/nama-fitur` untuk kapabilitas atau tool MCP baru.
-     * `fix/deskripsi-perbaikan` untuk penanganan anomali atau bug.
-     * `perf/optimasi-alokasi` untuk perbaikan efisiensi memori.
-2. **Kepatuhan Pengujian:**
-   - Setiap fitur atau tool baru wajib disertai pengujian unit di `tests/Sharphy.Tests` berbasis framework `xunit.v3`.
-   - Pastikan kompilasi menghasilkan **0 Warning** dan **0 Error**.
-3. **Larangan Mutlak Agen (Agent Git Policy):**
-   - AI Coding Agent yang beroperasi di repositori ini dilarang keras menjalankan perintah `git commit` maupun `git push`.
-   - Hanya pemilik repositori / pengembang manusia yang berhak melakukan peninjauan akhir dan melakukan commit ke riwayat Git.
+1. **Dedicated Branching:**
+   - Create branches off `main` with descriptive prefixes:
+     * `feat/feature-name` for new MCP tools or diagnostic engines.
+     * `fix/bug-description` for bug fixes and anomaly resolutions.
+     * `perf/allocation-optimization` for memory or latency improvements.
+2. **Test Coverage:**
+   - Every new engine or tool must include unit tests in `tests/Sharphy.Tests` based on `xunit.v3`.
+   - Ensure builds yield **0 Warnings** and **0 Errors**.
+3. **Agent Operational Boundaries:**
+   - AI Coding Agents operating in this repository are strictly forbidden from executing `git commit` or `git push`.
+   - Only the repository owner/human user is authorized to review and commit changes to Git history.
 
 ---
 
-<details>
-<summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
+## 4. Developer Certificate of Origin (DCO 1.1)
 
-# Contributing Guidelines for Sharphy
+To provide certainty of project ownership and defend intellectual property integrity, this repository enforces the **Developer Certificate of Origin (DCO) Version 1.1** (the industry standard utilized by the Linux Kernel and CNCF).
 
-This document outlines mandatory engineering standards, low-level architecture policies, and contribution guidelines for human engineers and AI coding agents operating on the **Sharphy** repository.
+By contributing code, documentation, or pull requests to this project, you certify that:
 
-## 1. Core Engineering Principles
+```text
+Developer Certificate of Origin
+Version 1.1
 
-1. **Unmanaged Memory Discipline:** Ensure all ClrMD instances (`DataTarget`, `ClrRuntime`) are properly disposed of using `using` declarations. Avoid memory leaks across forensic scans.
-2. **Isolated Sandboxing:** Untrusted assemblies must never be loaded into the default context. Reflection must execute within an isolated collectible `AssemblyLoadContext` (`isCollectible: true`) and unloaded immediately after evaluation.
-3. **Multi-Targeting Awareness:** All code within `Sharphy.Core`, `Sharphy.Server`, and `Sharphy.Cli` must cleanly compile across `.NET 8.0`, `.NET 9.0`, and `.NET 10.0`. Apply conditional directives (`#if NET10_0_OR_GREATER`) when utilizing newer BCL/CLR APIs.
-4. **Stdio Purity:** The standard output stream (`stdout`) is reserved strictly for JSON-RPC 2.0 messages. All diagnostic logs must be written to `stderr`.
+By making a contribution to this project, I certify that:
 
-## 2. Standard CLI Commands
+(a) The contribution was created in whole or in part by me and I
+    have the right to submit it under the open source license
+    indicated in the file; or
 
-```powershell
-dotnet restore Sharphy.sln
-dotnet build Sharphy.sln -c Debug
-dotnet test Sharphy.sln
-dotnet run --project src/Sharphy.Cli/Sharphy.Cli.csproj --framework net8.0 -- mcp start
+(b) The contribution is based upon previous work that, to the best
+    of my knowledge, is covered under an appropriate open source
+    license and I have the right under that license to submit that
+    work with modifications, whether created in whole or in part
+    by me, under the same open source license (unless I am
+    permitted to submit under a different license), as indicated
+    in the file; or
+
+(c) The contribution was provided directly to me by some other
+    person who certified (a), (b) or (c) and I have not modified
+    it.
+
+(d) I understand and agree that this project and the contribution
+    are public and that a record of the contribution (including all
+    personal information I submit with it, including my sign-off) is
+    maintained indefinitely and may be redistributed consistent with
+    this project or the open source license(s) involved.
 ```
 
-## 3. Pull Request Guidelines
-
-- Create dedicated branches (`feat/`, `fix/`, `perf/`).
-- Include comprehensive unit test coverage in `tests/Sharphy.Tests`.
-- AI Coding Agents are strictly forbidden from executing `git commit` or `git push`. All changes must remain uncommitted in the local working directory for human owner review.
-
-</details>
+### Commit Sign-Off Requirement
+All human contributors must append a sign-off line to commit messages:
+```bash
+git commit -s -m "feat: add ECMA-335 token filter"
+```
+This produces an explicit `Signed-off-by: Full Name <email@example.com>` signature. All accepted contributions are permanently licensed under the **Apache License 2.0** administered by **Bahar Maulidi**.

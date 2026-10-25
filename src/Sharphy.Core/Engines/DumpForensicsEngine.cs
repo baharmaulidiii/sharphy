@@ -3,7 +3,7 @@ using Microsoft.Diagnostics.Runtime;
 namespace Sharphy.Core.Engines;
 
 /// <summary>
-/// Engine analisis forensik crash dump dan managed heap inspeksi berbasis ClrMD.
+/// Provides crash dump telemetry and managed heap forensic inspection powered by Microsoft ClrMD.
 /// </summary>
 public static class DumpForensicsEngine
 {

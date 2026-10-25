@@ -4,7 +4,7 @@ using Mono.Cecil.Cil;
 namespace Sharphy.Core.Engines;
 
 /// <summary>
-/// Engine analisis dan deteksi pola obfuskasi biner .NET (CFG flattening, string encryption, opaque predicates).
+/// Provides .NET binary obfuscation analysis and control flow graph (CFG) demangling heuristics.
 /// </summary>
 public static class ObfuscationAnalyzerEngine
 {
@@ -39,7 +39,7 @@ public static class ObfuscationAnalyzerEngine
                 var body = method.Body;
                 var instructions = body.Instructions;
 
-                // 1. Deteksi CFG Flattening (Switch dispatch loop pattern)
+                // 1. Detect CFG Flattening (Switch dispatch loop pattern)
                 var switchCount = instructions.Count(i => i.OpCode == OpCodes.Switch);
                 if (switchCount > 1)
                 {
@@ -47,7 +47,7 @@ public static class ObfuscationAnalyzerEngine
                     sw.WriteLine($"  [!] Potential Control Flow Flattening detected in '{type.Name}::{method.Name}' (Switch statements: {switchCount})");
                 }
 
-                // 2. Deteksi Junk Code / NOP Bloat
+                // 2. Detect Junk Code / NOP Bloat
                 var nops = instructions.Where(i => i.OpCode == OpCodes.Nop).ToList();
                 if (nops.Count > 10)
                 {
@@ -55,7 +55,7 @@ public static class ObfuscationAnalyzerEngine
                     sw.WriteLine($"  [i] Excessive NOP instructions detected in '{type.Name}::{method.Name}' ({nops.Count} NOPs)");
                 }
 
-                // 3. Deteksi Enkripsi String atau Dynamic Method Invocation
+                // 3. Detect String Encryption or Dynamic Proxy Method Invocation
                 var hasDynamicInvoke = instructions.Any(i => i.OpCode == OpCodes.Calli || 
                     (i.Operand is MethodReference mr && mr.DeclaringType.FullName == "System.Reflection.MethodBase" && mr.Name == "Invoke"));
 
@@ -73,7 +73,7 @@ public static class ObfuscationAnalyzerEngine
         sw.WriteLine($"Excessive NOP / Junk Instructions: {strippedNops}");
         sw.WriteLine($"Reflection/Dynamic Proxy Calls   : {suspiciousMethods}");
 
-        // Simpan salinan yang telah di-parse untuk destination outputPath jika direktori valid
+        // Save processed assembly copy to destination outputPath if directory is valid
         var outDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
         if (!string.IsNullOrEmpty(outDir) && Directory.Exists(outDir))
         {

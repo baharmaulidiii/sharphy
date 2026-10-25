@@ -1,34 +1,34 @@
-# Panduan Publikasi & Rilis Komunitas Sharphy (Launch Kit)
+# Sharphy Community Launch & Announcement Kit
 
-Dokumen ini menyediakan materi komunikasi resmi dan format publikasi siap pakai (*ready-to-deploy announcements*) untuk memperkenalkan **Sharphy** kepada komunitas perekayasa perangkat lunak, peneliti keamanan, dan ekosistem AI coding agent global.
+This document provides ready-to-deploy announcements, discussion drafts, and copy for introducing **Sharphy** to software engineering communities, cybersecurity researchers, and AI coding agent ecosystems.
 
 ---
 
-## 1. Konfigurasi Metadata Repositori GitHub
+## 1. GitHub Repository Metadata
 
-Akses pengaturan repositori pada tautan https://github.com/baharmaulidiii/sharphy -> panel **About**:
+Access repository settings at https://github.com/baharmaulidiii/sharphy -> **About** section:
 
-* **Deskripsi Singkat (*Description*):**
+* **Description:**
   ```text
   CLR Intelligence & Runtime Forensic Bridge for AI Coding Agents (Native Model Context Protocol / MCP)
   ```
-* **Tautan Dokumentasi (*Website*):**
+* **Website:**
   ```text
   https://baharmaulidiii.github.io/sharphy/
   ```
-* **Label Topik (*Topics*):**
+* **Topics:**
   `mcp` `model-context-protocol` `dotnet` `csharp` `clr` `reverse-engineering` `forensics` `memory-dump` `decompiler` `ilspy` `clrmd` `roslyn` `ai-agent` `claude-code` `cursor`
 
 ---
 
-## 2. Draf Komunikasi Reddit (`r/dotnet`)
+## 2. Reddit Draft (`r/dotnet`)
 
-* **Target Komunitas:** `r/dotnet`
-* **Judul Postingan (*Title*):**
+* **Target Community:** `r/dotnet`
+* **Title:**
   ```text
   Sharphy: Native MCP Server Turning AI Coding Agents into Autonomous CLR Runtime Engineers
   ```
-* **Isi Postingan (*Body*):**
+* **Post Body:**
   ```markdown
   Hello .NET Community! 👋
 
@@ -51,75 +51,27 @@ Akses pengaturan repositori pada tautan https://github.com/baharmaulidiii/sharph
 
 ---
 
-## 3. Draf Komunikasi Komunitas AI (`r/ClaudeAI` & `r/LocalLLaMA`)
+## 3. Hacker News Draft (`Show HN`)
 
-* **Target Komunitas:** `r/ClaudeAI` / `r/LocalLLaMA`
-* **Judul Postingan (*Title*):**
+* **Title:**
   ```text
-  Empowering Claude Code and Cursor with Native .NET CLR Reverse Engineering & Memory Forensics (Sharphy MCP)
+  Show HN: Sharphy – Native MCP Server Giving AI Agents Deep .NET CLR Diagnostics
   ```
-* **Isi Postingan (*Body*):**
+* **Body:**
   ```markdown
-  Hi everyone,
+  Hi HN,
 
-  Most MCP tools focus on web browsing, documentation scraping, or database integrations. I built an MCP server focused entirely on deep, low-level systems engineering for the .NET runtime ecosystem.
+  I built Sharphy, a native Model Context Protocol (MCP) server for the .NET runtime.
 
-  **Sharphy** gives your agent direct observability over compiled assemblies and runtime memory dumps:
-  - Perform Root Cause Analysis (RCA) on fatal application crash dumps.
-  - Inspect managed heap object retention and detect memory leaks.
-  - Decompile method bytecode directly into idiomatic C#.
-  - Safely extract tokens and decrypt logic inside memory-isolated sandboxes.
+  Most AI coding assistants only read source files. Sharphy gives LLMs direct observability into the Common Language Runtime (CLR):
+  - Analyzing Windows/Linux crash dumps with ClrMD
+  - Traversing managed GC heaps and detecting deadlocks
+  - Decompiling CIL into modern C# using the ILSpy engine
+  - Safe dynamic assembly sandboxing via collectible AssemblyLoadContexts
 
-  Get started instantly via NuGet or source:
-  ```json
-  {
-    "mcpServers": {
-      "sharphy": {
-        "command": "sharphy",
-        "args": ["mcp", "start"]
-      }
-    }
-  }
+  Source: https://github.com/baharmaulidiii/sharphy
+  License: Apache-2.0
+  Docs: https://baharmaulidiii.github.io/sharphy/
+
+  Feedback welcome!
   ```
-
-  Check out the repository: https://github.com/baharmaulidiii/sharphy
-  ```
-
----
-
-## 4. Pengajuan Hacker News (Show HN)
-
-* **Tautan Pengajuan:** https://news.ycombinator.com/submit
-* **Format Judul (*Title*):**
-  ```text
-  Show HN: Sharphy – CLR runtime intelligence and memory forensics bridge for AI agents
-  ```
-* **Tautan Sasaran (*URL*):**
-  ```text
-  https://github.com/baharmaulidiii/sharphy
-  ```
-
----
-
-## 5. Pendaftaran Kurasi Awesome MCP Servers
-
-Ajukan Pull Request ke repositori kurasi MCP global:
-* **Repositori Sasaran:** `punkpeye/awesome-mcp-servers` (https://github.com/punkpeye/awesome-mcp-servers)
-* **Kategori Penempatan:** `Development & Debugging Tools`
-* **Teks Entri PR:**
-  ```markdown
-  - [Sharphy](https://github.com/baharmaulidiii/sharphy) - Native Model Context Protocol (MCP) server providing deep CLR runtime intelligence, memory crash dump forensics, and CIL decompilation for AI coding agents.
-  ```
-
----
-
-<details>
-<summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
-
-# Sharphy Launch & Community Promotion Kit
-
-This document provides official promotional materials, publication templates, and community submission drafts to introduce **Sharphy** across developer forums, Reddit, Hacker News, and awesome-mcp catalogs.
-
-*(Refer to complete templates and submission copy above).*
-
-</details>

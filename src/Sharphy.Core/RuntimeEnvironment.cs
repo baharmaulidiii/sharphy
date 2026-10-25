@@ -1,7 +1,7 @@
 namespace Sharphy.Core;
 
 /// <summary>
-/// Informasi arsitektur dan kapabilitas runtime yang aktif di Sharphy.
+/// Provides architectural telemetry and active runtime framework capabilities for Sharphy.
 /// </summary>
 public static class RuntimeEnvironment
 {
@@ -16,4 +16,3 @@ public static class RuntimeEnvironment
 
     public static bool SupportsUnsafeAccessor => true;
 }
-

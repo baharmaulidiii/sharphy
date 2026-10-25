@@ -3,7 +3,7 @@ using Mono.Cecil;
 namespace Sharphy.Core.Engines;
 
 /// <summary>
-/// Engine analisis komparasi biner ECMA-335 untuk mendeteksi perubahan API struktural dan internal logic.
+/// Provides ECMA-335 binary assembly diffing to detect structural API breaking changes and internal CIL logic shifts.
 /// </summary>
 public static class BinaryDiffEngine
 {

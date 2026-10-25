@@ -5,7 +5,7 @@ using ICSharpCode.Decompiler.TypeSystem;
 namespace Sharphy.Core.Engines;
 
 /// <summary>
-/// Engine dekompilasi CIL berbasis ICSharpCode.Decompiler (ILSpy).
+/// Provides CIL method decompilation powered by ICSharpCode.Decompiler (ILSpy engine).
 /// </summary>
 public static class DecompilerEngine
 {
@@ -25,7 +25,7 @@ public static class DecompilerEngine
 
         var decompiler = new CSharpDecompiler(assemblyPath, settings);
 
-        // Cari tipe di dalam TypeSystem.MainModule
+        // Resolve target type definition within MainModule
         var targetType = decompiler.TypeSystem.MainModule.TypeDefinitions
             .FirstOrDefault(t => t.FullName.Equals(typeName, StringComparison.OrdinalIgnoreCase) ||
                                  t.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase));

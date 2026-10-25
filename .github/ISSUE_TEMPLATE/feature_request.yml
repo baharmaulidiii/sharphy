@@ -1,41 +1,36 @@
-name: 💡 Usulan Fitur (Feature Request)
-description: Usulkan ide baru, kapabilitas diagnostik ClrMD, atau penambahan MCP tool.
+name: 🚀 Feature Request
+description: Propose new capabilities, additional MCP tools, or architecture improvements for Sharphy.
 title: "[FEAT]: "
-labels: ["enhancement"]
+labels: ["enhancement", "proposal"]
 body:
   - type: markdown
     attributes:
       value: |
-        Terima kasih atas ide dan kontribusi Anda untuk mengembangkan ekosistem Sharphy!
+        Thank you for proposing an enhancement to Sharphy!
   - type: textarea
-    id: problem
+    id: problem-statement
     attributes:
-      label: Latar Belakang Masalah (Problem Statement)
-      description: Deskripsikan kendala atau keterbatasan saat ini yang ingin Anda selesaikan.
-      placeholder: Contoh: Saat menganalisis memory leak di GC Heap, sulit membedakan objek pinned...
+      label: Problem Statement
+      description: Is your feature request related to a specific limitation or pain point?
+      placeholder: E.g., AI agents cannot easily correlate native memory allocations during dump analysis...
     validations:
       required: true
   - type: textarea
-    id: solution
+    id: proposed-solution
     attributes:
-      label: Solusi yang Diusulkan (Proposed Solution)
-      description: Jelaskan bagaimana fitur atau tool MCP ini seharusnya bekerja.
-      placeholder: Usulan tool MCP `sharphy_inspect_pinned_objects` yang mendeteksi handle pinned pada segmen GC...
+      label: Proposed Solution & MCP Tool Design
+      description: Detailed description of the feature, proposed MCP tool schema, or diagnostic engine.
+      placeholder: Suggest adding a tool named `sharphy_inspect_native_heap` accepting parameters...
     validations:
       required: true
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatif yang Dipertimbangkan (Alternatives Considered)
-      description: Apakah ada pendekatan atau perkakas alternatif yang pernah Anda pertimbangkan?
-  - type: dropdown
-    id: component
+      label: Considered Alternatives
+      description: Any alternative implementations or workarounds evaluated.
+  - type: checkboxes
+    id: contribution
     attributes:
-      label: Komponen Terkait
+      label: Willingness to Contribute
       options:
-        - Sharphy.Core (Engine Diagnostik, ClrMD, SOS, Roslyn)
-        - Sharphy.Server (Model Context Protocol, Transport, Dispatcher)
-        - Sharphy.Cli (CLI Runner, Tool Global)
-        - Dokumentasi & Testbed
-    validations:
-      required: true
+        - label: I am interested in implementing this feature and submitting a pull request under DCO 1.1.

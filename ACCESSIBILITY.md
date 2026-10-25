@@ -1,68 +1,27 @@
-# Pernyataan Aksesibilitas (Accessibility Statement)
+# Accessibility Statement (A11y)
 
-Komunitas pengembang **Sharphy** berkomitmen untuk menyediakan antarmuka baris perintah (CLI), server Model Context Protocol (MCP), dokumentasi, dan portal web yang dapat diakses oleh semua kalangan, termasuk pengguna dengan disabilitas fisik, motorik, penglihatan, pendengaran, maupun kognitif.
-
----
-
-## 1. Komitmen Aksesibilitas
-
-Kami berusaha mematuhi standar aksesibilitas internasional, termasuk **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** pada portal dokumentasi web kami, serta prinsip-prinsip desain CLI yang ramah pembaca layar (*screen reader*).
-
-### Standar pada Antarmuka CLI & Server MCP
-- **Dukungan Terminal & Pembaca Layar:** Seluruh keluaran CLI Sharphy dirancang menggunakan teks terstruktur yang dapat diinterpretasikan dengan baik oleh pembaca layar seperti NVDA, JAWS, dan Orca.
-- **Dukungan Warna & Kontras Tinggi:** CLI menggunakan format pesan diagnostik yang tidak hanya mengandalkan kode warna semata, melainkan juga simbol berbasis teks dan label status eksplisit untuk mendukung pengguna dengan buta warna atau kontras rendah.
-- **Stabilitas Protokol Stdio:** Keluaran standar (`stdout`) dipisahkan secara murni dari aliran log kesalahan (`stderr`), mencegah pembaca layar dibanjiri galat internal yang tidak relevan.
-
-### Standar pada Dokumentasi Web
-- Struktur semantik HTML5 yang benar (`<nav>`, `<main>`, `<article>`, `<header>`, `<footer>`).
-- Dukungan navigasi papan ketik (*full keyboard navigation*) dan indikator fokus (*focus outline*) yang jelas.
-- Kontras warna teks dan latar belakang yang memenuhi rasio minimal WCAG 2.1 AA (4.5:1 untuk teks normal).
-- Atribut teks alternatif (*alt text*) untuk ilustrasi, diagram, dan tangkapan layar.
+The **Sharphy** project is committed to providing an inclusive, barrier-free developer experience for software engineers, security researchers, and automated AI agents of all abilities.
 
 ---
 
-## 2. Pelaporan Kendala Aksesibilitas
+## 1. Conformance Standards
 
-Jika Anda menemukan hambatan aksesibilitas saat menggunakan CLI, membaca dokumentasi, atau berinteraksi dengan repositori Sharphy, mohon beri tahu kami agar kami dapat memperbaikinya:
+Our documentation portal, CLI terminal interfaces, and project guidelines strive to adhere to the **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** standards:
 
-- **Buka Issue di GitHub:** [Buat Issue Baru](https://github.com/baharmaulidiii/sharphy/issues/new/choose) dengan label `accessibility`.
-- **Informasi yang Membantu:**
-  - Perangkat bantu yang Anda gunakan (misalnya NVDA, VoiceOver, peramban tertentu, pembesar layar).
-  - URL dokumentasi atau perintah CLI yang memicu kendala.
-  - Deskripsi kendala yang dihadapi dan saran perbaikan jika ada.
-
-Kami akan menanggapi laporan aksesibilitas secepat mungkin dan memprioritaskan perbaikannya.
+1. **Color Contrast & Readability:**
+   - Documentation color tokens in both dark and light modes maintain minimum contrast ratios of 4.5:1 for standard body copy and 3:1 for large typography and active UI controls.
+2. **Keyboard Navigation:**
+   - All interactive documentation elements, navigation bars, code copying snippets, and theme selectors are fully operable via keyboard navigation (`Tab`, `Shift+Tab`, `Enter`, `Escape`).
+3. **Screen Reader Compatibility:**
+   - Documentation uses semantic HTML landmarks (`<main>`, `<header>`, `<footer>`, `<nav>`, `<article>`), explicit heading hierarchies (`h1` through `h4`), and descriptive `aria-label` attributes on interactive icon buttons.
+4. **Terminal CLI Readability:**
+   - CLI output streams are formatted for standard monospaced terminals, supporting high-contrast mode, avoiding reliance on color alone to convey error states, and directing diagnostic errors strictly to `stderr`.
 
 ---
 
-<details>
-<summary><b>🇬🇧 English Translation (Click to expand)</b></summary>
+## 2. Feedback & Reporting Accessibility Barriers
 
-# Accessibility Statement
+We welcome feedback on the accessibility of Sharphy. If you encounter accessibility barriers, low-contrast text, or assistive technology incompatibilities:
 
-The **Sharphy** developer community is committed to ensuring that our Command Line Interface (CLI), Model Context Protocol (MCP) server, documentation, and web portal are accessible to everyone, including users with visual, auditory, motor, or cognitive disabilities.
-
-## 1. Accessibility Commitment
-
-We strive to conform to international standards, including **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** across our documentation portal, as well as screen-reader-friendly CLI design principles.
-
-### CLI & MCP Server Standards
-- **Screen Reader Compatibility:** CLI output provides structured, plain-text diagnostic messages easily read by screen readers (NVDA, JAWS, VoiceOver, Orca).
-- **Color Independence:** CLI messages never rely solely on color to convey meaning; text-based prefixes and explicit status badges are always provided.
-- **Stdio Stream Separation:** Clear isolation between `stdout` (JSON-RPC) and `stderr` (diagnostics/errors) prevents unexpected noise for assistive tools.
-
-### Web Documentation Standards
-- Semantic HTML5 structure (`<nav>`, `<main>`, `<article>`, `<header>`, `<footer>`).
-- Full keyboard navigation and visible focus rings.
-- Color contrast compliant with WCAG 2.1 AA ratios (minimum 4.5:1 for normal text).
-- Informative alternative text (`alt`) for diagrams, architectural schemas, and preview images.
-
-## 2. Reporting Accessibility Barriers
-
-If you encounter accessibility issues or barriers while using Sharphy or its documentation:
-- **Open an Issue:** Submit an issue on [GitHub Issues](https://github.com/baharmaulidiii/sharphy/issues/new/choose) with the `accessibility` label.
-- **Helpful Details:** Mention your assistive technology (e.g., NVDA, VoiceOver, zoom software), the command or page URL, and a description of the barrier.
-
-We review accessibility feedback promptly and prioritize fixes accordingly.
-
-</details>
+- **GitHub Issues:** Open an issue titled `[A11Y]: <description>` on [GitHub Issues](https://github.com/baharmaulidiii/sharphy/issues).
+- Please specify the assistive tool (e.g., NVDA, JAWS, VoiceOver), terminal emulator, or browser used.

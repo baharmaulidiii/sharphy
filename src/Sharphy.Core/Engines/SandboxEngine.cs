@@ -3,7 +3,7 @@ using System.Runtime.Loader;
 namespace Sharphy.Core.Engines;
 
 /// <summary>
-/// Engine eksekusi sandboxed dan ekstraksi metadata dinamis menggunakan collectible AssemblyLoadContext.
+/// Provides sandboxed dynamic metadata reflection and token extraction inside collectible AssemblyLoadContexts.
 /// </summary>
 public static class SandboxEngine
 {
@@ -41,7 +41,7 @@ public static class SandboxEngine
         }
         finally
         {
-            // Pastikan ALC di-unload secara kolektibel untuk mencegah penguncian biner & kebocoran memori
+            // Deterministically unload ALC to prevent file locking and host memory pollution
             alc.Unload();
         }
 

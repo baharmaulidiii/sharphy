@@ -17,6 +17,7 @@ This document defines testing standards and verification requirements that AI Ag
 ## 2. Verification Checklist for Agents
 
 Before concluding an operational cycle and handing over changes for the human owner to review/commit, the Agent **must** verify:
-- [ ] `dotnet build Sharphy.sln` compiles cleanly with 0 errors and 0 new warnings across supported frameworks.
+- [ ] `dotnet build Sharphy.sln` compiles cleanly with 0 errors and 0 new warnings across supported frameworks (.NET 8.0, 9.0, 10.0).
 - [ ] `dotnet test Sharphy.sln` passes all test cases.
-- [ ] Documentation files ([README.md](README.md) and [README.en.md](README.en.md)) reflect updated tool listings when adding or modifying MCP tools.
+- [ ] Documentation files ([README.md](../README.md)) reflect updated tool listings when adding or modifying MCP tools.
+- [ ] The `Laporan Evaluasi Rilis & Deployment` is presented in Bahasa Indonesia to the Repository Owner.

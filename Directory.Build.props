@@ -8,15 +8,16 @@
     
     <!-- Multi-targeting -->
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     
     <!-- Package Metadata & Branding -->
     <Authors>Bahar Maulidi</Authors>
-    <Company>Sharphy Contributors</Company>
+    <Company>Bahar Maulidi</Company>
+    <Copyright>Copyright (c) 2026 Bahar Maulidi. All rights reserved.</Copyright>
     <Product>Sharphy</Product>
     <Description>CLR Intelligence &amp; Runtime Forensic Bridge for AI Coding Agents</Description>
     <RepositoryUrl>https://github.com/baharmaulidiii/sharphy</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     
     <!-- NuGet Package Icon & Readme -->
     <PackageIcon>sharphy.png</PackageIcon>

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
         alt: 'Sharphy Social Preview Banner',
       },
     ],
-    locale: 'id_ID',
+    locale: 'en_US',
     type: 'website',
   },
 };
@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id">
+    <html lang="en">
       <body className="min-h-screen bg-[#0d1117] text-[#c9d1d9] antialiased selection:bg-blue-600 selection:text-white">
         {children}
       </body>

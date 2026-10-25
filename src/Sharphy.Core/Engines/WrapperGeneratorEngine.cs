@@ -4,7 +4,7 @@ using Mono.Cecil;
 namespace Sharphy.Core.Engines;
 
 /// <summary>
-/// Generator kode C# pembungkus anggota private kelas menggunakan atribut [UnsafeAccessor] (.NET 8+).
+/// Provides synthesis of zero-overhead private member wrappers leveraging .NET 8+ [UnsafeAccessor] attributes.
 /// </summary>
 public static class WrapperGeneratorEngine
 {

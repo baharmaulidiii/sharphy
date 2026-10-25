@@ -4,7 +4,7 @@ using Mono.Cecil.Cil;
 namespace Sharphy.Core.Engines;
 
 /// <summary>
-/// Engine mutasi dan injeksi instruksi CIL berbasis Mono.Cecil.
+/// Provides surgical CIL instruction bytecode mutation and binary re-emitting powered by Mono.Cecil.
 /// </summary>
 public static class IlPatcherEngine
 {
@@ -47,7 +47,7 @@ public static class IlPatcherEngine
 
         if (targetInstr == null)
         {
-            // Jika offset tepat tidak ditemukan, fallback ke instruksi pertama
+            // Fallback to first instruction if exact offset is not matched
             targetInstr = method.Body.Instructions.FirstOrDefault();
         }
 
@@ -56,7 +56,7 @@ public static class IlPatcherEngine
             throw new InvalidOperationException("No IL instructions found in method body.");
         }
 
-        // Cari OpCode berdasarkan nama (misal Nop, Ret, Ldc_I4_1)
+        // Resolve OpCode by name (e.g., Nop, Ret, Ldc_I4_1)
         var opcodeField = typeof(OpCodes).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
             .FirstOrDefault(f => f.Name.Equals(newOpCodeName, StringComparison.OrdinalIgnoreCase));
 

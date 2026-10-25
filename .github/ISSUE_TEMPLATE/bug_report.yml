@@ -1,77 +1,74 @@
-name: 🐛 Laporan Bug (Bug Report)
-description: Laporkan kendala teknis, kegagalan diagnosa ClrMD, atau galat runtime pada Sharphy.
+name: 🐛 Bug Report
+description: Report technical issues, ClrMD diagnostic failures, or runtime exceptions in Sharphy.
 title: "[BUG]: "
 labels: ["bug", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Terima kasih telah meluangkan waktu untuk melaporkan bug! 
-        *Pastikan isu ini belum pernah dilaporkan sebelumnya pada daftar Issues.*
-        *Jika ini adalah kerentanan keamanan kritis, silakan gunakan [GitHub Security Advisories](https://github.com/baharmaulidiii/sharphy/security/advisories/new).*
+        Thank you for reporting an issue!
+        *Please check that this issue has not already been reported in the Issues list.*
+        *If this involves a critical security vulnerability, please submit via [GitHub Security Advisories](https://github.com/baharmaulidiii/sharphy/security/advisories/new).*
   - type: textarea
     id: description
     attributes:
-      label: Deskripsi Masalah (Problem Description)
-      description: Penjelasan ringkas dan jelas mengenai bug atau anomali yang terjadi.
-      placeholder: Contoh: Saat memanggil tool sharphy_inspect_heap pada memory dump 64-bit, terjadi ObjectDisposedException...
+      label: Problem Description
+      description: A clear and concise description of the bug or unexpected behavior.
+      placeholder: E.g., When invoking sharphy_inspect_heap on a 64-bit memory dump, an ObjectDisposedException is thrown...
     validations:
       required: true
   - type: textarea
     id: reproduction
     attributes:
-      label: Langkah-Langkah Reproduksi (Steps to Reproduce)
-      description: Langkah demi langkah untuk mereproduksi masalah ini.
+      label: Steps to Reproduce
+      description: Step-by-step reproduction instructions.
       placeholder: |
-        1. Jalankan `sharphy mcp start`
-        2. Kirim payload JSON-RPC `tools/call` dengan nama `sharphy_decompile_method`
-        3. Berikan path biner '...'
-        4. Terjadi galat...
+        1. Run `sharphy mcp start`
+        2. Send JSON-RPC `tools/call` for `sharphy_decompile_method`
+        3. Provide assembly path '...'
+        4. Error occurs...
     validations:
       required: true
   - type: textarea
     id: expected-behavior
     attributes:
-      label: Perilaku yang Diharapkan (Expected Behavior)
-      description: Apa yang seharusnya terjadi?
-      placeholder: Tool mengembalikan dekompilasi C# yang valid tanpa eksepsi runtime.
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: The tool should return decompiled C# source without runtime exceptions.
     validations:
       required: true
   - type: textarea
     id: logs-and-output
     attributes:
-      label: Log & Jejak Kesalahan (Logs / Stderr Output / Callstack)
-      description: Tempelkan pesan kesalahan dari stderr atau stack trace lengkap.
+      label: Logs / Stderr Output / Stack Trace
+      description: Paste error output or stack traces from stderr.
       render: shell
   - type: dropdown
     id: target-framework
     attributes:
-      label: Target Framework .NET
-      description: Versi .NET runtime yang digunakan saat isu terjadi.
+      label: .NET Target Framework
+      description: .NET runtime version used when the issue occurred.
       options:
         - .NET 8.0 (LTS)
         - .NET 9.0 (STS)
-        - .NET 10.0 (Preview / Latest)
-        - Lainnya / Multiple
+        - .NET 10.0 (Latest)
+        - Other / Custom Runtime
     validations:
       required: true
   - type: dropdown
-    id: environment
+    id: operating-system
     attributes:
-      label: Sistem Operasi & Lingkungan (OS)
-      description: Sistem Operasi yang digunakan.
+      label: Operating System
       options:
-        - Windows (x64 / arm64)
-        - Linux (x64 / arm64)
-        - macOS (x64 / Apple Silicon)
+        - Windows (x64)
+        - Linux (x64)
+        - macOS (Apple Silicon / x64)
     validations:
       required: true
   - type: checkboxes
-    id: checklists
+    id: checklist
     attributes:
-      label: Konfirmasi & Validasi
+      label: Verification
       options:
-        - label: Saya telah memastikan bahwa tidak ada informasi rahasia atau kredensial privat dalam log/dump yang dilampirkan.
-          required: true
-        - label: Saya telah memeriksa bahwa isu ini bukan duplikasi dari issue yang sudah ada.
+        - label: I have verified this behavior using the latest stable release of Sharphy.
           required: true

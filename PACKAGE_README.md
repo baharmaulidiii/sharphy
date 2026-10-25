@@ -76,4 +76,4 @@ Once connected, your AI assistant will automatically discover Sharphy's catalog 
 
 - **Repository**: [https://github.com/baharmaulidiii/sharphy](https://github.com/baharmaulidiii/sharphy)
 - **Documentation**: [https://baharmaulidiii.github.io/sharphy](https://baharmaulidiii.github.io/sharphy)
-- **License**: MIT
+- **License**: Apache-2.0 (Copyright 2026 Bahar Maulidi. All rights reserved.)

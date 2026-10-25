@@ -3,7 +3,7 @@ using Mono.Cecil;
 namespace Sharphy.Core.Engines;
 
 /// <summary>
-/// Engine analisis metadata ECMA-335 berbasis Mono.Cecil.
+/// Provides ECMA-335 metadata hierarchy and type reflection powered by Mono.Cecil.
 /// </summary>
 public static class MetadataEngine
 {

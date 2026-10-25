@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 🛡️ Pelaporan Kerentanan Keamanan (Security Advisory)
+  - name: 🔒 Report Security Vulnerability
     url: https://github.com/baharmaulidiii/sharphy/security/advisories/new
-    about: Laporkan kerentanan keamanan dan celah sandbox secara privat dan terkoordinasi.
-  - name: 💬 Diskusi Komunitas (Discussions)
+    about: Privately report a security vulnerability or sandbox issue.
+  - name: 💬 Community Discussions & Questions
     url: https://github.com/baharmaulidiii/sharphy/discussions
-    about: Tanyakan pertanyaan seputar penggunaan, berbagi skenario investigasi runtime, atau diskusi umum.
+    about: Ask questions or discuss architecture with the maintainer and community.

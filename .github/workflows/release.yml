@@ -153,7 +153,7 @@ jobs:
           }
 
           if ([string]::IsNullOrWhiteSpace($apiKey)) {
-            Write-Error "Autentikasi NuGet tidak tersedia (OIDC token kosong dan secret NUGET_API_KEY tidak diset)."
+            Write-Error "NuGet authentication is unavailable (OIDC token is empty and NUGET_API_KEY secret is not set)."
             exit 1
           }
 
