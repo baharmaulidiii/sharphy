@@ -8,7 +8,7 @@
 **Pemanfaatan Semantik Metadata ECMA-335, Analisis Crash Dump Langsung Lintas Sistem Operasi, dan Rekonstruksi Bytecode CIL Secara Rigid.**
 
 <p align="center">
-  <a href="https://www.nuget.org/packages/Sharphy.Cli"><img src="https://img.shields.io/badge/nuget-v1.0.2-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
+  <a href="https://www.nuget.org/packages/Sharphy.Cli"><img src="https://img.shields.io/badge/nuget-v1.0.3-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
   <a href="#"><img src="https://img.shields.io/badge/MCP-10%20tools%20catalog-8A2BE2" alt="MCP Catalog" /></a>
   <a href="https://dotnet.microsoft.com/download"><img src="https://img.shields.io/badge/.NET-8%20|%209%20|%2010-512BD4?logo=dotnet&logoColor=white" alt=".NET 8/9/10" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License" /></a>

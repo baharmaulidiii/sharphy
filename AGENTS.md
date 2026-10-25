@@ -126,9 +126,9 @@ Every AI Coding Agent completing work in this repository is strictly required to
   git commit -m "..."
   git push origin main
 
-  # 2. Tag and publish packages (if required)
-  git tag -a v0.1.1-preview -m "Release v0.1.1-preview: ..."
-  git push origin v0.1.1-preview
+  # 2. Tag and publish packages (Automated via GitHub Actions)
+  # Go to GitHub Actions -> Release Orchestrator -> Run workflow (Input version, e.g., 1.0.3)
+  # GitHub Actions automatically packs, publishes to NuGet, and generates the git tag & release.
 
   # 3. Deploy documentation portal (if required)
   # Trigger GitHub Pages workflow via GitHub Web UI

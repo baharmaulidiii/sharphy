@@ -8,6 +8,14 @@ Format dokumen ini mengacu pada standar **[Keep a Changelog](https://keepachange
 
 ## [Belum Dirilis] - Unreleased
 
+## [1.0.3] - 2026-10-25
+
+### Ditambahkan (Added)
+- **Engine Komparasi Biner Nyata (`BinaryDiffEngine`):** Analisis perbedaan metadata ECMA-335 riil antara dua berkas rakitan (.NET assembly) untuk mendeteksi penambahan/penghapusan tipe, breaking changes pada public/protected API, serta variasi ukuran instruksi CIL bytecode.
+- **Engine Deobfuskasi & Analisis Alur Kendali (`ObfuscationAnalyzerEngine`):** Deteksi pola obfuskasi mendalam seperti Control Flow Graph (CFG) switch flattening, pembersihan instruksi sampah (excessive NOPs), dan pelacakan proxy delegate dinamis (`calli` / `MethodBase.Invoke`).
+- **Integrasi Penuh Tool Catalog MCP:** Menghubungkan tool `sharphy_diff_assemblies` dan `sharphy_clean_obfuscation` ke engine riil, mengeliminasi seluruh keluaran berbasis teks tiruan (stub).
+- **Pengujian Nyata Multi-Target:** Penambahan verifikasi otomatis pada `RealEngineTests` untuk `BinaryDiffEngine` dan `ObfuscationAnalyzerEngine`.
+
 ## [1.0.2] - 2026-10-25
 
 ### Ditambahkan (Added)
