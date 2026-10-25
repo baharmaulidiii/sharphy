@@ -127,4 +127,4 @@ All human contributors must append a sign-off line to commit messages:
 ```bash
 git commit -s -m "feat: add ECMA-335 token filter"
 ```
-This produces an explicit `Signed-off-by: Full Name <email@example.com>` signature. All accepted contributions are permanently licensed under the **Apache License 2.0** administered by **Bahar Maulidi**.
+This produces an explicit `Signed-off-by: Full Name <email@example.com>` signature. All accepted contributions are permanently licensed under the **Apache License 2.0** administered by **Moh. Baharudin Yuda Maulidi**.

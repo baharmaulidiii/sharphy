@@ -9,7 +9,7 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 ## [1.0.4] - 2026-10-25
 
 ### Added
-- **5-Pillar Legal Architecture Finalization:** Migrated primary open-source licensing to **Apache License, Version 2.0** providing express bilateral patent grants and patent retaliation protections for sole creator and copyright owner **Bahar Maulidi**.
+- **5-Pillar Legal Architecture Finalization:** Migrated primary open-source licensing to **Apache License, Version 2.0** providing express bilateral patent grants and patent retaliation protections for sole creator and copyright owner **Moh. Baharudin Yuda Maulidi**.
 - **Official Trademark Policy (`TRADEMARK.md`):** Formalized guidelines protecting the "Sharphy" brand name, package namespaces, and visual vector logo (`assets/sharphy.svg`) against unauthorized derivative distributions and malicious impersonations.
 - **Hardened Legal Disclaimer & AI Safety Shield (`DISCLAIMER.md`):** Established complete liability immunity for dual-use technology, explicit waivers for autonomous AI agent operations via Model Context Protocol (MCP), and user indemnification obligations.
 - **Developer Certificate of Origin (`CONTRIBUTING.md`):** Integrated DCO 1.1 requirements with mandatory commit sign-offs (`git commit -s`) to guarantee provenance and license compliance of external contributions.

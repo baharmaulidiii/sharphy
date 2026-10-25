@@ -15,7 +15,7 @@ Every Agent operating in this repository acts as an **Autonomous CLR Engineer**:
 3. **Safety & Sandboxing:** Binary unpacking and dynamic assembly inspection must execute within an isolated, collectible `AssemblyLoadContext` (`isCollectible: true`) to avoid polluting the host runtime process or locking files on disk.
 4. **Repository Language vs. Interaction Language Boundary:**
    - **Repository Artifacts (100% Pure English):** All codebase files, C# XML documentation, inline code comments, git commit messages, GitHub templates, release notes, and documentation markdown files across the entire repository MUST be written exclusively in standard, idiomatic English (`en-US`). No other language or bilingual collapsible tags are permitted inside repository artifacts.
-   - **Human-to-Agent Interaction (Bahasa Indonesia):** When communicating with the Repository Owner (Bahar Maulidi), the Agent MUST converse, provide reasoning updates, and present the final `Laporan Evaluasi Rilis & Deployment` in **Bahasa Indonesia**.
+   - **Human-to-Agent Interaction (Bahasa Indonesia):** When communicating with the Repository Owner (Moh. Baharudin Yuda Maulidi), the Agent MUST converse, provide reasoning updates, and present the final `Laporan Evaluasi Rilis & Deployment` in **Bahasa Indonesia**.
 5. **Absolute Git Commit & Push Prohibition:** Agents are strictly forbidden from executing `git commit` or `git push` under any circumstances. Only the repository owner/human user is authorized to perform git commit and push operations. Agents must leave all modifications uncommitted in the local working directory.
 
 ---

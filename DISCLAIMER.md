@@ -36,13 +36,13 @@ Sharphy implements the open **Model Context Protocol (MCP)** specification, enab
 ## 4. Absolute Disclaimer of Warranty & Limitation of Liability
 
 - **"AS-IS" Basis:** This software is provided free of charge on an "AS-IS" basis, without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement, as stipulated in the Apache License 2.0.
-- **Waiver of Damages:** Under no circumstances and under no legal theory (whether in contract, tort, strict liability, or otherwise) shall **Bahar Maulidi** be liable for any direct, indirect, special, incidental, punitive, or consequential damages (including loss of business, data corruption, lost profits, or operational disruption) arising from the use or inability to use this software.
+- **Waiver of Damages:** Under no circumstances and under no legal theory (whether in contract, tort, strict liability, or otherwise) shall **Moh. Baharudin Yuda Maulidi** be liable for any direct, indirect, special, incidental, punitive, or consequential damages (including loss of business, data corruption, lost profits, or operational disruption) arising from the use or inability to use this software.
 
 ---
 
 ## 5. Indemnification
 
-By downloading, installing, compiling, or executing Sharphy, you expressly agree to defend, indemnify, and hold harmless **Bahar Maulidi** against any claims, liabilities, lawsuits, judgments, or legal expenses (including reasonable attorney fees) resulting from:
+By downloading, installing, compiling, or executing Sharphy, you expressly agree to defend, indemnify, and hold harmless **Moh. Baharudin Yuda Maulidi** against any claims, liabilities, lawsuits, judgments, or legal expenses (including reasonable attorney fees) resulting from:
 1. Your violation of any applicable law or third-party intellectual property rights;
 2. Misuse of Sharphy for unauthorized reverse engineering or cracking;
 3. Any data corruption or system compromise induced by autonomous AI agents operated under your environment.

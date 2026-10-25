@@ -11,9 +11,9 @@
     <Version>1.0.4</Version>
     
     <!-- Package Metadata & Branding -->
-    <Authors>Bahar Maulidi</Authors>
-    <Company>Bahar Maulidi</Company>
-    <Copyright>Copyright (c) 2026 Bahar Maulidi. All rights reserved.</Copyright>
+    <Authors>Moh. Baharudin Yuda Maulidi</Authors>
+    <Company>Moh. Baharudin Yuda Maulidi</Company>
+    <Copyright>Copyright (c) 2026 Moh. Baharudin Yuda Maulidi. All rights reserved.</Copyright>
     <Product>Sharphy</Product>
     <Description>CLR Intelligence &amp; Runtime Forensic Bridge for AI Coding Agents</Description>
     <RepositoryUrl>https://github.com/baharmaulidiii/sharphy</RepositoryUrl>

@@ -197,4 +197,4 @@ Sharphy is engineered with native multi-targeting without emulation layers:
 
 ## License
 
-Sharphy is distributed under the **[Apache License, Version 2.0](LICENSE)**. Copyright (c) 2026 Bahar Maulidi. All rights reserved.
+Sharphy is distributed under the **[Apache License, Version 2.0](LICENSE)**. Copyright (c) 2026 Moh. Baharudin Yuda Maulidi. All rights reserved.

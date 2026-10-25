@@ -250,7 +250,7 @@ export default function Home() {
       {/* Minimalist Footer */}
       <footer className="mt-auto border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-6 py-8 text-xs text-neutral-500 dark:text-neutral-400 transition-colors">
         <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 Bahar Maulidi. Apache License 2.0.</p>
+          <p>© 2026 Moh. Baharudin Yuda Maulidi. Apache License 2.0.</p>
           <div className="flex items-center gap-5">
             <a href="https://github.com/baharmaulidiii/sharphy" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">GitHub</a>
             <a href="https://github.com/baharmaulidiii/sharphy/blob/main/CHANGELOG.md" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">Changelog</a>

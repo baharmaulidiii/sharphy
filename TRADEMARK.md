@@ -6,7 +6,7 @@ This document establishes the ownership, permitted use boundaries, and legal pro
 
 ## 1. Ownership & Legal Status
 
-The name **Sharphy**, the official Sharphy logo (`assets/sharphy.svg` and `assets/sharphy.png`), and related graphical branding are the exclusive intellectual property of **Bahar Maulidi**.
+The name **Sharphy**, the official Sharphy logo (`assets/sharphy.svg` and `assets/sharphy.png`), and related graphical branding are the exclusive intellectual property of **Moh. Baharudin Yuda Maulidi**.
 
 Although the Sharphy source code is released under the **Apache License, Version 2.0**, that license **explicitly does not grant trademark rights** (pursuant to Section 6 of Apache License 2.0: *"This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor..."*).
 
@@ -27,7 +27,7 @@ You are **PERMITTED** to use the "Sharphy" name without prior written consent st
 
 ## 3. Prohibited Uses
 
-To prevent community confusion, safeguard project integrity, and protect security researchers from compromised imitations, the following actions are **STRICTLY PROHIBITED** without prior express written consent from Bahar Maulidi:
+To prevent community confusion, safeguard project integrity, and protect security researchers from compromised imitations, the following actions are **STRICTLY PROHIBITED** without prior express written consent from Moh. Baharudin Yuda Maulidi:
 
 1. **Naming Forks or Derivative Projects:**
    If you fork or redistribute modified versions of this codebase, you **MAY NOT** name your derivative project in a manner that implies official endorsement, sponsorship, or affiliation (e.g., naming your fork *"Sharphy Official"*, *"Sharphy Pro"*, or *"Sharphy Enterprise"* is prohibited).
