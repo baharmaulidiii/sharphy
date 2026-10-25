@@ -8,6 +8,18 @@ Format dokumen ini mengacu pada standar **[Keep a Changelog](https://keepachange
 
 ## [Belum Dirilis] - Unreleased
 
+## [1.0.1] - 2026-10-25
+
+### Ditambahkan (Added)
+- **Branding & Identitas Visual Paket NuGet:** Integrasi logo resmi Sharphy (`assets/sharphy.png`) ke properti `<PackageIcon>` di `Directory.Build.props` sehingga seluruh paket (`Sharphy.Cli`, `Sharphy.Core`, `Sharphy.Server`) menampilkan logo Sharphy di NuGet.org.
+- **Penyertaan Dokumentasi Paket Mandiri:** Integrasi berkas `README.md` ke dalam properti `<PackageReadmeFile>` di semua paket nupkg untuk menghapus peringatan "package is missing a readme" dan memperkaya dokumentasi publik.
+
+### Diperbaiki (Fixed)
+- **Otomatisasi Publikasi NuGet.org (Trusted Publishing):** Migrasi autentikasi rilis GitHub Actions dari API key statis ke OpenID Connect (OIDC) melalui action resmi `NuGet/login@v1`.
+- **Pengendalian Manual Penuh Pipeline Rilis:** Pemurnian alur `Release Orchestrator` (`workflow_dispatch`) agar rilis ke NuGet.org sepenuhnya diinisiasi secara terkontrol dan presisi tanpa step yang terlewati (*skipped*).
+
+---
+
 ## [1.0.0] - 2026-10-24
 
 ### Ditambahkan (Added)

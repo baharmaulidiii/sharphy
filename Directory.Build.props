@@ -9,12 +9,21 @@
     <!-- Multi-targeting -->
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     
-    <!-- Package Metadata -->
+    <!-- Package Metadata & Branding -->
     <Authors>Bahar Maulidi</Authors>
     <Company>Sharphy Contributors</Company>
     <Product>Sharphy</Product>
     <Description>CLR Intelligence &amp; Runtime Forensic Bridge for AI Coding Agents</Description>
     <RepositoryUrl>https://github.com/baharmaulidiii/sharphy</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    
+    <!-- NuGet Package Icon & Readme -->
+    <PackageIcon>sharphy.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)assets\sharphy.png" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)assets\sharphy.png')" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)README.md')" />
+  </ItemGroup>
 </Project>
