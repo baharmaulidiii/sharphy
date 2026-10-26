@@ -1,6 +1,9 @@
 {
   "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "name": "sharphy",
+  "description": "Native Model Context Protocol (MCP) server turning AI coding agents into .NET runtime diagnosticians, memory forensic analysts, and CIL binary architects.",
   "maintainers": [
     "baharmaulidiii"
-  ]
+  ],
+  "icon": "https://raw.githubusercontent.com/baharmaulidiii/sharphy/main/assets/sharphy.png"
 }
