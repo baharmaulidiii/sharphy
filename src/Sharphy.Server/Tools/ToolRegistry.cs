@@ -41,7 +41,7 @@ public sealed class ToolRegistry
         // 1. sharphy_analyze_dump
         Register(
             name: "sharphy_analyze_dump",
-            description: "Performs automated Root Cause Analysis (RCA) on Windows / Linux crash dump (.dmp) files.",
+            description: "Performs automated Root Cause Analysis (RCA) on Windows (.dmp) and Linux (ELF core dump) crash dumps. Use this tool when diagnosing fatal process crashes, unhandled exceptions, or crashing thread call stacks. Do NOT use for thread deadlock cycles (use 'sharphy_deadlock_detector') or heap memory leaks (use 'sharphy_inspect_heap'). This is a non-destructive, read-only diagnostic inspection.",
             schema: new
             {
                 type = "object",
@@ -64,7 +64,7 @@ public sealed class ToolRegistry
         // 2. sharphy_inspect_heap
         Register(
             name: "sharphy_inspect_heap",
-            description: "Inspects managed heap objects, detects memory leaks, duplicate strings, and LOH fragmentation.",
+            description: "Inspects managed heap allocations, generation sizes (Gen 0/1/2, LOH, POH), fragmentation, and object leak retainers in a memory dump. Use this tool when diagnosing high memory usage, memory leaks, or OutOfMemoryException. Do NOT use for general crash RCA (use 'sharphy_analyze_dump') or thread lock cycles (use 'sharphy_deadlock_detector'). Non-destructive, read-only inspection.",
             schema: new
             {
                 type = "object",
@@ -94,7 +94,7 @@ public sealed class ToolRegistry
         // 3. sharphy_deadlock_detector
         Register(
             name: "sharphy_deadlock_detector",
-            description: "Detects inter-thread deadlocks and sync-block lock contention across threads in a crash dump.",
+            description: "Detects thread synchronization deadlocks and lock contention by traversing CLR SyncBlocks and building a Wait-For Graph (WFG). Use this tool when diagnosing unresponsive or frozen .NET applications suspected of thread lock cycles. Do NOT use for unhandled exception crashes (use 'sharphy_analyze_dump') or heap analysis (use 'sharphy_inspect_heap'). Non-destructive, read-only inspection.",
             schema: new
             {
                 type = "object",
@@ -117,7 +117,7 @@ public sealed class ToolRegistry
         // 4. sharphy_decompile_method
         Register(
             name: "sharphy_decompile_method",
-            description: "Decompiles a specific CIL method from an assembly into clean, modern C# source code.",
+            description: "Decompiles compiled CIL bytecode into idiomatic C# source code using the embedded ILSpy engine. Use this tool when inspecting method logic, lambda expressions, or async state machines of a compiled assembly. Do NOT use for metadata enumeration (use 'sharphy_inspect_metadata') or binary diffing (use 'sharphy_diff_assemblies'). Read-only inspection.",
             schema: new
             {
                 type = "object",
@@ -153,7 +153,7 @@ public sealed class ToolRegistry
         // 5. sharphy_diff_assemblies
         Register(
             name: "sharphy_diff_assemblies",
-            description: "Compares two binary assembly versions to identify breaking API changes and internal logic modifications.",
+            description: "Compares two versions of a compiled .NET assembly at the ECMA-335 metadata level to identify added/removed types, API breaking changes, and CIL instruction size shifts. Use this tool when validating library updates, regression testing, or detecting API modifications. Do NOT use for decompiling full method bodies (use 'sharphy_decompile_method'). Read-only comparison.",
             schema: new
             {
                 type = "object",
@@ -186,7 +186,7 @@ public sealed class ToolRegistry
         // 6. sharphy_inspect_metadata
         Register(
             name: "sharphy_inspect_metadata",
-            description: "Dumps ECMA-335 type hierarchies, generic arguments, P/Invoke signatures, and embedded resources.",
+            description: "Decodes ECMA-335 metadata tables including TypeDef, MethodDef, FieldDef, custom attributes, P/Invoke imports, and embedded resources. Use this tool when discovering types and member signatures of an assembly without decompiling method bodies. Do NOT use for binary comparisons (use 'sharphy_diff_assemblies'). Read-only inspection.",
             schema: new
             {
                 type = "object",
@@ -217,7 +217,7 @@ public sealed class ToolRegistry
         // 7. sharphy_clean_obfuscation
         Register(
             name: "sharphy_clean_obfuscation",
-            description: "Analyzes and demangles common obfuscation patterns (CFG flattening, proxy delegates, string decrypters).",
+            description: "Demangles control flow flattening (CFG demangling), trims dead code and excessive NOP sleds, and analyzes dynamic proxy delegates. Use this tool when reverse engineering obfuscated assemblies to produce a cleaner assembly for analysis. Do NOT use for direct opcode modification (use 'sharphy_patch_il'). Mutates by creating a cleaned assembly at outputPath.",
             schema: new
             {
                 type = "object",
@@ -250,7 +250,7 @@ public sealed class ToolRegistry
         // 8. sharphy_extract_tokens
         Register(
             name: "sharphy_extract_tokens",
-            description: "Extracts decryption tokens safely inside an isolated AssemblyLoadContext sandbox.",
+            description: "Safely extracts runtime tokens and types by loading target assemblies inside an isolated collectible AssemblyLoadContext (isCollectible: true). Use this tool when dynamically inspecting types without locking files on disk or polluting the host runtime. Do NOT use for static disassembly without runtime loading (use 'sharphy_inspect_metadata'). Sandboxed read-only execution.",
             schema: new
             {
                 type = "object",
@@ -281,7 +281,7 @@ public sealed class ToolRegistry
         // 9. sharphy_patch_il
         Register(
             name: "sharphy_patch_il",
-            description: "Replaces or injects CIL instructions (e.g. nop-ing validation routines) and emits a patched binary.",
+            description: "Surgically modifies CIL bytecode instructions by replacing target opcodes, adjusting branch targets, and emitting a patched binary. Use this tool when bypassing validation logic, inserting NOP sleds, or altering execution flow. Do NOT use for general obfuscation stripping (use 'sharphy_clean_obfuscation'). Mutates by writing a patched assembly to outputPath.",
             schema: new
             {
                 type = "object",
@@ -324,7 +324,7 @@ public sealed class ToolRegistry
         // 10. sharphy_generate_wrapper
         Register(
             name: "sharphy_generate_wrapper",
-            description: "Generates strongly-typed C# wrapper using [UnsafeAccessor] or Roslyn targeting private members.",
+            description: "Generates strongly-typed C# wrapper source code utilizing .NET 8+ [UnsafeAccessor] attributes to access private members and fields with zero reflection overhead. Use this tool when testing or accessing inaccessible internal/private APIs. Do NOT use for bytecode modification (use 'sharphy_patch_il'). Mutates disk by writing a new C# (.cs) source file to outputPath.",
             schema: new
             {
                 type = "object",

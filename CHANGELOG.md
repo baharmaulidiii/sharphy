@@ -8,6 +8,9 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+### Changed
+- **Tool Definition Quality Optimization (Glama TDQS Tier A):** Comprehensively rewritten descriptions across all 10 MCP tools in `ToolRegistry.cs` and `.agents/mcp-schema.json`, providing explicit purpose scope, behavioral side effects, actionable usage guidelines, and sibling tool exclusions to maximize AI agent selection accuracy.
+
 ### Added
 - **Glama.ai Registry Metadata (`glama.json`):** Added official maintainer metadata schema declaring repository maintainer provenance for Glama MCP Registry verification.
 - **Glama.ai MCP Registry Integration:** Added official Glama MCP server listing badge and metadata for discovery in the open-source MCP ecosystem.
