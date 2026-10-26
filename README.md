@@ -28,10 +28,6 @@
   <a href="CODE_OF_CONDUCT.md"><b>Code of Conduct</b></a>
 </p>
 
-```bash
-dotnet tool install -g Sharphy.Cli
-```
-
 </div>
 
 > [!CAUTION]
