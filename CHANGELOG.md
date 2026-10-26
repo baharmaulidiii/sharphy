@@ -9,6 +9,7 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 ## [Unreleased]
 
 ### Added
+- **Glama.ai Registry Metadata (`glama.json`):** Added official maintainer metadata schema declaring repository maintainer provenance for Glama MCP Registry verification.
 - **Glama.ai MCP Registry Integration:** Added official Glama MCP server listing badge and metadata for discovery in the open-source MCP ecosystem.
 - **Containerization Support (`Dockerfile`):** Implemented multi-stage container build targeting `.NET 9.0` with a chiseled minimal runtime for containerized deployments and automated checks.
 
