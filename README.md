@@ -8,7 +8,7 @@
 **Leveraging ECMA-335 Metadata Semantics, Cross-Platform Crash Dump Telemetry, and Rigid CIL Bytecode Navigation.**
 
 <p align="center">
-  <a href="https://www.nuget.org/packages/Sharphy.Cli"><img src="https://img.shields.io/badge/nuget-v1.0.4-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
+  <a href="https://www.nuget.org/packages/Sharphy.Cli"><img src="https://img.shields.io/badge/nuget-v1.0.5-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
   <a href="https://glama.ai/mcp/servers/baharmaulidiii/sharphy"><img src="https://glama.ai/mcp/servers/baharmaulidiii/sharphy/badges/score.svg" alt="Glama MCP Server" /></a>
   <a href="#"><img src="https://img.shields.io/badge/MCP-10%20tools%20catalog-8A2BE2" alt="MCP Catalog" /></a>
   <a href="https://dotnet.microsoft.com/download"><img src="https://img.shields.io/badge/.NET-8%20|%209%20|%2010-512BD4?logo=dotnet&logoColor=white" alt=".NET 8/9/10" /></a>
