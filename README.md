@@ -105,7 +105,7 @@ Sharphy exposes ten specialized tools covering the full spectrum of .NET runtime
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                    SHARPHY 10 MCP TOOLS CATALOG                           │
+│                     SHARPHY 10 MCP TOOLS CATALOG                           │
 ├────────────────────────┬─────────────────────────┬─────────────────────────┤
 │ Memory & Forensics     │ Decompilation & Diff    │ Bytecode & Metadata     │
 ├────────────────────────┼─────────────────────────┼─────────────────────────┤
