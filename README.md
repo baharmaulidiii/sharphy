@@ -99,6 +99,47 @@ The Sharphy solution is organized into three modular projects with distinct boun
 
 ---
 
+## Operational Architecture: Zero-Footprint Production Forensics
+
+A common enterprise architectural question is whether diagnostic servers must be deployed to live production machines.
+
+> **Does Sharphy need to be installed on your production servers? NO.**
+
+Sharphy follows a **Zero-Footprint, Post-Mortem Forensic Workflow**. The analytical engines, decompilers, and AI agents run strictly in isolated development, CI/CD, or security analyst workstations:
+
+```
+┌──────────────────────────────────────────────┐
+│         PRODUCTION ENVIRONMENT               │
+│  (Zero Sharphy Footprint Required)           │
+│                                              │
+│  1. Unhandled crash / freeze occurs          │
+│  2. Collect memory dump via official CLI:    │
+│     dotnet-dump collect -p <PID>             │
+│  3. Output: crash.dmp (Windows) / core (ELF) │
+└──────────────────────┬───────────────────────┘
+                       │ Secure SCP / S3 Dump Transfer
+                       ▼
+┌──────────────────────────────────────────────┐
+│     ANALYST WORKSTATION / AI ENVIRONMENT     │
+│  (Isolated Off-Site Inspection)              │
+│                                              │
+│  • AI Coding Agent (Cursor / Claude Code)    │
+│  • Sharphy MCP Server (Sharphy.Cli / Server) │
+│  • Automated RCA:                            │
+│    - sharphy_analyze_dump                    │
+│    - sharphy_inspect_heap                    │
+│    - sharphy_deadlock_detector               │
+└──────────────────────────────────────────────┘
+```
+
+### Key Operational Benefits:
+1. **Zero Production Risk:** No third-party daemons, background agents, or persistent listeners are installed on mission-critical production servers.
+2. **Standard Microsoft Tooling:** Dump collection uses standard, officially supported Microsoft utilities (`dotnet-dump`, `createdump`, or OS crash reporting).
+3. **Regulatory & Audit Compliance:** Keeps production environments compliant with strict compliance standards (PCI-DSS, ISO/IEC 27001, SOC 2) by avoiding intrusive monitoring hooks.
+4. **Air-Gapped & Offline Ready:** Analysis can be performed in completely isolated, offline lab environments without remote runtime connectivity.
+
+---
+
 ## 10 MCP Tools Catalog
 
 Sharphy exposes ten specialized tools covering the full spectrum of .NET runtime analysis:
