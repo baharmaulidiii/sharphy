@@ -1,3 +1,4 @@
+<!-- mcp-name: io.github.baharmaulidiii/sharphy -->
 <div align="center">
 
 <img src="assets/sharphy.svg" alt="Sharphy Logo" width="120" />

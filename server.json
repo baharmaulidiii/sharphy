@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.baharmaulidiii/sharphy",
+  "title": "Sharphy",
+  "description": "Native Model Context Protocol (MCP) server empowering AI coding agents with deep .NET CLR runtime diagnostics, memory forensics, and binary reverse-engineering.",
+  "version": "1.0.5",
+  "repository": {
+    "url": "https://github.com/baharmaulidiii/sharphy",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "nuget",
+      "identifier": "Sharphy.Cli",
+      "version": "1.0.5",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
