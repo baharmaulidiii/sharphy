@@ -15,6 +15,11 @@ on:
         type: boolean
         required: true
         default: true
+      publish_mcp_registry:
+        description: 'Publish to Official MCP Registry & PulseMCP'
+        type: boolean
+        required: true
+        default: true
       prerelease:
         description: 'Mark as pre-release on GitHub Releases'
         type: boolean
@@ -276,3 +281,51 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # -------------------------------------------------------------
+  # Job 5: Publish to Official MCP Registry & PulseMCP (Conditional)
+  # -------------------------------------------------------------
+  publish_mcp_registry:
+    name: Publish to Official MCP Registry & PulseMCP
+    needs: [verify, publish_packages]
+    if: always() && needs.verify.result == 'success' && needs.publish_packages.result == 'success' && github.event.inputs.publish_mcp_registry != 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go runtime
+        uses: actions/setup-go@v5
+        with:
+          go-version: '>=1.22'
+          check-latest: false
+
+      - name: Download & Install mcp-publisher CLI
+        shell: bash
+        run: |
+          echo "Fetching latest mcp-publisher release..."
+          ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+          curl -sL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_${ARCH}.tar.gz" | tar -xz mcp-publisher
+          chmod +x ./mcp-publisher
+          ./mcp-publisher --help
+
+      - name: Authenticate to MCP Registry via GitHub OIDC
+        shell: bash
+        run: |
+          echo "Logging into Model Context Protocol Registry via GitHub OIDC..."
+          ./mcp-publisher login github-oidc
+
+      - name: Wait for NuGet package indexing propagation
+        shell: bash
+        run: |
+          echo "Waiting 60 seconds for NuGet.org to index the newly published package version..."
+          sleep 60
+
+      - name: Publish server.json to Official MCP Registry
+        shell: bash
+        run: |
+          echo "Publishing server manifest to registry.modelcontextprotocol.io..."
+          ./mcp-publisher publish server.json
