@@ -10,6 +10,18 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 ---
 
+## [1.0.6] - 2026-10-28
+
+### Added
+- **Official Model Context Protocol (MCP) Registry Verification:** Embedded verified package ownership marker (io.github.baharmaulidiii/sharphy) across both root README.md and package documentation PACKAGE_README.md to fulfill strict publisher identity validation on 
+egistry.modelcontextprotocol.io.
+- **MCP Registry Manifest (server.json):** Formally declared standardized server discovery manifest adhering to the official draft schema (2025-12-11).
+
+### Changed
+- **NuGet Prefix Reserved Synchronization:** Updated documentation and badge metadata to reflect the verified prefix reservation granted by Microsoft / NuGet.org.
+
+---
+
 ## [1.0.5] - 2026-10-26
 
 ### Changed

@@ -487,3 +487,6 @@ $RECYCLE.BIN/
 docs/.next/
 docs/out/
 docs/node_modules/
+
+# MCP Publisher CLI binary
+mcp-publisher.exe

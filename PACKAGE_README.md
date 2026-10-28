@@ -1,3 +1,4 @@
+<!-- mcp-name: io.github.baharmaulidiii/sharphy -->
 # Sharphy: CLR Intelligence & Runtime Forensic Bridge
 
 Sharphy is a native **Model Context Protocol (MCP)** server that equips AI Coding Agents (Cursor, Claude Code, Windsurf, Copilot, Antigravity) with deep .NET Common Language Runtime (CLR) diagnostics, memory forensics, and binary reverse-engineering capabilities.
