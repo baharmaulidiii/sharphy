@@ -11,6 +11,8 @@
 <p align="center">
   <a href="https://www.nuget.org/profiles/baharmaulidiii"><img src="https://img.shields.io/badge/nuget-v1.0.6-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
   <a href="https://www.nuget.org/profiles/baharmaulidiii"><img src="https://img.shields.io/badge/nuget-prefix%20reserved%20%E2%9C%94-004880?logo=nuget&logoColor=white" alt="NuGet Prefix Reserved" /></a>
+  <a href="https://registry.modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP%20Registry-verified%20server%20%E2%9C%94-008080?logo=anthropic&logoColor=white" alt="Official MCP Registry Verified" /></a>
+  <a href="https://pulsemcp.com"><img src="https://img.shields.io/badge/PulseMCP-listed-6A0DAD" alt="PulseMCP Listed" /></a>
   <a href="https://glama.ai/mcp/servers/baharmaulidiii/sharphy"><img src="https://glama.ai/mcp/servers/baharmaulidiii/sharphy/badges/score.svg" alt="Glama MCP Server" /></a>
   <a href="#"><img src="https://img.shields.io/badge/MCP-10%20tools%20catalog-8A2BE2" alt="MCP Catalog" /></a>
   <a href="https://dotnet.microsoft.com/download"><img src="https://img.shields.io/badge/8%20|%209%20|%2010-512BD4?logo=dotnet&logoColor=white" alt=".NET 8/9/10" /></a>
@@ -37,7 +39,7 @@
 > Sharphy is engineered exclusively for good-faith security research, production crash dump diagnostics, vulnerability assessments, incident response, and lawful software engineering. Users bear sole civil and criminal responsibility for complying with applicable territorial cyber laws, third-party End User License Agreements (EULAs), and intellectual property rights. The developer disclaims any liability for malicious misuse or unlawful reverse engineering. Full details: [DISCLAIMER.md](DISCLAIMER.md).
 
 > [!IMPORTANT]
-> Install and execute Sharphy only from official distribution channels: verified NuGet packages (`Sharphy.Cli` under the verified `Sharphy.*` reserved prefix) or direct compilation from the official repository at [github.com/baharmaulidiii/sharphy](https://github.com/baharmaulidiii/sharphy).
+> Install and execute Sharphy only from official distribution channels: verified NuGet packages (`Sharphy.Cli` under the verified `Sharphy.*` reserved prefix), official Model Context Protocol (MCP) Registry (`io.github.baharmaulidiii/sharphy`), or direct compilation from the official repository at [github.com/baharmaulidiii/sharphy](https://github.com/baharmaulidiii/sharphy).
 
 ---
 
