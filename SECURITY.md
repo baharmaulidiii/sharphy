@@ -11,7 +11,7 @@ Active security patch support is provided for the following release lines:
 | Release Line | Status | Security Patch Policy |
 | :--- | :--- | :--- |
 | `1.0.x` (General Availability / Stable) | :white_check_mark: Supported | Active security patches for critical vulnerabilities, runtime updates, and MCP server stability. |
-| `0.1.x` (Preview Releases) | :white_check_mark: Supported | Maintenance transition path towards stable releases. |
+| `0.1.x` (Preview Releases) | :x: Deprecated  | supported. Users must upgrade to the stable `1.0.x` release line. |
 | `< 0.1.0` | :x: Deprecated | Unsupported. Users must upgrade to the stable `1.0.x` release line. |
 
 ---
