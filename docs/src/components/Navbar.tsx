@@ -32,7 +32,7 @@ export function Navbar() {
               Sharphy
             </span>
             <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[10px] font-mono font-medium text-blue-600 dark:text-blue-400">
-              v1.0.5
+              v1.0.6
             </span>
           </div>
         </a>
