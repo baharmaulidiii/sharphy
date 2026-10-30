@@ -1,3 +1,4 @@
+using System.Text;
 using Mono.Cecil;
 
 namespace Sharphy.Core.Engines;
@@ -7,7 +8,7 @@ namespace Sharphy.Core.Engines;
 /// </summary>
 public static class BinaryDiffEngine
 {
-    public static string CompareAssemblies(string oldAssemblyPath, string newAssemblyPath)
+    public static string CompareAssemblies(string oldAssemblyPath, string newAssemblyPath, bool includeCilDiff = true)
     {
         if (!File.Exists(oldAssemblyPath))
         {
@@ -53,6 +54,7 @@ public static class BinaryDiffEngine
 
         int changedMethodsCount = 0;
         int breakingChangesCount = removedTypes.Count;
+        var diffBlocks = new List<string>();
 
         foreach (var typeName in commonTypes)
         {
@@ -92,13 +94,35 @@ public static class BinaryDiffEngine
 
                 if (oldM.HasBody && newM.HasBody)
                 {
-                    if (oldM.Body.Instructions.Count != newM.Body.Instructions.Count ||
-                        oldM.Body.CodeSize != newM.Body.CodeSize)
+                    var isModified = oldM.Body.Instructions.Count != newM.Body.Instructions.Count ||
+                                     oldM.Body.CodeSize != newM.Body.CodeSize ||
+                                     !AreInstructionsIdentical(oldM.Body.Instructions, newM.Body.Instructions);
+
+                    if (isModified)
                     {
                         changedMethodsCount++;
                         sw.WriteLine($"  [~] {typeName}::{oldM.Name} (CIL size: {oldM.Body.CodeSize}B -> {newM.Body.CodeSize}B, Ops: {oldM.Body.Instructions.Count} -> {newM.Body.Instructions.Count})");
+
+                        if (includeCilDiff)
+                        {
+                            var diffText = GenerateUnifiedCilDiff(typeName, oldM, newM);
+                            if (!string.IsNullOrWhiteSpace(diffText))
+                            {
+                                diffBlocks.Add(diffText);
+                            }
+                        }
                     }
                 }
+            }
+        }
+
+        if (includeCilDiff && diffBlocks.Count > 0)
+        {
+            sw.WriteLine();
+            sw.WriteLine("--- Unified Line-by-Line CIL Diff ---");
+            foreach (var block in diffBlocks)
+            {
+                sw.WriteLine(block);
             }
         }
 
@@ -111,6 +135,71 @@ public static class BinaryDiffEngine
             : "Status: ✅ FULLY COMPATIBLE - No public breaking API removals detected.");
 
         return sw.ToString();
+    }
+
+    private static bool AreInstructionsIdentical(IList<Mono.Cecil.Cil.Instruction> a, IList<Mono.Cecil.Cil.Instruction> b)
+    {
+        if (a.Count != b.Count) return false;
+        for (int i = 0; i < a.Count; i++)
+        {
+            if (a[i].OpCode != b[i].OpCode || FormatOperand(a[i]) != FormatOperand(b[i]))
+                return false;
+        }
+        return true;
+    }
+
+    public static string GenerateUnifiedCilDiff(string typeName, MethodDefinition oldM, MethodDefinition newM)
+    {
+        var oldLines = oldM.Body.Instructions.Select(FormatInstruction).ToList();
+        var newLines = newM.Body.Instructions.Select(FormatInstruction).ToList();
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"--- Baseline: {typeName}::{oldM.Name}");
+        sb.AppendLine($"+++ Updated : {typeName}::{newM.Name}");
+        sb.AppendLine($"@@ IL_0000,{Math.Max(oldLines.Count, newLines.Count)} @@");
+
+        int max = Math.Max(oldLines.Count, newLines.Count);
+        for (int i = 0; i < max; i++)
+        {
+            string? oldLine = i < oldLines.Count ? oldLines[i] : null;
+            string? newLine = i < newLines.Count ? newLines[i] : null;
+
+            if (oldLine == newLine)
+            {
+                sb.AppendLine($"  {oldLine}");
+            }
+            else
+            {
+                if (oldLine != null)
+                {
+                    sb.AppendLine($"- {oldLine}");
+                }
+                if (newLine != null)
+                {
+                    sb.AppendLine($"+ {newLine}");
+                }
+            }
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
+    private static string FormatInstruction(Mono.Cecil.Cil.Instruction inst)
+    {
+        var op = FormatOperand(inst);
+        return string.IsNullOrEmpty(op)
+            ? $"IL_{inst.Offset:x4}: {inst.OpCode}"
+            : $"IL_{inst.Offset:x4}: {inst.OpCode} {op}";
+    }
+
+    private static string FormatOperand(Mono.Cecil.Cil.Instruction inst)
+    {
+        if (inst.Operand == null) return string.Empty;
+        if (inst.Operand is Mono.Cecil.Cil.Instruction target)
+            return $"IL_{target.Offset:x4}";
+        if (inst.Operand is Mono.Cecil.Cil.Instruction[] targets)
+            return string.Join(", ", targets.Select(t => $"IL_{t.Offset:x4}"));
+        return inst.Operand.ToString() ?? string.Empty;
     }
 
     private static string GetMethodSignatureKey(MethodDefinition m)

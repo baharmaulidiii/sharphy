@@ -95,4 +95,57 @@ public class RealEngineTests
             if (File.Exists(tempOutput)) File.Delete(tempOutput);
         }
     }
+    [Fact]
+    public void BinaryDiffEngine_UnifiedCilDiff_OutputsAccurateInstructions()
+    {
+        Assert.True(File.Exists(SampleAssemblyPath));
+
+        var diff = BinaryDiffEngine.CompareAssemblies(SampleAssemblyPath, SampleAssemblyPath, includeCilDiff: true);
+
+        Assert.NotNull(diff);
+        Assert.Contains("Sharphy ECMA-335 Binary Diff Analysis", diff);
+        Assert.Contains("FULLY COMPATIBLE", diff);
+    }
+
+    [Fact]
+    public void ObfuscationAnalyzer_FlagsXorStringDecryptor()
+    {
+        using var assembly = Mono.Cecil.AssemblyDefinition.CreateAssembly(
+            new Mono.Cecil.AssemblyNameDefinition("TestDynDec", new Version(1, 0, 0, 0)),
+            "TestDynDec",
+            Mono.Cecil.ModuleKind.Dll);
+
+        var module = assembly.MainModule;
+        var voidType = module.TypeSystem.Void;
+        var method = new Mono.Cecil.MethodDefinition("DecryptString", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, voidType);
+        method.Body.InitLocals = true;
+
+        var il = method.Body.GetILProcessor();
+        var loopTarget = il.Create(Mono.Cecil.Cil.OpCodes.Ldelem_U1);
+        il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Nop));
+        il.Append(loopTarget);
+        il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_S, (sbyte)0x5A));
+        il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Xor));
+        il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Conv_U1));
+        il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Bne_Un, loopTarget));
+        il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Ret));
+
+        var isDecryptor = ObfuscationAnalyzerEngine.IsStringDecryptorLoop(method.Body.Instructions);
+        Assert.True(isDecryptor);
+    }
+
+    [Fact]
+    public void DumpForensicsEngine_HandlesMissingDumpGracefully()
+    {
+        var nonExistentDump = Path.Combine(Path.GetTempPath(), "NonExistent_" + Guid.NewGuid().ToString("N") + ".dmp");
+
+        var rca = DumpForensicsEngine.AnalyzeCrashDump(nonExistentDump);
+        Assert.Contains("Target crash dump file was not found", rca);
+
+        var heap = DumpForensicsEngine.InspectHeap(nonExistentDump);
+        Assert.Contains("Target dump file was not found", heap);
+
+        var deadlocks = DumpForensicsEngine.DetectDeadlocks(nonExistentDump);
+        Assert.Contains("Target dump file was not found", deadlocks);
+    }
 }

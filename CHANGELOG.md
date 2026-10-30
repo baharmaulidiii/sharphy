@@ -10,6 +10,17 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 ---
 
+## [1.1.0] - 2026-10-30
+
+### Added
+- **ThreadPool Starvation & Sync-over-Async Heuristics (`sharphy_analyze_dump`):** Automated triage detecting worker thread starvation and thread stack frames blocked in synchronous waits (`Task.Wait`, `Task.GetResult`, `Monitor.Enter`, `ManualResetEventSlim.Wait`).
+- **GC Heap Fragmentation & Pinning Telemetry (`sharphy_inspect_heap`):** Calculation of heap fragmentation percentage (`Free` objects vs. allocated space) and pinning diagnostics enumerating `ClrHandleKind.Pinned` objects across generations.
+- **Unified Line-by-Line CIL Diffing (`sharphy_diff_assemblies`):** Added `includeCilDiff` capability emitting standard unified diff markers (`---`, `+++`, `@@`, `+`, `-`) for deterministic instruction-level change detection by coding agents.
+- **Pattern-Matching String Decryptor Scanner (`sharphy_clean_obfuscation`):** Opcode pattern matching detecting dynamic string decryption loops (XOR, bitwise arithmetic, array indexing, and back-edge loop branches).
+- **Test Suite Expansion:** Added automated xUnit v3 test fixtures covering CIL unified diffing, string decryptor heuristics, and dump resilience, expanding total test count to 14.
+
+---
+
 ## [1.0.6] - 2026-10-28
 
 ### Added

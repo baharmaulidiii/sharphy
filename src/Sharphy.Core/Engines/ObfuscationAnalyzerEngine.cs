@@ -27,6 +27,7 @@ public static class ObfuscationAnalyzerEngine
         int suspiciousMethods = 0;
         int strippedNops = 0;
         int detectedSwitchFlattening = 0;
+        int detectedDecryptors = 0;
 
         sw.WriteLine("--- Method Control Flow Graph (CFG) Analysis ---");
 
@@ -64,6 +65,13 @@ public static class ObfuscationAnalyzerEngine
                     suspiciousMethods++;
                     sw.WriteLine($"  [⚠️] Reflection proxy delegate / dynamic invocation found in '{type.Name}::{method.Name}'");
                 }
+
+                // 4. Detect Pattern-Matching String Decryptors (XOR / Bitwise byte loops)
+                if (IsStringDecryptorLoop(instructions))
+                {
+                    detectedDecryptors++;
+                    sw.WriteLine($"  [🔐] Pattern-matched string decryptor routine found in '{type.Name}::{method.Name}' (Token: 0x{method.MetadataToken.ToInt32():X8})");
+                }
             }
         }
 
@@ -72,6 +80,7 @@ public static class ObfuscationAnalyzerEngine
         sw.WriteLine($"CFG Switch Flattening Instances : {detectedSwitchFlattening}");
         sw.WriteLine($"Excessive NOP / Junk Instructions: {strippedNops}");
         sw.WriteLine($"Reflection/Dynamic Proxy Calls   : {suspiciousMethods}");
+        sw.WriteLine($"Pattern-Matched String Decryptors: {detectedDecryptors}");
 
         // Save processed assembly copy to destination outputPath if directory is valid
         var outDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
@@ -86,5 +95,51 @@ public static class ObfuscationAnalyzerEngine
         }
 
         return sw.ToString();
+    }
+
+    /// <summary>
+    /// Detects signature byte decryption loops typically composed of array indexing (ldelem.u1),
+    /// arithmetic/bitwise decoding (xor, add, sub), type conversions (conv.u1), and back-edge loop branches.
+    /// </summary>
+    public static bool IsStringDecryptorLoop(Mono.Collections.Generic.Collection<Instruction> instructions)
+    {
+        if (instructions == null || instructions.Count < 5) return false;
+
+        bool hasLdelem = false;
+        bool hasBitwiseOrXor = false;
+        bool hasStelemOrConv = false;
+        bool hasLoopBranch = false;
+
+        for (int i = 0; i < instructions.Count; i++)
+        {
+            var op = instructions[i].OpCode;
+
+            if (op == OpCodes.Ldelem_U1 || op == OpCodes.Ldelem_I1 || op == OpCodes.Ldelema)
+            {
+                hasLdelem = true;
+            }
+            else if (op == OpCodes.Xor || op == OpCodes.Not || op == OpCodes.And)
+            {
+                hasBitwiseOrXor = true;
+            }
+            else if (op == OpCodes.Stelem_I1 || op == OpCodes.Stelem_Any || op == OpCodes.Conv_U1 || op == OpCodes.Conv_I1)
+            {
+                hasStelemOrConv = true;
+            }
+
+            // Detect back-edge branch targeting an earlier instruction offset
+            if (instructions[i].Operand is Instruction target && target.Offset < instructions[i].Offset)
+            {
+                if (op == OpCodes.Bne_Un || op == OpCodes.Bne_Un_S ||
+                    op == OpCodes.Blt || op == OpCodes.Blt_S ||
+                    op == OpCodes.Blt_Un || op == OpCodes.Blt_Un_S ||
+                    op == OpCodes.Br || op == OpCodes.Br_S)
+                {
+                    hasLoopBranch = true;
+                }
+            }
+        }
+
+        return hasLdelem && hasBitwiseOrXor && (hasStelemOrConv || hasLoopBranch);
     }
 }

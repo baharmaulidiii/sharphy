@@ -9,7 +9,7 @@
 **Leveraging ECMA-335 Metadata Semantics, Cross-Platform Crash Dump Telemetry, and Rigid CIL Bytecode Navigation.**
 
 <p align="center">
-  <a href="https://www.nuget.org/profiles/baharmaulidiii"><img src="https://img.shields.io/badge/nuget-v1.0.6-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
+  <a href="https://www.nuget.org/profiles/baharmaulidiii"><img src="https://img.shields.io/badge/nuget-v1.1.0-blue?logo=nuget&logoColor=white" alt="NuGet Package" /></a>
   <a href="https://www.nuget.org/profiles/baharmaulidiii"><img src="https://img.shields.io/badge/nuget-prefix%20reserved%20%E2%9C%94-004880?logo=nuget&logoColor=white" alt="NuGet Prefix Reserved" /></a>
   <a href="https://registry.modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP%20Registry-verified%20server%20%E2%9C%94-008080?logo=anthropic&logoColor=white" alt="Official MCP Registry Verified" /></a>
   <a href="https://pulsemcp.com"><img src="https://img.shields.io/badge/PulseMCP-listed-6A0DAD" alt="PulseMCP Listed" /></a>

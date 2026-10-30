@@ -153,14 +153,15 @@ public sealed class ToolRegistry
         // 5. sharphy_diff_assemblies
         Register(
             name: "sharphy_diff_assemblies",
-            description: "Compares two versions of a compiled .NET assembly at the ECMA-335 metadata level to identify added/removed types, API breaking changes, and CIL instruction size shifts. Use this tool when validating library updates, regression testing, or detecting API modifications. Do NOT use for decompiling full method bodies (use 'sharphy_decompile_method'). Read-only comparison.",
+            description: "Compares two versions of a compiled .NET assembly at the ECMA-335 metadata level to identify added/removed types, API breaking changes, and unified line-by-line CIL instruction diffs. Use this tool when validating library updates, regression testing, or detecting API modifications. Do NOT use for decompiling full method bodies (use 'sharphy_decompile_method'). Read-only comparison.",
             schema: new
             {
                 type = "object",
                 properties = new
                 {
                     oldAssemblyPath = new { type = "string", description = "Path to the baseline/older assembly" },
-                    newAssemblyPath = new { type = "string", description = "Path to the updated/newer assembly" }
+                    newAssemblyPath = new { type = "string", description = "Path to the updated/newer assembly" },
+                    includeCilDiff = new { type = "boolean", description = "Whether to include unified line-by-line CIL instruction diff for modified method bodies", @default = true }
                 },
                 required = new[] { "oldAssemblyPath", "newAssemblyPath" }
             },
@@ -179,7 +180,13 @@ public sealed class ToolRegistry
                     return Task.FromResult(McpToolCallResult.CreateError($"One or both assembly files were not found on disk: '{oldP}', '{newP}'."));
                 }
 
-                var diffReport = BinaryDiffEngine.CompareAssemblies(oldP, newP);
+                var includeCilDiff = true;
+                if (args?.TryGetProperty("includeCilDiff", out var inc) == true && (inc.ValueKind == JsonValueKind.True || inc.ValueKind == JsonValueKind.False))
+                {
+                    includeCilDiff = inc.GetBoolean();
+                }
+
+                var diffReport = BinaryDiffEngine.CompareAssemblies(oldP, newP, includeCilDiff);
                 return Task.FromResult(McpToolCallResult.CreateSuccess(diffReport));
             });
 
