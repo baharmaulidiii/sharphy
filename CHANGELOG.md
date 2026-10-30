@@ -10,6 +10,12 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 ---
 
+## [1.1.1] - 2026-10-30
+
+### Changed
+- **Dynamic Assembly Version Resolution:** Standardized CLI version reporting (`sharphy --version`) and MCP handshake metadata (`McpImplementationInfo.Version`) to dynamically extract the runtime assembly version attributes rather than hardcoded string constants.
+- **MCP Registry Publication Pipeline:** Hardened CI workflow to poll the NuGet flatcontainer API until packages are fully indexed before triggering MCP Registry publication, preventing premature validation 400 Bad Request responses.
+
 ## [1.1.0] - 2026-10-30
 
 ### Added

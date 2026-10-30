@@ -15,7 +15,7 @@ public static class Program
 
         if (args[0] is "-v" or "--version" or "version")
         {
-            var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "1.1.0";
+            var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
             Console.WriteLine($"Sharphy CLI v{version} [{RuntimeEnvironment.FrameworkVersion}]");
             return 0;
         }

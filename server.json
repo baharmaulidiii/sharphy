@@ -3,7 +3,7 @@
   "name": "io.github.baharmaulidiii/sharphy",
   "title": "Sharphy",
   "description": "CLR Intelligence and Runtime Forensic Bridge for AI Coding Agents.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": {
     "url": "https://github.com/baharmaulidiii/sharphy",
     "source": "github"
@@ -12,7 +12,7 @@
     {
       "registryType": "nuget",
       "identifier": "Sharphy.Cli",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "transport": {
         "type": "stdio"
       }

@@ -321,8 +321,28 @@ jobs:
       - name: Wait for NuGet package indexing propagation
         shell: bash
         run: |
-          echo "Waiting 60 seconds for NuGet.org to index the newly published package version..."
-          sleep 60
+          echo "Polling NuGet.org flatcontainer API until package version ${{ env.PACKAGE_VERSION }} is indexed..."
+          VERSION="${{ env.PACKAGE_VERSION }}"
+          MAX_RETRIES=20
+          RETRY_COUNT=0
+          INDEXED=false
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://api.nuget.org/v3-flatcontainer/sharphy.cli/${VERSION}/sharphy.cli.${VERSION}.nupkg")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Sharphy.Cli v${VERSION} is successfully indexed on NuGet.org flatcontainer!"
+              INDEXED=true
+              break
+            fi
+            echo "Attempt $((RETRY_COUNT+1))/$MAX_RETRIES: HTTP $STATUS (package still validating on NuGet.org). Sleeping 15s..."
+            sleep 15
+            RETRY_COUNT=$((RETRY_COUNT+1))
+          done
+
+          if [ "$INDEXED" = "false" ]; then
+            echo "⚠️ Warning: NuGet indexing took longer than expected, giving additional 30s buffer before publish attempt..."
+            sleep 30
+          fi
 
       - name: Publish server.json to Official MCP Registry
         shell: bash

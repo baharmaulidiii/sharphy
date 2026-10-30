@@ -77,6 +77,6 @@ public sealed class McpImplementationInfo
     public string Name { get; set; } = "sharphy";
 
     [JsonPropertyName("version")]
-    public string Version { get; set; } = "1.1.0";
+    public string Version { get; set; } = typeof(McpImplementationInfo).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
 }
 
