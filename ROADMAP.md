@@ -6,12 +6,28 @@ This document outlines the strategic engineering roadmap and upcoming milestones
 
 ## 1. Release Milestone History
 
-### Milestone 1.1 (Active CLR Diagnostics & Advanced Bytecode Forensics) - COMPLETED
-- [x] SOS-style ThreadPool starvation diagnostics detecting sync-over-async blockages (`sharphy_analyze_dump`).
-- [x] Automated heap fragmentation analysis and LOH `HandleKind.Pinned` GC compaction risk telemetry (`sharphy_inspect_heap`).
-- [x] Unified line-by-line CIL instruction diffing (`---`, `+++`, `@@`, `+`, `-`) for AI coding agents (`sharphy_diff_assemblies`).
-- [x] Pattern-matching string decryptor heuristic resolving obfuscated runtime loops (`sharphy_clean_obfuscation`).
-- [x] Expansion of xUnit v3 automated testing suite to 14 verified multi-targeting tests across .NET 8.0 and .NET 10.0.
+### Milestone 1.1.x (Active Community Hardening & Heuristic Depth: v1.1.2 - v1.1.9) - IN PROGRESS
+- [x] **v1.1.0 (Active CLR Diagnostics & Bytecode Forensics):**
+  - SOS-style ThreadPool starvation diagnostics detecting sync-over-async blockages (`sharphy_analyze_dump`).
+  - Automated heap fragmentation analysis and LOH `HandleKind.Pinned` GC compaction risk telemetry (`sharphy_inspect_heap`).
+  - Unified line-by-line CIL instruction diffing (`---`, `+++`, `@@`, `+`, `-`) for AI coding agents (`sharphy_diff_assemblies`).
+  - Pattern-matching string decryptor heuristic resolving obfuscated runtime loops (`sharphy_clean_obfuscation`).
+  - Expansion of xUnit v3 automated testing suite to 14 verified multi-targeting tests across .NET 8.0 and .NET 10.0.
+- [x] **v1.1.1 (Multi-Targeting Harness & CI Hardening):**
+  - Hardened automated GitHub Actions publishing pipeline to the Official Model Context Protocol (MCP) Registry.
+  - Stabilized multi-target test executions across isolated .NET runtimes.
+- [ ] **v1.1.2 - v1.1.4 (Engine Resilience & Edge-Case Telemetry):**
+  - Resilient exception triage for partial, truncated, or minidumps lacking managed heap segments.
+  - Expanded SOS command compatibility (analyzing complex Monitor lock waiting queues and threadpool worker starvation).
+  - Telemetry enhancements for Large Object Heap (LOH) and Pinned Object Heap (POH) compaction risk indicators.
+- [ ] **v1.1.5 - v1.1.7 (Advanced Heuristics & De-obfuscation Depth):**
+  - Multi-stage Control Flow Flattening (CFF) demangling and switch-dispatcher unwinding.
+  - Unmanaged P/Invoke boundary telemetry and native module resolution in hybrid dumps.
+  - Granular `[UnsafeAccessor]` generation enhancements for ref-structs and static generic methods.
+- [ ] **v1.1.8 - v1.1.9 (Real-World Testbed Suite & Community Maturation):**
+  - Realistic memory leak, thread starvation, and deadlock testbed harnesses under `samples/`.
+  - Comprehensive performance benchmark suite verifying token-efficiency and sub-50ms execution bounds.
+  - Final community stabilization pass solidifying the standalone offline forensic toolset.
 
 ### Milestone 1.0 (General Availability & Core Engine Stabilization) - COMPLETED
 - [x] Complete transition from preview (`0.1.x`) to General Availability (`1.0.0`).
@@ -25,7 +41,7 @@ This document outlines the strategic engineering roadmap and upcoming milestones
 
 ---
 
-## 2. Near-Term Milestones (v1.2.x)
+## 2. Near-Term Milestones (v1.2.x - Phase 2 Cloud & Transport Expansion)
 
 ### Advanced Memory Telemetry & Native Heaps
 - [ ] Native P/Invoke heap allocation profiling alongside managed GC tracking.
@@ -34,10 +50,11 @@ This document outlines the strategic engineering roadmap and upcoming milestones
 ### Live Telemetry & Transport Expansion
 - [ ] Bidirectional Server-Sent Events (SSE) and HTTP stream transport for remote container diagnostics.
 - [ ] EventPipe IPC streaming for live .NET processes on Linux and Windows.
+- [ ] Kubernetes Sidecar container packaging (`ghcr.io/baharmaulidiii/sharphy`) and Helm chart templates.
 
 ---
 
-## 3. Long-Term Architectural Horizon (v2.0.x)
+## 3. Long-Term Architectural Horizon (v2.0.x - Phase 2 Autonomous SRE Swarms)
 
 ### Remote Runtime Live Profiling
 - [ ] EventPipe and DiagnosticsClient IPC streaming for live .NET processes on Linux and Windows.
