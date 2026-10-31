@@ -6,7 +6,7 @@ This document outlines the strategic engineering roadmap and upcoming milestones
 
 ## 1. Release Milestone History
 
-### Milestone 1.1.x (Active Community Hardening & Heuristic Depth: v1.1.2 - v1.1.3) - IN PROGRESS
+### Milestone 1.1.x (Active Community Hardening & Heuristic Depth: v1.1.2) - IN PROGRESS
 - [x] **v1.1.0 (Active CLR Diagnostics & Bytecode Forensics):**
   - SOS-style ThreadPool starvation diagnostics detecting sync-over-async blockages (`sharphy_analyze_dump`).
   - Automated heap fragmentation analysis and LOH `HandleKind.Pinned` GC compaction risk telemetry (`sharphy_inspect_heap`).
@@ -16,16 +16,15 @@ This document outlines the strategic engineering roadmap and upcoming milestones
 - [x] **v1.1.1 (Multi-Targeting Harness & CI Hardening):**
   - Hardened automated GitHub Actions publishing pipeline to the Official Model Context Protocol (MCP) Registry.
   - Stabilized multi-target test executions across isolated .NET runtimes.
-- [ ] **v1.1.2 (Engine Resilience & Advanced Heuristic Depth):**
+- [ ] **v1.1.2 (Consolidated Community Hardening & Diagnostic Depth):**
   - Resilient exception triage for partial, truncated, or minidumps lacking managed heap segments.
   - Deep Monitor lock contention analysis and thread synchronization Wait-For Graphs.
   - Telemetry enhancements for Large Object Heap (LOH) and Pinned Object Heap (POH) compaction risk scoring.
   - Pattern-matching de-obfuscation extensions (dynamic Base64/ROT loops and Control Flow Flattening unwinding).
   - Unmanaged P/Invoke boundary telemetry and native module resolution in hybrid dumps.
-- [ ] **v1.1.3 (Community Maturation, Testbeds & Final LTS Verification):**
   - Realistic memory leak, thread starvation, and deadlock testbed harnesses under `samples/`.
   - Comprehensive performance benchmark suite verifying token-efficiency and sub-50ms execution bounds.
-  - Final community stabilization pass solidifying the standalone offline forensic toolset prior to Phase 2.
+  - Final community stabilization pass concluding the offline standalone toolset prior to Phase 2.
 
 ### Milestone 1.0 (General Availability & Core Engine Stabilization) - COMPLETED
 - [x] Complete transition from preview (`0.1.x`) to General Availability (`1.0.0`).
