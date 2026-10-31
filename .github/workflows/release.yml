@@ -288,7 +288,7 @@ jobs:
   publish_mcp_registry:
     name: Publish to Official MCP Registry & PulseMCP
     needs: [verify, publish_packages]
-    if: always() && needs.verify.result == 'success' && needs.publish_packages.result == 'success' && github.event.inputs.publish_mcp_registry != 'false'
+    if: always() && needs.verify.result == 'success' && (needs.publish_packages.result == 'success' || github.event.inputs.publish_packages == 'false') && github.event.inputs.publish_mcp_registry != 'false'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -296,6 +296,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Determine Target Version
+        id: target_version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            RAW_VER="${{ github.event.inputs.version }}"
+          elif [[ "${{ github.ref_name }}" =~ ^v?(.*)$ ]]; then
+            RAW_VER="${BASH_REMATCH[1]}"
+          else
+            RAW_VER="1.0.0"
+          fi
+          VER="${RAW_VER#v}"
+          echo "PACKAGE_VERSION=$VER" >> $GITHUB_ENV
+          echo "Target version for MCP Registry: $VER"
 
       - name: Setup Go runtime
         uses: actions/setup-go@v5
