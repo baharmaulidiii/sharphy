@@ -184,4 +184,53 @@ public class RealEngineTests
             if (File.Exists(truncatedDump)) File.Delete(truncatedDump);
         }
     }
+
+    [Fact]
+    public void DumpForensicsEngine_FindDeadlockCycles_DetectsCyclesAndIgnoresAcyclicChains()
+    {
+        // AB-BA 2-thread deadlock plus 3-thread deadlock cycle
+        var cyclicGraph = new Dictionary<int, IReadOnlyList<int>>
+        {
+            [4] = new[] { 7 },
+            [7] = new[] { 4 },
+            [10] = new[] { 12 },
+            [12] = new[] { 15 },
+            [15] = new[] { 10 }
+        };
+
+        var cycles = DumpForensicsEngine.FindDeadlockCycles(cyclicGraph);
+        Assert.Equal(2, cycles.Count);
+        Assert.Contains(cycles, c => c.SequenceEqual(new[] { 4, 7, 4 }));
+        Assert.Contains(cycles, c => c.SequenceEqual(new[] { 10, 12, 15, 10 }));
+
+        // Acyclic contention chain: 1 -> 2 -> 3
+        var acyclicGraph = new Dictionary<int, IReadOnlyList<int>>
+        {
+            [1] = new[] { 2 },
+            [2] = new[] { 3 }
+        };
+
+        var noCycles = DumpForensicsEngine.FindDeadlockCycles(acyclicGraph);
+        Assert.Empty(noCycles);
+    }
+
+    [Fact]
+    public void DumpForensicsEngine_ComputeCompactionRiskScore_CalculatesExpectedBands()
+    {
+        var (lowScore, lowSeverity) = DumpForensicsEngine.ComputeCompactionRiskScore(5.0, 0.0, 0, 0);
+        Assert.InRange(lowScore, 0, 24);
+        Assert.Equal("LOW", lowSeverity);
+
+        var (modScore, modSeverity) = DumpForensicsEngine.ComputeCompactionRiskScore(20.0, 10.0, 2, 1);
+        Assert.InRange(modScore, 25, 49);
+        Assert.Equal("MODERATE", modSeverity);
+
+        var (highScore, highSeverity) = DumpForensicsEngine.ComputeCompactionRiskScore(45.0, 25.0, 3, 2);
+        Assert.InRange(highScore, 50, 74);
+        Assert.Equal("HIGH", highSeverity);
+
+        var (critScore, critSeverity) = DumpForensicsEngine.ComputeCompactionRiskScore(75.0, 60.0, 8, 6);
+        Assert.InRange(critScore, 75, 100);
+        Assert.Equal("CRITICAL", critSeverity);
+    }
 }

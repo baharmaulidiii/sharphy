@@ -101,38 +101,103 @@ public static class DumpForensicsEngine
                     sw.WriteLine(string.Format("{0,-60} | {1,10} | {2,15:N0}", item.TypeName, item.Count, item.TotalSize));
                 }
 
-                // GC Heap Fragmentation & Pinning Telemetry
+                // GC Heap Fragmentation, LOH/POH Compaction Risk & Pinning Telemetry
                 sw.WriteLine();
-                sw.WriteLine("--- Heap Fragmentation & Pinning Telemetry ---");
+                sw.WriteLine("--- Heap Fragmentation & LOH/POH Compaction Telemetry ---");
                 try
                 {
                     long totalHeapSize = 0;
                     long totalFreeSize = 0;
+                    long lohTotalSize = 0;
+                    long lohFreeSize = 0;
+                    long pohTotalSize = 0;
+                    long pohFreeSize = 0;
+                    long gen2TotalSize = 0;
+                    long gen2FreeSize = 0;
 
                     foreach (var segment in heap.Segments)
                     {
-                        totalHeapSize += (long)segment.Length;
-                        totalFreeSize += (long)segment.EnumerateObjects()
+                        var segLen = (long)segment.Length;
+                        var segFree = segment.EnumerateObjects()
                             .Where(o => o.IsValid && o.IsFree)
                             .Sum(o => (long)o.Size);
+
+                        totalHeapSize += segLen;
+                        totalFreeSize += segFree;
+
+                        if (segment.Kind == GCSegmentKind.Large)
+                        {
+                            lohTotalSize += segLen;
+                            lohFreeSize += segFree;
+                        }
+                        else if (segment.Kind == GCSegmentKind.Pinned || segment.IsPinned)
+                        {
+                            pohTotalSize += segLen;
+                            pohFreeSize += segFree;
+                        }
+                        else if (segment.Kind == GCSegmentKind.Generation2)
+                        {
+                            gen2TotalSize += segLen;
+                            gen2FreeSize += segFree;
+                        }
                     }
 
                     double fragmentationPct = totalHeapSize > 0 ? ((double)totalFreeSize / totalHeapSize) * 100.0 : 0.0;
-                    sw.WriteLine($"Total Heap Size: {totalHeapSize:N0} bytes");
-                    sw.WriteLine($"Free Object Space: {totalFreeSize:N0} bytes");
-                    sw.WriteLine($"Heap Fragmentation: {fragmentationPct:F2}%");
+                    double lohFragPct = lohTotalSize > 0 ? ((double)lohFreeSize / lohTotalSize) * 100.0 : 0.0;
+                    double pohFragPct = pohTotalSize > 0 ? ((double)pohFreeSize / pohTotalSize) * 100.0 : 0.0;
+                    double gen2FragPct = gen2TotalSize > 0 ? ((double)gen2FreeSize / gen2TotalSize) * 100.0 : 0.0;
 
-                    if (fragmentationPct > 30.0)
+                    sw.WriteLine($"Total Heap Size: {totalHeapSize:N0} bytes | Free: {totalFreeSize:N0} bytes ({fragmentationPct:F2}%)");
+                    sw.WriteLine($"LOH Size: {lohTotalSize:N0} bytes (Fragmentation: {lohFragPct:F2}%)");
+                    sw.WriteLine($"POH Size: {pohTotalSize:N0} bytes (Fragmentation: {pohFragPct:F2}%)");
+                    if (gen2TotalSize > 0)
                     {
-                        sw.WriteLine("  ⚠️ High GC Heap Fragmentation detected (> 30%). May lead to OutOfMemoryException during large allocations.");
+                        sw.WriteLine($"Gen2 Size: {gen2TotalSize:N0} bytes (Fragmentation: {gen2FragPct:F2}%)");
                     }
 
-                    // Pinned handles enumeration
+                    // Pinned & AsyncPinned handles enumeration
                     var pinnedHandles = runtime.EnumerateHandles()
-                        .Where(h => h.HandleKind == ClrHandleKind.Pinned)
+                        .Where(h => h.HandleKind == ClrHandleKind.Pinned || h.HandleKind == ClrHandleKind.AsyncPinned)
                         .ToList();
 
-                    sw.WriteLine($"Pinned GC Handles Count: {pinnedHandles.Count}");
+                    int lohPinnedCount = 0;
+                    int pohPinnedCount = 0;
+                    int gen2PinnedCount = 0;
+
+                    foreach (var handle in pinnedHandles)
+                    {
+                        var targetAddr = handle.Object.IsValid && handle.Object.Address != 0
+                            ? handle.Object.Address
+                            : handle.Address;
+                        var seg = heap.GetSegmentByAddress(targetAddr);
+                        if (seg == null) continue;
+
+                        if (seg.Kind == GCSegmentKind.Large)
+                        {
+                            lohPinnedCount++;
+                        }
+                        else if (seg.Kind == GCSegmentKind.Pinned || seg.IsPinned)
+                        {
+                            pohPinnedCount++;
+                        }
+                        else if (seg.Kind == GCSegmentKind.Generation2 ||
+                                 (seg.Kind == GCSegmentKind.Ephemeral &&
+                                  targetAddr >= seg.Generation2.Start &&
+                                  targetAddr < seg.Generation2.End))
+                        {
+                            gen2PinnedCount++;
+                        }
+                    }
+
+                    var (riskScore, riskSeverity) = ComputeCompactionRiskScore(lohFragPct, pohFragPct, lohPinnedCount, gen2PinnedCount);
+                    sw.WriteLine($"Compaction Resistance Score: {riskScore}/100 ({riskSeverity})");
+                    sw.WriteLine($"Pinned Handles: {pinnedHandles.Count} total (LOH: {lohPinnedCount}, POH: {pohPinnedCount}, Gen2: {gen2PinnedCount})");
+
+                    if (fragmentationPct > 30.0 || riskScore >= 50)
+                    {
+                        sw.WriteLine("  ⚠️ Elevated GC heap fragmentation or pinning resistance detected. May cause OutOfMemoryException during large allocations.");
+                    }
+
                     if (pinnedHandles.Count > 0)
                     {
                         sw.WriteLine("Pinned Objects (First 10):");
@@ -140,9 +205,10 @@ public static class DumpForensicsEngine
                         {
                             var targetObj = handle.Object;
                             var typeName = targetObj.IsValid ? (targetObj.Type?.Name ?? "Unknown") : "Invalid";
-                            var seg = heap.GetSegmentByAddress(handle.Address);
+                            var lookupAddr = targetObj.IsValid && targetObj.Address != 0 ? targetObj.Address : handle.Address;
+                            var seg = heap.GetSegmentByAddress(lookupAddr);
                             var genStr = seg != null ? seg.Kind.ToString() : "UnknownGen";
-                            sw.WriteLine($"  - [0x{handle.Address:X}] Object: 0x{targetObj.Address:X} ({typeName}) in {genStr}");
+                            sw.WriteLine($"  - [{handle.HandleKind} 0x{handle.Address:X}] Object: 0x{targetObj.Address:X} ({typeName}) in {genStr}");
                         }
                     }
                     else
@@ -191,17 +257,123 @@ public static class DumpForensicsEngine
             try
             {
                 var syncBlocks = runtime.Heap.EnumerateSyncBlocks().ToList();
-                sw.WriteLine($"Active SyncBlocks in CLR: {syncBlocks.Count}");
+                var threadByAddress = runtime.Threads
+                    .Where(t => t.Address != 0)
+                    .GroupBy(t => t.Address)
+                    .ToDictionary(g => g.Key, g => g.First());
 
-                if (syncBlocks.Count == 0)
+                var heldSyncBlocks = syncBlocks.Where(sb => sb.IsMonitorHeld).ToList();
+                sw.WriteLine($"Active SyncBlocks in CLR: {syncBlocks.Count} (Monitor-Held: {heldSyncBlocks.Count})");
+
+                var locksByObject = new Dictionary<ulong, (int OwnerThreadId, string ObjectType, SyncBlock Block)>();
+                foreach (var sb in heldSyncBlocks)
+                {
+                    if (sb.HoldingThreadAddress != 0 && threadByAddress.TryGetValue(sb.HoldingThreadAddress, out var owner))
+                    {
+                        var obj = runtime.Heap.GetObject(sb.Object);
+                        var typeName = obj.IsValid ? (obj.Type?.Name ?? "System.Object") : "UnknownObject";
+                        locksByObject[sb.Object] = (owner.ManagedThreadId, typeName, sb);
+                    }
+                }
+
+                var waitForGraph = new Dictionary<int, List<int>>();
+                var waitEdges = new List<(int WaiterThreadId, int OwnerThreadId, ulong ObjectAddress, string ObjectType)>();
+                var waitSignatures = new[]
+                {
+                    "System.Threading.Monitor.Enter",
+                    "System.Threading.Monitor.ReliableEnter",
+                    "System.Threading.Monitor.Wait",
+                    "AwareLock::Enter",
+                    "System.Threading.WaitHandle.WaitOne"
+                };
+
+                foreach (var thread in runtime.Threads.Where(t => t.IsAlive))
+                {
+                    bool isWaitingOnSync = false;
+                    try
+                    {
+                        foreach (var frame in thread.EnumerateStackTrace())
+                        {
+                            var display = frame.FrameName ?? frame.Method?.Signature ?? string.Empty;
+                            if (waitSignatures.Any(sig => display.Contains(sig, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                isWaitingOnSync = true;
+                                break;
+                            }
+                        }
+
+                        if (!isWaitingOnSync || locksByObject.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        foreach (var root in thread.EnumerateStackRoots())
+                        {
+                            var addr = root.Object.Address;
+                            if (addr != 0 && locksByObject.TryGetValue(addr, out var held) && held.OwnerThreadId != thread.ManagedThreadId)
+                            {
+                                if (!waitForGraph.TryGetValue(thread.ManagedThreadId, out var owners))
+                                {
+                                    owners = new List<int>();
+                                    waitForGraph[thread.ManagedThreadId] = owners;
+                                }
+
+                                if (!owners.Contains(held.OwnerThreadId))
+                                {
+                                    owners.Add(held.OwnerThreadId);
+                                    waitEdges.Add((thread.ManagedThreadId, held.OwnerThreadId, addr, held.ObjectType));
+                                }
+                            }
+                        }
+                    }
+                    catch (ClrDiagnosticsException)
+                    {
+                        // Partial stack memory on a thread should not abort global WFG traversal.
+                    }
+                }
+
+                sw.WriteLine();
+                sw.WriteLine("--- Wait-For Graph (WFG) & Cycle Analysis ---");
+                var wfgReadOnly = waitForGraph.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<int>)kvp.Value);
+                var cycles = FindDeadlockCycles(wfgReadOnly);
+
+                if (cycles.Count > 0)
+                {
+                    sw.WriteLine($"[🚨 DEADLOCK CYCLE DETECTED] Identified {cycles.Count} circular Wait-For cycle(s):");
+                    foreach (var cycle in cycles)
+                    {
+                        sw.WriteLine($"  - Cycle: {string.Join(" -> ", cycle.Select(id => $"Thread #{id}"))}");
+                    }
+                }
+                else if (waitEdges.Count > 0)
+                {
+                    sw.WriteLine($"[⚠️ Lock Contention Detected] {waitEdges.Count} Wait-For edge(s) without circular cycle:");
+                    foreach (var edge in waitEdges.Take(15))
+                    {
+                        sw.WriteLine($"  - Thread #{edge.WaiterThreadId} waiting on Thread #{edge.OwnerThreadId} (Object 0x{edge.ObjectAddress:X} [{edge.ObjectType}])");
+                    }
+                }
+                else if (heldSyncBlocks.Count == 0)
                 {
                     sw.WriteLine("No active lock contention or deadlocks detected across threads.");
                 }
                 else
                 {
-                    foreach (var sb in syncBlocks)
+                    sw.WriteLine("Monitor locks held without circular deadlock cycles.");
+                }
+
+                if (heldSyncBlocks.Count > 0)
+                {
+                    sw.WriteLine();
+                    sw.WriteLine("--- Held Monitor SyncBlocks (Top 15) ---");
+                    foreach (var sb in heldSyncBlocks.Take(15))
                     {
-                        sw.WriteLine($"SyncBlock at Object 0x{sb.Object:X}");
+                        var ownerStr = sb.HoldingThreadAddress != 0 && threadByAddress.TryGetValue(sb.HoldingThreadAddress, out var owner)
+                            ? $"Thread #{owner.ManagedThreadId}"
+                            : $"0x{sb.HoldingThreadAddress:X}";
+                        var obj = runtime.Heap.GetObject(sb.Object);
+                        var typeName = obj.IsValid ? (obj.Type?.Name ?? "System.Object") : "UnknownObject";
+                        sw.WriteLine($"  - Object 0x{sb.Object:X} ({typeName}) | Owner: {ownerStr} | Recursion: {sb.RecursionCount} | Waiters: {sb.WaitingThreadCount}");
                     }
                 }
             }
@@ -212,6 +384,111 @@ public static class DumpForensicsEngine
 
             return sw.ToString();
         }
+    }
+
+    /// <summary>
+    /// Traverses a directed Wait-For Graph (WaiterThreadId -> OwnerThreadIds) using DFS
+    /// and returns unique normalized circular deadlock cycles.
+    /// </summary>
+    public static IReadOnlyList<IReadOnlyList<int>> FindDeadlockCycles(IReadOnlyDictionary<int, IReadOnlyList<int>> waitForGraph)
+    {
+        var cycles = new List<IReadOnlyList<int>>();
+        var seenSignatures = new HashSet<string>(StringComparer.Ordinal);
+        var state = new Dictionary<int, int>(); // 0/absent = unvisited, 1 = visiting, 2 = visited
+        var stack = new List<int>();
+
+        foreach (var startNode in waitForGraph.Keys.OrderBy(k => k))
+        {
+            if (state.GetValueOrDefault(startNode) == 0)
+            {
+                DfsFindCycles(startNode, waitForGraph, state, stack, cycles, seenSignatures);
+            }
+        }
+
+        return cycles;
+    }
+
+    private static void DfsFindCycles(
+        int node,
+        IReadOnlyDictionary<int, IReadOnlyList<int>> graph,
+        Dictionary<int, int> state,
+        List<int> stack,
+        List<IReadOnlyList<int>> cycles,
+        HashSet<string> seenSignatures)
+    {
+        state[node] = 1;
+        stack.Add(node);
+
+        if (graph.TryGetValue(node, out var neighbors))
+        {
+            foreach (var next in neighbors)
+            {
+                var nextState = state.GetValueOrDefault(next);
+                if (nextState == 1)
+                {
+                    var idx = stack.IndexOf(next);
+                    if (idx >= 0)
+                    {
+                        var rawCycle = stack.Skip(idx).ToList();
+                        var minIdx = 0;
+                        for (int i = 1; i < rawCycle.Count; i++)
+                        {
+                            if (rawCycle[i] < rawCycle[minIdx]) minIdx = i;
+                        }
+
+                        var normalized = new List<int>(rawCycle.Count + 1);
+                        for (int i = 0; i < rawCycle.Count; i++)
+                        {
+                            normalized.Add(rawCycle[(minIdx + i) % rawCycle.Count]);
+                        }
+                        normalized.Add(normalized[0]);
+
+                        var signature = string.Join("->", normalized);
+                        if (seenSignatures.Add(signature))
+                        {
+                            cycles.Add(normalized);
+                        }
+                    }
+                }
+                else if (nextState == 0 && graph.ContainsKey(next))
+                {
+                    DfsFindCycles(next, graph, state, stack, cycles, seenSignatures);
+                }
+            }
+        }
+
+        stack.RemoveAt(stack.Count - 1);
+        state[node] = 2;
+    }
+
+    /// <summary>
+    /// Computes a bounded 0-100 GC compaction resistance risk score from LOH/POH fragmentation and pinned handles.
+    /// </summary>
+    public static (int Score, string Severity) ComputeCompactionRiskScore(
+        double lohFragmentationPct,
+        double pohFragmentationPct,
+        int lohPinnedCount,
+        int gen2PinnedCount)
+    {
+        var clampedLohFrag = Math.Clamp(lohFragmentationPct, 0.0, 100.0);
+        var clampedPohFrag = Math.Clamp(pohFragmentationPct, 0.0, 100.0);
+
+        double rawScore =
+            Math.Min(40.0, clampedLohFrag * 0.8) +
+            Math.Min(20.0, clampedPohFrag * 0.4) +
+            Math.Min(25.0, Math.Max(0, lohPinnedCount) * 5.0) +
+            Math.Min(15.0, Math.Max(0, gen2PinnedCount) * 3.0);
+
+        int score = Math.Clamp((int)Math.Round(rawScore, MidpointRounding.AwayFromZero), 0, 100);
+        string severity = score switch
+        {
+            >= 75 => "CRITICAL",
+            >= 50 => "HIGH",
+            >= 25 => "MODERATE",
+            _ => "LOW"
+        };
+
+        return (score, severity);
     }
 
     private static bool TryOpenDumpRuntime(
