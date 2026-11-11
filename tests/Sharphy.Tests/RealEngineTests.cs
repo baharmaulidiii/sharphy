@@ -148,4 +148,40 @@ public class RealEngineTests
         var deadlocks = DumpForensicsEngine.DetectDeadlocks(nonExistentDump);
         Assert.Contains("Target dump file was not found", deadlocks);
     }
+
+    [Fact]
+    public void DumpForensicsEngine_HandlesEmptyAndTruncatedDumpsGracefully()
+    {
+        var emptyDump = Path.Combine(Path.GetTempPath(), $"Empty_{Guid.NewGuid():N}.dmp");
+        var truncatedDump = Path.Combine(Path.GetTempPath(), $"Truncated_{Guid.NewGuid():N}.dmp");
+
+        try
+        {
+            File.WriteAllBytes(emptyDump, Array.Empty<byte>());
+            // Write a truncated MDMP signature (only 32 bytes) to simulate an incomplete minidump
+            File.WriteAllBytes(truncatedDump, "MDMP\x93\xA7\x00\x00TruncatedMinidumpPayload1234"u8.ToArray());
+
+            var emptyRca = DumpForensicsEngine.AnalyzeCrashDump(emptyDump);
+            var emptyHeap = DumpForensicsEngine.InspectHeap(emptyDump);
+            var emptyDeadlocks = DumpForensicsEngine.DetectDeadlocks(emptyDump);
+
+            Assert.Contains("Warning", emptyRca);
+            Assert.Contains("empty (0 bytes)", emptyRca);
+            Assert.Contains("Warning", emptyHeap);
+            Assert.Contains("Warning", emptyDeadlocks);
+
+            var truncRca = DumpForensicsEngine.AnalyzeCrashDump(truncatedDump);
+            var truncHeap = DumpForensicsEngine.InspectHeap(truncatedDump);
+            var truncDeadlocks = DumpForensicsEngine.DetectDeadlocks(truncatedDump);
+
+            Assert.Contains("Warning", truncRca);
+            Assert.Contains("Warning", truncHeap);
+            Assert.Contains("Warning", truncDeadlocks);
+        }
+        finally
+        {
+            if (File.Exists(emptyDump)) File.Delete(emptyDump);
+            if (File.Exists(truncatedDump)) File.Delete(truncatedDump);
+        }
+    }
 }
