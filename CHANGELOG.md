@@ -10,6 +10,18 @@ The format is based on **[Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 
 ---
 
+## [1.1.2] - 2026-11-11
+
+### Added
+- **Truncated Dump Resilience & Hybrid Native Module Triage (`DumpForensicsEngine`):** Added `TryOpenDumpRuntime` with explicit `FileStream` ownership (`leaveOpen: false`) and graceful handling for empty, truncated, or corrupted crash dumps without leaking OS file locks, plus native module enumeration and CLR interop transition markers.
+- **Wait-For Graph (WFG) Deadlock Traversal (`sharphy_deadlock_detector`):** Extended `DetectDeadlocks` with SyncBlock ownership mapping, stack-root waiter correlation, and DFS cycle detection (`FindDeadlockCycles`) to distinguish circular deadlocks from linear lock contention.
+- **LOH & POH Compaction Risk Scoring (`sharphy_inspect_heap`):** Added per-tier GC heap fragmentation metrics (`LOH`, `POH`, `Gen2`), pinned handle placement tracking, and bounded `ComputeCompactionRiskScore` (`0-100`, `LOW` to `CRITICAL`).
+- **Unmanaged P/Invoke Boundary Telemetry (`sharphy_inspect_metadata`):** Decoded `MethodDefinition.PInvokeInfo` across defined and nested types to report native DLL names, entry points, calling conventions, charsets, and `SetLastError` attributes.
+- **Expanded Pattern De-obfuscation & Safe NOP Stripping (`sharphy_clean_obfuscation`):** Added `IsControlFlowFlatteningDispatcher`, safe dead NOP sled removal (`StripRedundantNops`) preserving branch targets and exception handler boundaries, and `ClassifyDecryptorPattern` covering `XOR/Bitwise`, `ROT/Arithmetic`, `BitShift`, and `Base64/Lookup`.
+- **Sample Testbeds (`samples/`):** Added `samples/DeadlockDemo` and `samples/MemoryLeakDemo` alongside multi-target (`net8.0`, `net9.0`, `net10.0`) test matrix coverage expanded to 21 verified tests.
+
+---
+
 ## [1.1.1] - 2026-10-30
 
 ### Changed

@@ -6,7 +6,7 @@ This document outlines the strategic engineering roadmap and upcoming milestones
 
 ## 1. Release Milestone History
 
-### Milestone 1.1.x (Active Community Hardening & Heuristic Depth: v1.1.2) - IN PROGRESS
+### Milestone 1.1.x (Active Community Hardening & Heuristic Depth: v1.1.2) - COMPLETED
 - [x] **v1.1.0 (Active CLR Diagnostics & Bytecode Forensics):**
   - SOS-style ThreadPool starvation diagnostics detecting sync-over-async blockages (`sharphy_analyze_dump`).
   - Automated heap fragmentation analysis and LOH `HandleKind.Pinned` GC compaction risk telemetry (`sharphy_inspect_heap`).
@@ -16,7 +16,7 @@ This document outlines the strategic engineering roadmap and upcoming milestones
 - [x] **v1.1.1 (Multi-Targeting Harness & CI Hardening):**
   - Hardened automated GitHub Actions publishing pipeline to the Official Model Context Protocol (MCP) Registry.
   - Stabilized multi-target test executions across isolated .NET runtimes.
-- [ ] **v1.1.2 (Consolidated Community Hardening & Diagnostic Depth):**
+- [x] **v1.1.2 (Consolidated Community Hardening & Diagnostic Depth):**
   - Resilient exception triage for partial, truncated, or minidumps lacking managed heap segments.
   - Deep Monitor lock contention analysis and thread synchronization Wait-For Graphs.
   - Telemetry enhancements for Large Object Heap (LOH) and Pinned Object Heap (POH) compaction risk scoring.
