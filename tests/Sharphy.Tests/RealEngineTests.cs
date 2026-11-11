@@ -676,6 +676,66 @@ public class RealEngineTests
         }
     }
 
+    [Fact]
+    public void WrapperGeneratorEngine_EscapesMaliciousMetadataStringsAgainstCSharpInjection()
+    {
+        var tempDll = Path.Combine(Path.GetTempPath(), $"WrapInject_{Guid.NewGuid():N}.dll");
+        var tempCs = Path.Combine(Path.GetTempPath(), $"WrapInject_{Guid.NewGuid():N}.cs");
+
+        try
+        {
+            using (var asm = Mono.Cecil.AssemblyDefinition.CreateAssembly(
+                new Mono.Cecil.AssemblyNameDefinition("WrapInject", new Version(1, 0, 0, 0)),
+                "WrapInject",
+                Mono.Cecil.ModuleKind.Dll))
+            {
+                var mod = asm.MainModule;
+                var maliciousNs = "Evil; System.Diagnostics.Process.Start(\"calc\")\n//";
+                var type = new Mono.Cecil.TypeDefinition(
+                    maliciousNs,
+                    "Target",
+                    Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class,
+                    mod.TypeSystem.Object);
+                mod.Types.Add(type);
+
+                var injectedMethod = new Mono.Cecil.MethodDefinition(
+                    "Secret\")]\n//injected",
+                    Mono.Cecil.MethodAttributes.Private | Mono.Cecil.MethodAttributes.Static,
+                    mod.TypeSystem.Void);
+                type.Methods.Add(injectedMethod);
+
+                asm.Write(tempDll);
+            }
+
+            var code = WrapperGeneratorEngine.GenerateWrapper(tempDll, "Target", tempCs);
+            Assert.DoesNotContain("\n//injected", code);
+            Assert.DoesNotContain("\r//injected", code);
+            Assert.Contains("Name = \"Secret\\\")]\\n//injected\"", code);
+            Assert.DoesNotContain("Process.Start(", code);
+        }
+        finally
+        {
+            if (File.Exists(tempDll)) File.Delete(tempDll);
+            if (File.Exists(tempCs)) File.Delete(tempCs);
+        }
+    }
+
+    [Fact]
+    public void SandboxEngine_RefusesMalformedOrNonManagedPeSafely()
+    {
+        var badPe = Path.Combine(Path.GetTempPath(), $"BadPe_{Guid.NewGuid():N}.dll");
+        try
+        {
+            File.WriteAllBytes(badPe, "NOT_A_VALID_PE_BINARY_PAYLOAD"u8.ToArray());
+            var report = SandboxEngine.ExtractTokens(badPe);
+            Assert.Contains("[Sharphy Sandbox Security Warning]", report);
+        }
+        finally
+        {
+            if (File.Exists(badPe)) File.Delete(badPe);
+        }
+    }
+
     [System.Runtime.InteropServices.DllImport("dbghelp.dll", SetLastError = true)]
     private static extern bool MiniDumpWriteDump(
         IntPtr hProcess,

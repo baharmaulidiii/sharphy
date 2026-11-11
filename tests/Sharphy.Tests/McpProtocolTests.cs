@@ -200,5 +200,26 @@ public class McpProtocolTests
         Assert.NotNull(badArgsResp.Error);
         Assert.Equal(JsonRpcErrorCodes.InvalidParams, badArgsResp.Error.Code);
     }
+
+    [Fact]
+    public async Task RunAsync_RejectsOversizedFramesAndRecoversForNextRequest()
+    {
+        var hugeFrame = new string('x', SharphyMcpServer.MaxMessageSizeChars + 32);
+        var pingFrame = """{"jsonrpc":"2.0","id":77,"method":"ping","params":{}}""";
+        using var input = new StringReader(hugeFrame + "\n" + pingFrame + "\n");
+        using var output = new StringWriter();
+        using var err = new StringWriter();
+
+        var server = new SharphyMcpServer(input: input, output: output, error: err);
+        await server.RunAsync(TestContext.Current.CancellationToken);
+
+        var lines = output.ToString()
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+        Assert.Equal(2, lines.Length);
+        Assert.Contains("maximum frame size", lines[0]);
+        Assert.Contains("\"id\":77", lines[1]);
+        Assert.DoesNotContain("\"error\"", lines[1]);
+    }
 }
 

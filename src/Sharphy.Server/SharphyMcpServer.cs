@@ -9,11 +9,17 @@ namespace Sharphy.Server;
 /// </summary>
 public sealed class SharphyMcpServer
 {
+    public const int MaxMessageSizeChars = 4 * 1024 * 1024;
+
     private readonly ToolRegistry _toolRegistry;
     private readonly TextReader _input;
     private readonly TextWriter _output;
     private readonly TextWriter _error;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly char[] _readBuffer = new char[4096];
+    private int _bufPos;
+    private int _bufLen;
+    private bool _skipNextLf;
     private volatile bool _isRunning;
 
     public SharphyMcpServer(
@@ -42,19 +48,29 @@ public sealed class SharphyMcpServer
         while (_isRunning && !cancellationToken.IsCancellationRequested)
         {
             string? line;
+            bool exceededLimit;
             try
             {
-                line = await _input.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+                (line, exceededLimit) = await ReadLineBoundedAsync(MaxMessageSizeChars, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
                 break;
             }
 
-            if (line == null)
+            if (line == null && !exceededLimit)
             {
                 // Stdio stream closed by parent host / client
                 break;
+            }
+
+            if (exceededLimit)
+            {
+                LogDiagnostic($"Rejected oversized JSON-RPC frame exceeding {MaxMessageSizeChars} characters.");
+                var sizeError = JsonRpcResponse.CreateError(null, JsonRpcErrorCodes.InvalidRequest, $"Request exceeds maximum frame size of {MaxMessageSizeChars} characters.");
+                await _output.WriteLineAsync(JsonSerializer.Serialize(sizeError, _jsonOptions)).ConfigureAwait(false);
+                await _output.FlushAsync().ConfigureAwait(false);
+                continue;
             }
 
             if (string.IsNullOrWhiteSpace(line))
@@ -87,6 +103,11 @@ public sealed class SharphyMcpServer
 
     public async Task<JsonRpcResponse?> ProcessMessageAsync(string messageJson)
     {
+        if (messageJson.Length > MaxMessageSizeChars)
+        {
+            return JsonRpcResponse.CreateError(null, JsonRpcErrorCodes.InvalidRequest, $"Request exceeds maximum frame size of {MaxMessageSizeChars} characters.");
+        }
+
         JsonRpcRequest? request;
         try
         {
@@ -174,6 +195,62 @@ public sealed class SharphyMcpServer
 
         var callResult = await _toolRegistry.DispatchAsync(toolName, arguments).ConfigureAwait(false);
         return JsonRpcResponse.Success(request.Id, callResult);
+    }
+
+    private async Task<(string? Line, bool ExceededLimit)> ReadLineBoundedAsync(int maxChars, CancellationToken cancellationToken)
+    {
+        var sb = new System.Text.StringBuilder();
+        bool exceeded = false;
+
+        while (true)
+        {
+            if (_bufPos >= _bufLen)
+            {
+                _bufLen = await _input.ReadAsync(_readBuffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+                _bufPos = 0;
+
+                if (_bufLen == 0)
+                {
+                    if (exceeded) return (null, true);
+                    return sb.Length > 0 ? (sb.ToString(), false) : (null, false);
+                }
+            }
+
+            if (_skipNextLf)
+            {
+                _skipNextLf = false;
+                if (_readBuffer[_bufPos] == '\n')
+                {
+                    _bufPos++;
+                    continue;
+                }
+            }
+
+            char ch = _readBuffer[_bufPos++];
+            if (ch == '\r')
+            {
+                _skipNextLf = true;
+                return exceeded ? (null, true) : (sb.ToString(), false);
+            }
+
+            if (ch == '\n')
+            {
+                return exceeded ? (null, true) : (sb.ToString(), false);
+            }
+
+            if (!exceeded)
+            {
+                if (sb.Length >= maxChars)
+                {
+                    exceeded = true;
+                    sb.Clear();
+                }
+                else
+                {
+                    sb.Append(ch);
+                }
+            }
+        }
     }
 
     private void LogDiagnostic(string message)

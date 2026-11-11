@@ -29,11 +29,12 @@ public static class WrapperGeneratorEngine
         sb.AppendLine();
 
         var rootNamespace = GetRootNamespace(type);
-        var wrapperNamespace = string.IsNullOrWhiteSpace(rootNamespace)
+        var safeNamespace = SanitizeDottedNamespace(rootNamespace);
+        var wrapperNamespace = string.IsNullOrWhiteSpace(safeNamespace)
             ? "GeneratedWrappers"
-            : $"{rootNamespace}.GeneratedWrappers";
+            : $"{safeNamespace}.GeneratedWrappers";
         var safeTypeName = CecilHelpers.SanitizeCSharpIdentifier(type.Name);
-        var fullTypeExpr = type.FullName.Replace('/', '.');
+        var fullTypeExpr = SanitizeDottedTypeExpression(type.FullName);
 
         sb.AppendLine($"namespace {wrapperNamespace};");
         sb.AppendLine();
@@ -59,7 +60,7 @@ public static class WrapperGeneratorEngine
             var candidateName = $"Call_{CecilHelpers.SanitizeCSharpIdentifier(method.Name)}";
             var uniqueMethodName = MakeUniqueIdentifier(candidateName, usedNames);
 
-            sb.AppendLine($"    [UnsafeAccessor({kind}, Name = \"{method.Name}\")]");
+            sb.AppendLine($"    [UnsafeAccessor({kind}, Name = \"{EscapeCSharpStringLiteral(method.Name)}\")]");
             sb.AppendLine($"    public static extern {FormatTypeName(method.ReturnType)} {uniqueMethodName}({allParams});");
             sb.AppendLine();
         }
@@ -72,7 +73,7 @@ public static class WrapperGeneratorEngine
             var candidateName = $"Get_{CecilHelpers.SanitizeCSharpIdentifier(field.Name)}";
             var uniqueFieldName = MakeUniqueIdentifier(candidateName, usedNames);
 
-            sb.AppendLine($"    [UnsafeAccessor({kind}, Name = \"{field.Name}\")]");
+            sb.AppendLine($"    [UnsafeAccessor({kind}, Name = \"{EscapeCSharpStringLiteral(field.Name)}\")]");
             sb.AppendLine($"    public static extern ref {FormatTypeName(field.FieldType)} {uniqueFieldName}({targetParam});");
             sb.AppendLine();
         }
@@ -98,14 +99,65 @@ public static class WrapperGeneratorEngine
         {
             return $"ref {FormatTypeName(byRef.ElementType)}";
         }
+        if (typeRef is ArrayType arr)
+        {
+            var commas = arr.Rank > 1 ? new string(',', arr.Rank - 1) : string.Empty;
+            return $"{FormatTypeName(arr.ElementType)}[{commas}]";
+        }
         if (typeRef is GenericInstanceType git)
         {
             var baseName = git.ElementType.Name;
             var tickIdx = baseName.IndexOf('`');
             if (tickIdx > 0) baseName = baseName[..tickIdx];
-            return $"{baseName}<{string.Join(", ", git.GenericArguments.Select(FormatTypeName))}>";
+            return $"{CecilHelpers.SanitizeCSharpIdentifier(baseName)}<{string.Join(", ", git.GenericArguments.Select(FormatTypeName))}>";
         }
-        return typeRef.Name;
+        return CecilHelpers.SanitizeCSharpIdentifier(typeRef.Name);
+    }
+
+    private static string SanitizeDottedNamespace(string rawNamespace)
+    {
+        if (string.IsNullOrWhiteSpace(rawNamespace)) return string.Empty;
+        return string.Join(".", rawNamespace
+            .Split('.', StringSplitOptions.RemoveEmptyEntries)
+            .Select(CecilHelpers.SanitizeCSharpIdentifier));
+    }
+
+    private static string SanitizeDottedTypeExpression(string rawFullName)
+    {
+        var normalized = rawFullName.Replace('/', '.');
+        var tickIdx = normalized.IndexOf('`');
+        if (tickIdx > 0) normalized = normalized[..tickIdx];
+        return string.Join(".", normalized
+            .Split('.', StringSplitOptions.RemoveEmptyEntries)
+            .Select(CecilHelpers.SanitizeCSharpIdentifier));
+    }
+
+    private static string EscapeCSharpStringLiteral(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return string.Empty;
+
+        var sb = new StringBuilder(raw.Length);
+        foreach (char c in raw)
+        {
+            switch (c)
+            {
+                case '\\': sb.Append("\\\\"); break;
+                case '\"': sb.Append("\\\""); break;
+                case '\0': sb.Append("\\0"); break;
+                case '\r': sb.Append("\\r"); break;
+                case '\n': sb.Append("\\n"); break;
+                case '\t': sb.Append("\\t"); break;
+                case '\b': sb.Append("\\b"); break;
+                case '\f': sb.Append("\\f"); break;
+                default:
+                    if (char.IsControl(c))
+                        sb.Append($"\\u{(int)c:x4}");
+                    else
+                        sb.Append(c);
+                    break;
+            }
+        }
+        return sb.ToString();
     }
 
     private static string GetRootNamespace(TypeDefinition type)

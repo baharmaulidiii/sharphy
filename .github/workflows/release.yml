@@ -32,10 +32,7 @@ on:
         default: true
 
 permissions:
-  contents: write
-  packages: write
-  pages: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: "release-${{ github.ref }}"
@@ -103,15 +100,22 @@ jobs:
       - name: Determine Package Version & Tag
         id: versioning
         shell: pwsh
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if ("${{ github.event.inputs.version }}" -ne "") {
-            $rawVer = "${{ github.event.inputs.version }}"
-          } elseif ("${{ github.ref_name }}" -match '^v?(.*)$') {
+          if (-not [string]::IsNullOrEmpty($env:INPUT_VERSION)) {
+            $rawVer = $env:INPUT_VERSION
+          } elseif ($env:REF_NAME -match '^v?(.*)$') {
             $rawVer = $matches[1]
           } else {
             $rawVer = "1.0.0"
           }
           $ver = $rawVer.TrimStart('v')
+          if ($ver -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
+            Write-Error "Invalid semantic version format: '$ver'"
+            exit 1
+          }
           $tag = "v$ver"
 
           Write-Output "Resolved version: $ver"
@@ -182,6 +186,8 @@ jobs:
     needs: [verify, publish_packages]
     if: always() && needs.verify.result == 'success' && (needs.publish_packages.result == 'success' || github.event.inputs.publish_packages == 'false')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -189,15 +195,22 @@ jobs:
       - name: Determine Version & Tag
         id: release_meta
         shell: bash
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            RAW_VER="${{ github.event.inputs.version }}"
-          elif [[ "${{ github.ref_name }}" =~ ^v?(.*)$ ]]; then
+          if [ -n "$INPUT_VERSION" ]; then
+            RAW_VER="$INPUT_VERSION"
+          elif [[ "$REF_NAME" =~ ^v?(.*)$ ]]; then
             RAW_VER="${BASH_REMATCH[1]}"
           else
             RAW_VER="1.0.0"
           fi
           VER="${RAW_VER#v}"
+          if ! [[ "$VER" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semantic version format: '$VER'" >&2
+            exit 1
+          fi
           TAG="v$VER"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "version=$VER" >> $GITHUB_OUTPUT
@@ -212,13 +225,14 @@ jobs:
       - name: Extract Release Notes from CHANGELOG.md
         id: changelog_extract
         shell: bash
+        env:
+          TAG: ${{ steps.release_meta.outputs.tag }}
+          VER: ${{ steps.release_meta.outputs.version }}
         run: |
-          TAG="${{ steps.release_meta.outputs.tag }}"
-          VER="${{ steps.release_meta.outputs.version }}"
           echo "Extracting release notes for version $VER ($TAG)..."
           
           NOTE_FILE="release_notes.md"
-          awk "/## \[$VER\]/{flag=1;next}/## \[/{flag=0}flag" CHANGELOG.md > "$NOTE_FILE" || true
+          awk -v ver="$VER" '$0 ~ ("## \\[" ver "\\]"){flag=1;next}/## \[/{flag=0}flag' CHANGELOG.md > "$NOTE_FILE" || true
           
           if [ ! -s "$NOTE_FILE" ]; then
             echo "Release $TAG of Sharphy: CLR Intelligence & Runtime Forensic Bridge for AI Coding Agents." > "$NOTE_FILE"
@@ -245,6 +259,10 @@ jobs:
     needs: [verify]
     if: github.event.inputs.deploy_docs != 'false'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -300,15 +318,22 @@ jobs:
       - name: Determine Target Version
         id: target_version
         shell: bash
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            RAW_VER="${{ github.event.inputs.version }}"
-          elif [[ "${{ github.ref_name }}" =~ ^v?(.*)$ ]]; then
+          if [ -n "$INPUT_VERSION" ]; then
+            RAW_VER="$INPUT_VERSION"
+          elif [[ "$REF_NAME" =~ ^v?(.*)$ ]]; then
             RAW_VER="${BASH_REMATCH[1]}"
           else
             RAW_VER="1.0.0"
           fi
           VER="${RAW_VER#v}"
+          if ! [[ "$VER" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semantic version format: '$VER'" >&2
+            exit 1
+          fi
           echo "PACKAGE_VERSION=$VER" >> $GITHUB_ENV
           echo "Target version for MCP Registry: $VER"
 
@@ -318,12 +343,31 @@ jobs:
           go-version: '>=1.22'
           check-latest: false
 
-      - name: Download & Install mcp-publisher CLI
+      - name: Download, Verify SHA256 & Install mcp-publisher CLI
         shell: bash
         run: |
-          echo "Fetching latest mcp-publisher release..."
+          MCP_PUBLISHER_VERSION="v1.8.9"
+          echo "Fetching pinned mcp-publisher ${MCP_PUBLISHER_VERSION}..."
           ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
-          curl -sL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_${ARCH}.tar.gz" | tar -xz mcp-publisher
+          ARCHIVE="mcp-publisher_linux_${ARCH}.tar.gz"
+
+          case "${ARCH}" in
+            amd64)
+              EXPECTED_SHA256="4d527ca8f1ced0394c962dc925c2a4a4addef441cbefd62501c875e9481823a8"
+              ;;
+            arm64)
+              EXPECTED_SHA256="f4eb2e2f0a3d0693247efc117902ebcc651e1d1da973c85ed165db80a93e4fbb"
+              ;;
+            *)
+              echo "Unsupported architecture: ${ARCH}" >&2
+              exit 1
+              ;;
+          esac
+
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/${ARCHIVE}" -o "${ARCHIVE}"
+          echo "${EXPECTED_SHA256}  ${ARCHIVE}" | sha256sum -c -
+          tar -xzf "${ARCHIVE}" mcp-publisher
+          rm -f "${ARCHIVE}"
           chmod +x ./mcp-publisher
           ./mcp-publisher --help
 
