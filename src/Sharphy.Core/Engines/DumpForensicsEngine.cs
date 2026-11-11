@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Diagnostics.Runtime;
 
 namespace Sharphy.Core.Engines;
@@ -98,7 +99,7 @@ public static class DumpForensicsEngine
 
                 foreach (var item in stats)
                 {
-                    sw.WriteLine(string.Format("{0,-60} | {1,10} | {2,15:N0}", item.TypeName, item.Count, item.TotalSize));
+                    sw.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0,-60} | {1,10} | {2,15:N0}", item.TypeName, item.Count, item.TotalSize));
                 }
 
                 // GC Heap Fragmentation, LOH/POH Compaction Risk & Pinning Telemetry
@@ -147,12 +148,12 @@ public static class DumpForensicsEngine
                     double pohFragPct = pohTotalSize > 0 ? ((double)pohFreeSize / pohTotalSize) * 100.0 : 0.0;
                     double gen2FragPct = gen2TotalSize > 0 ? ((double)gen2FreeSize / gen2TotalSize) * 100.0 : 0.0;
 
-                    sw.WriteLine($"Total Heap Size: {totalHeapSize:N0} bytes | Free: {totalFreeSize:N0} bytes ({fragmentationPct:F2}%)");
-                    sw.WriteLine($"LOH Size: {lohTotalSize:N0} bytes (Fragmentation: {lohFragPct:F2}%)");
-                    sw.WriteLine($"POH Size: {pohTotalSize:N0} bytes (Fragmentation: {pohFragPct:F2}%)");
+                    sw.WriteLine(string.Format(CultureInfo.InvariantCulture, "Total Heap Size: {0:N0} bytes | Free: {1:N0} bytes ({2:F2}%)", totalHeapSize, totalFreeSize, fragmentationPct));
+                    sw.WriteLine(string.Format(CultureInfo.InvariantCulture, "LOH Size: {0:N0} bytes (Fragmentation: {1:F2}%)", lohTotalSize, lohFragPct));
+                    sw.WriteLine(string.Format(CultureInfo.InvariantCulture, "POH Size: {0:N0} bytes (Fragmentation: {1:F2}%)", pohTotalSize, pohFragPct));
                     if (gen2TotalSize > 0)
                     {
-                        sw.WriteLine($"Gen2 Size: {gen2TotalSize:N0} bytes (Fragmentation: {gen2FragPct:F2}%)");
+                        sw.WriteLine(string.Format(CultureInfo.InvariantCulture, "Gen2 Size: {0:N0} bytes (Fragmentation: {1:F2}%)", gen2TotalSize, gen2FragPct));
                     }
 
                     // Pinned & AsyncPinned handles enumeration
@@ -284,6 +285,9 @@ public static class DumpForensicsEngine
                     "System.Threading.Monitor.ReliableEnter",
                     "System.Threading.Monitor.Wait",
                     "AwareLock::Enter",
+                    "HelperMethodFrame_1OBJ",
+                    "JIT_MonEnter",
+                    "JIT_MonReliableEnter",
                     "System.Threading.WaitHandle.WaitOne"
                 };
 
@@ -307,22 +311,33 @@ public static class DumpForensicsEngine
                             continue;
                         }
 
+                        var candidateEdges = new List<(int OwnerThreadId, ulong ObjectAddress, string ObjectType, int WaitingCount)>();
                         foreach (var root in thread.EnumerateStackRoots())
                         {
                             var addr = root.Object.Address;
                             if (addr != 0 && locksByObject.TryGetValue(addr, out var held) && held.OwnerThreadId != thread.ManagedThreadId)
                             {
-                                if (!waitForGraph.TryGetValue(thread.ManagedThreadId, out var owners))
-                                {
-                                    owners = new List<int>();
-                                    waitForGraph[thread.ManagedThreadId] = owners;
-                                }
+                                candidateEdges.Add((held.OwnerThreadId, addr, held.ObjectType, held.Block.WaitingThreadCount));
+                            }
+                        }
 
-                                if (!owners.Contains(held.OwnerThreadId))
-                                {
-                                    owners.Add(held.OwnerThreadId);
-                                    waitEdges.Add((thread.ManagedThreadId, held.OwnerThreadId, addr, held.ObjectType));
-                                }
+                        // Prefer SyncBlocks that explicitly report waiting threads when available
+                        var preferredEdges = candidateEdges.Any(e => e.WaitingCount > 0)
+                            ? candidateEdges.Where(e => e.WaitingCount > 0)
+                            : candidateEdges;
+
+                        foreach (var held in preferredEdges)
+                        {
+                            if (!waitForGraph.TryGetValue(thread.ManagedThreadId, out var owners))
+                            {
+                                owners = new List<int>();
+                                waitForGraph[thread.ManagedThreadId] = owners;
+                            }
+
+                            if (!owners.Contains(held.OwnerThreadId))
+                            {
+                                owners.Add(held.OwnerThreadId);
+                                waitEdges.Add((thread.ManagedThreadId, held.OwnerThreadId, held.ObjectAddress, held.ObjectType));
                             }
                         }
                     }
@@ -630,6 +645,11 @@ public static class DumpForensicsEngine
                                 recordedBlocked = true;
                             }
                         }
+                    }
+
+                    if (!recordedBlocked && string.Equals(firstRuntimeFrame, "HelperMethodFrame_1OBJ", StringComparison.Ordinal))
+                    {
+                        blockedThreads.Add((thread.ManagedThreadId, "System.Threading.Monitor.Enter", "HelperMethodFrame_1OBJ"));
                     }
 
                     if (firstRuntimeFrame != null)
