@@ -92,7 +92,7 @@ internal static class CecilHelpers
     {
         if (string.IsNullOrWhiteSpace(raw)) return "_";
 
-        Span<char> buffer = stackalloc char[raw.Length];
+        Span<char> buffer = raw.Length <= 256 ? stackalloc char[raw.Length] : new char[raw.Length];
         for (int i = 0; i < raw.Length; i++)
         {
             char c = raw[i];

@@ -92,24 +92,25 @@ public static class WrapperGeneratorEngine
         return code;
     }
 
-    private static string FormatTypeName(TypeReference typeRef)
+    private static string FormatTypeName(TypeReference typeRef, int depth = 0)
     {
+        if (depth > 32) return "object";
         if (typeRef.FullName == "System.Void") return "void";
         if (typeRef.IsByReference && typeRef is ByReferenceType byRef)
         {
-            return $"ref {FormatTypeName(byRef.ElementType)}";
+            return $"ref {FormatTypeName(byRef.ElementType, depth + 1)}";
         }
         if (typeRef is ArrayType arr)
         {
             var commas = arr.Rank > 1 ? new string(',', arr.Rank - 1) : string.Empty;
-            return $"{FormatTypeName(arr.ElementType)}[{commas}]";
+            return $"{FormatTypeName(arr.ElementType, depth + 1)}[{commas}]";
         }
         if (typeRef is GenericInstanceType git)
         {
             var baseName = git.ElementType.Name;
             var tickIdx = baseName.IndexOf('`');
             if (tickIdx > 0) baseName = baseName[..tickIdx];
-            return $"{CecilHelpers.SanitizeCSharpIdentifier(baseName)}<{string.Join(", ", git.GenericArguments.Select(FormatTypeName))}>";
+            return $"{CecilHelpers.SanitizeCSharpIdentifier(baseName)}<{string.Join(", ", git.GenericArguments.Select(a => FormatTypeName(a, depth + 1)))}>";
         }
         return CecilHelpers.SanitizeCSharpIdentifier(typeRef.Name);
     }

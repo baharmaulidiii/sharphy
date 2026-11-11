@@ -704,6 +704,13 @@ public class RealEngineTests
                     mod.TypeSystem.Void);
                 type.Methods.Add(injectedMethod);
 
+                var longName = new string('A', 5000);
+                var longMethod = new Mono.Cecil.MethodDefinition(
+                    longName,
+                    Mono.Cecil.MethodAttributes.Private | Mono.Cecil.MethodAttributes.Static,
+                    mod.TypeSystem.Void);
+                type.Methods.Add(longMethod);
+
                 asm.Write(tempDll);
             }
 
@@ -712,6 +719,7 @@ public class RealEngineTests
             Assert.DoesNotContain("\r//injected", code);
             Assert.Contains("Name = \"Secret\\\")]\\n//injected\"", code);
             Assert.DoesNotContain("Process.Start(", code);
+            Assert.Contains("Call_" + new string('A', 5000), code);
         }
         finally
         {
