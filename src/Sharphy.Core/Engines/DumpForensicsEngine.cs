@@ -9,6 +9,8 @@ namespace Sharphy.Core.Engines;
 public static class DumpForensicsEngine
 {
     private const int MaxNativeModulesInReport = 15;
+    private const int MaxThreadsInReport = 30;
+    private const int MaxExceptionFramesInReport = 15;
 
     private static readonly string[] SyncBlockingSignatures =
     {
@@ -168,6 +170,7 @@ public static class DumpForensicsEngine
                         .Where(h => h.HandleKind == ClrHandleKind.Pinned || h.HandleKind == ClrHandleKind.AsyncPinned)
                         .ToList();
 
+                    int ephemeralPinnedCount = 0;
                     int lohPinnedCount = 0;
                     int pohPinnedCount = 0;
                     int gen2PinnedCount = 0;
@@ -195,11 +198,20 @@ public static class DumpForensicsEngine
                         {
                             gen2PinnedCount++;
                         }
+                        else
+                        {
+                            ephemeralPinnedCount++;
+                        }
                     }
 
                     var (riskScore, riskSeverity) = ComputeCompactionRiskScore(lohFragPct, pohFragPct, lohPinnedCount, gen2PinnedCount);
                     sw.WriteLine($"Compaction Resistance Score: {riskScore}/100 ({riskSeverity})");
-                    sw.WriteLine($"Pinned Handles: {pinnedHandles.Count} total (LOH: {lohPinnedCount}, POH: {pohPinnedCount}, Gen2: {gen2PinnedCount})");
+                    sw.WriteLine($"Pinned Handles: {pinnedHandles.Count} total (Gen0/Gen1: {ephemeralPinnedCount}, Gen2: {gen2PinnedCount}, LOH: {lohPinnedCount}, POH: {pohPinnedCount})");
+
+                    if (ephemeralPinnedCount > 0)
+                    {
+                        sw.WriteLine($"  ⚠️ {ephemeralPinnedCount} ephemeral (Gen0/Gen1) pinned handle(s) detected; pinning young-generation objects blocks generational compaction.");
+                    }
 
                     if (fragmentationPct > 30.0 || riskScore >= 50)
                     {
@@ -589,22 +601,72 @@ public static class DumpForensicsEngine
     private static void WriteThreadsAndExceptions(StringWriter sw, ClrRuntime runtime)
     {
         sw.WriteLine("--- Threads & Exceptions ---");
-        foreach (var thread in runtime.Threads.Where(t => t.IsAlive))
+        var aliveThreads = runtime.Threads.Where(t => t.IsAlive).ToList();
+        var orderedThreads = aliveThreads
+            .OrderByDescending(t => SafeRead(() => t.CurrentException != null ? "1" : "0", "0") == "1")
+            .ThenBy(t => t.ManagedThreadId)
+            .ToList();
+
+        int printedThreads = 0;
+        foreach (var thread in orderedThreads)
         {
-            sw.WriteLine($"[Thread #{thread.ManagedThreadId}] OS Thread ID: 0x{thread.OSThreadId:X4}");
+            ClrException? ex = null;
+            string? exceptionReadError = null;
             try
             {
-                var ex = thread.CurrentException;
-                if (ex != null)
+                ex = thread.CurrentException;
+            }
+            catch (ClrDiagnosticsException readEx)
+            {
+                exceptionReadError = readEx.Message;
+            }
+
+            if (printedThreads >= MaxThreadsInReport && ex == null)
+            {
+                continue;
+            }
+
+            sw.WriteLine($"[Thread #{thread.ManagedThreadId}] OS Thread ID: 0x{thread.OSThreadId:X4}");
+            printedThreads++;
+
+            if (exceptionReadError != null)
+            {
+                sw.WriteLine($"  [Partial Dump Warning] Could not read thread exception record: {exceptionReadError}");
+                continue;
+            }
+
+            if (ex != null)
+            {
+                sw.WriteLine($"  🔥 Crashing Exception: {ex.Type?.Name ?? "UnknownException"}: {ex.Message ?? "<no message>"}");
+                sw.WriteLine($"  HRESULT: 0x{ex.HResult:X8}");
+
+                try
                 {
-                    sw.WriteLine($"  🔥 Crashing Exception: {ex.Type?.Name ?? "UnknownException"}: {ex.Message ?? "<no message>"}");
-                    sw.WriteLine($"  HRESULT: 0x{ex.HResult:X8}");
+                    var frames = thread.EnumerateStackTrace()
+                        .Select(f => f.Method?.Signature ?? f.FrameName)
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Take(MaxExceptionFramesInReport)
+                        .ToList();
+
+                    if (frames.Count > 0)
+                    {
+                        sw.WriteLine("  Crashing Call Stack:");
+                        foreach (var frame in frames)
+                        {
+                            sw.WriteLine($"    at {frame}");
+                        }
+                    }
+                }
+                catch (ClrDiagnosticsException stackEx)
+                {
+                    sw.WriteLine($"  [Partial Stack Warning] Could not unwind full exception stack: {stackEx.Message}");
                 }
             }
-            catch (ClrDiagnosticsException ex)
-            {
-                sw.WriteLine($"  [Partial Dump Warning] Could not read thread exception record: {ex.Message}");
-            }
+        }
+
+        if (orderedThreads.Count > printedThreads)
+        {
+            sw.WriteLine($"  ... ({orderedThreads.Count - printedThreads} additional alive threads omitted for token efficiency)");
         }
     }
 

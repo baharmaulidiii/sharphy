@@ -164,5 +164,41 @@ public class McpProtocolTests
         Assert.True(invalidOffsetResult.IsError);
         Assert.Contains("non-negative integer", invalidOffsetResult.Content[0].Text);
     }
+
+    [Fact]
+    public async Task ProcessMessage_RejectsNon20JsonRpcVersionAndNonObjectArguments()
+    {
+        var server = new SharphyMcpServer();
+
+        var legacyReq = """
+        {
+            "jsonrpc": "1.0",
+            "id": 12,
+            "method": "tools/list"
+        }
+        """;
+
+        var legacyResp = await server.ProcessMessageAsync(legacyReq);
+        Assert.NotNull(legacyResp);
+        Assert.NotNull(legacyResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.InvalidRequest, legacyResp.Error.Code);
+
+        var badArgsReq = """
+        {
+            "jsonrpc": "2.0",
+            "id": 13,
+            "method": "tools/call",
+            "params": {
+                "name": "sharphy_inspect_metadata",
+                "arguments": [1, 2, 3]
+            }
+        }
+        """;
+
+        var badArgsResp = await server.ProcessMessageAsync(badArgsReq);
+        Assert.NotNull(badArgsResp);
+        Assert.NotNull(badArgsResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.InvalidParams, badArgsResp.Error.Code);
+    }
 }
 

@@ -601,6 +601,91 @@ public class RealEngineTests
         Assert.False(File.Exists(tempCopy));
     }
 
+    [Fact]
+    public void ObfuscationAnalyzer_CreatesMissingNestedOutputDirectorySafely()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), $"ObfNested_{Guid.NewGuid():N}");
+        var nestedOut = Path.Combine(tempRoot, "sub1", "sub2", "cleaned.dll");
+
+        try
+        {
+            Assert.True(File.Exists(SampleAssemblyPath));
+            var report = ObfuscationAnalyzerEngine.AnalyzeAndCleanObfuscation(SampleAssemblyPath, nestedOut);
+
+            Assert.Contains("Sharphy Deobfuscation & Anti-Tamper Forensics", report);
+            Assert.True(File.Exists(nestedOut));
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot)) Directory.Delete(tempRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void DumpForensicsEngine_CapturesCrashingCallStackAndEphemeralPinnedHandles()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var dumpPath = Path.Combine(Path.GetTempPath(), $"CrashAndPin_{Guid.NewGuid():N}.dmp");
+        var pinnedSmall = new byte[32];
+        var handle = System.Runtime.InteropServices.GCHandle.Alloc(pinnedSmall, System.Runtime.InteropServices.GCHandleType.Pinned);
+
+        try
+        {
+            bool CaptureDumpInFilter()
+            {
+                using var fs = new FileStream(dumpPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+                using var proc = System.Diagnostics.Process.GetCurrentProcess();
+                bool ok = MiniDumpWriteDump(
+                    proc.Handle,
+                    (uint)proc.Id,
+                    fs.SafeFileHandle,
+                    0x00000002u | 0x00000004u | 0x00001000u,
+                    IntPtr.Zero,
+                    IntPtr.Zero,
+                    IntPtr.Zero);
+                Assert.True(ok, "MiniDumpWriteDump failed while writing live exception test dump.");
+                return true;
+            }
+
+            try
+            {
+                throw new InvalidOperationException("SharphySyntheticCrashException");
+            }
+            catch (InvalidOperationException) when (CaptureDumpInFilter())
+            {
+                // Intentionally captured while exception is live in filter
+            }
+
+            var rca = DumpForensicsEngine.AnalyzeCrashDump(dumpPath);
+            Assert.Contains("InvalidOperationException", rca);
+            Assert.Contains("Crashing Call Stack:", rca);
+
+            var heap = DumpForensicsEngine.InspectHeap(dumpPath, topObjects: 10);
+            Assert.Contains("Pinned Handles:", heap);
+            Assert.Contains("Gen0/Gen1:", heap);
+            Assert.Contains("Compaction Resistance Score:", heap);
+        }
+        finally
+        {
+            if (handle.IsAllocated) handle.Free();
+            if (File.Exists(dumpPath)) File.Delete(dumpPath);
+        }
+    }
+
+    [System.Runtime.InteropServices.DllImport("dbghelp.dll", SetLastError = true)]
+    private static extern bool MiniDumpWriteDump(
+        IntPtr hProcess,
+        uint processId,
+        System.Runtime.InteropServices.SafeHandle hFile,
+        uint dumpType,
+        IntPtr exceptionParam,
+        IntPtr userStreamParam,
+        IntPtr callbackParam);
+
     private static string ResolveSampleBinary(string sampleName)
     {
         var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));

@@ -102,6 +102,11 @@ public sealed class SharphyMcpServer
             return JsonRpcResponse.CreateError(request?.Id, JsonRpcErrorCodes.InvalidRequest, "Invalid request payload.");
         }
 
+        if (!string.Equals(request.JsonRpc, "2.0", StringComparison.Ordinal))
+        {
+            return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidRequest, $"Unsupported JSON-RPC version '{request.JsonRpc}'. Expected '2.0'.");
+        }
+
         // JSON-RPC 2.0 notifications (requests without an Id member) must not emit a response.
         if (request.Id == null)
         {
@@ -155,9 +160,16 @@ public sealed class SharphyMcpServer
         }
 
         JsonElement? arguments = null;
-        if (paramsElement.TryGetProperty("arguments", out var argsProp) && argsProp.ValueKind == JsonValueKind.Object)
+        if (paramsElement.TryGetProperty("arguments", out var argsProp))
         {
-            arguments = argsProp;
+            if (argsProp.ValueKind == JsonValueKind.Object)
+            {
+                arguments = argsProp;
+            }
+            else if (argsProp.ValueKind != JsonValueKind.Null && argsProp.ValueKind != JsonValueKind.Undefined)
+            {
+                return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidParams, "Parameter 'arguments' must be an object.");
+            }
         }
 
         var callResult = await _toolRegistry.DispatchAsync(toolName, arguments).ConfigureAwait(false);

@@ -78,17 +78,9 @@ public static class ObfuscationAnalyzerEngine
         sw.WriteLine($"Reflection/Dynamic Proxy Calls   : {suspiciousMethods}");
         sw.WriteLine($"Pattern-Matched String Decryptors: {detectedDecryptors}");
 
-        // Save processed assembly copy to destination outputPath if directory is valid
-        var outDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-        if (!string.IsNullOrEmpty(outDir) && Directory.Exists(outDir))
-        {
-            CecilHelpers.WriteAssemblyAvoidingLock(assembly, assemblyPath, outputPath);
-            sw.WriteLine($"Cleaned/Processed binary written to: {outputPath}");
-        }
-        else
-        {
-            sw.WriteLine("Note: Output path directory does not exist. Assembly analysis complete without disk emission.");
-        }
+        // Save processed assembly copy to destination outputPath (creating missing parent directories safely)
+        CecilHelpers.WriteAssemblyAvoidingLock(assembly, assemblyPath, outputPath);
+        sw.WriteLine($"Cleaned/Processed binary written to: {outputPath}");
 
         return sw.ToString();
     }

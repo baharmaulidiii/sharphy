@@ -38,7 +38,7 @@ export default function Home() {
     {
       name: 'sharphy_inspect_heap',
       category: 'Diagnostics',
-      desc: 'Deep managed heap analysis, GC generation allocations, memory leak retention graphs, and LOH fragmentation.',
+      desc: 'Deep managed heap analysis, GC generation allocations, ephemeral/LOH/POH pinned handle telemetry, and Compaction Resistance Risk Scoring.',
     },
     {
       name: 'sharphy_deadlock_detector',
@@ -53,12 +53,12 @@ export default function Home() {
     {
       name: 'sharphy_diff_assemblies',
       category: 'Decompiler',
-      desc: 'Semantic ECMA-335 assembly comparison detecting added/removed types, breaking API changes, and CIL size shifts.',
+      desc: 'Semantic ECMA-335 assembly comparison, overload & generic signature tracking, and unified LCS CIL instruction diffing.',
     },
     {
       name: 'sharphy_clean_obfuscation',
       category: 'Decompiler',
-      desc: 'Control Flow Graph (CFG) switch flattening demangling, proxy delegate resolution, and excessive NOP trimming.',
+      desc: 'Control Flow Graph (CFG) switch flattening detection, multi-pattern decryptor classification, and branch/EH-safe redundant NOP trimming.',
     },
     {
       name: 'sharphy_inspect_metadata',
