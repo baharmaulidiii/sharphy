@@ -101,5 +101,68 @@ public class McpProtocolTests
         Assert.NotNull(response.Error);
         Assert.Equal(JsonRpcErrorCodes.MethodNotFound, response.Error.Code);
     }
+
+    [Fact]
+    public async Task ProcessMessage_ArbitraryNotificationWithoutId_ReturnsNull()
+    {
+        var server = new SharphyMcpServer();
+        var request = "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/cancelled\",\"params\":{\"requestId\":42}}";
+
+        var response = await server.ProcessMessageAsync(request);
+
+        Assert.Null(response);
+    }
+
+    [Fact]
+    public async Task ProcessMessage_ToolsCall_ValidatesHeapTopObjectsAndPatchOffset()
+    {
+        var server = new SharphyMcpServer();
+
+        var invalidTopReq = """
+        {
+            "jsonrpc": "2.0",
+            "id": 10,
+            "method": "tools/call",
+            "params": {
+                "name": "sharphy_inspect_heap",
+                "arguments": {
+                    "dumpPath": "missing.dmp",
+                    "topObjects": 0
+                }
+            }
+        }
+        """;
+
+        var invalidTopResp = await server.ProcessMessageAsync(invalidTopReq);
+        Assert.NotNull(invalidTopResp);
+        var invalidTopResult = Assert.IsType<McpToolCallResult>(invalidTopResp.Result);
+        Assert.True(invalidTopResult.IsError);
+        Assert.Contains("positive integer", invalidTopResult.Content[0].Text);
+
+        var invalidOffsetReq = """
+        {
+            "jsonrpc": "2.0",
+            "id": 11,
+            "method": "tools/call",
+            "params": {
+                "name": "sharphy_patch_il",
+                "arguments": {
+                    "assemblyPath": "missing.dll",
+                    "typeName": "Demo.Program",
+                    "methodName": "Main",
+                    "instructionOffset": -5,
+                    "newOpCode": "Nop",
+                    "outputPath": "out.dll"
+                }
+            }
+        }
+        """;
+
+        var invalidOffsetResp = await server.ProcessMessageAsync(invalidOffsetReq);
+        Assert.NotNull(invalidOffsetResp);
+        var invalidOffsetResult = Assert.IsType<McpToolCallResult>(invalidOffsetResp.Result);
+        Assert.True(invalidOffsetResult.IsError);
+        Assert.Contains("non-negative integer", invalidOffsetResult.Content[0].Text);
+    }
 }
 

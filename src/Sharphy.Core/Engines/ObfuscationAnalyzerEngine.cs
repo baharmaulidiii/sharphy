@@ -10,13 +10,7 @@ public static class ObfuscationAnalyzerEngine
 {
     public static string AnalyzeAndCleanObfuscation(string assemblyPath, string outputPath)
     {
-        if (!File.Exists(assemblyPath))
-        {
-            throw new FileNotFoundException($"Assembly was not found at '{assemblyPath}'.", assemblyPath);
-        }
-
-        var readerParams = new ReaderParameters { ReadWrite = false };
-        using var assembly = AssemblyDefinition.ReadAssembly(assemblyPath, readerParams);
+        using var assembly = CecilHelpers.ReadAssemblyReadOnly(assemblyPath);
 
         var sw = new StringWriter();
         sw.WriteLine("=== Sharphy Deobfuscation & Anti-Tamper Forensics ===");
@@ -31,10 +25,8 @@ public static class ObfuscationAnalyzerEngine
 
         sw.WriteLine("--- Method Control Flow Graph (CFG) Analysis ---");
 
-        foreach (var type in assembly.MainModule.Types)
+        foreach (var type in CecilHelpers.EnumerateAllTypes(assembly.MainModule, includeModuleType: true))
         {
-            if (type.Name.StartsWith("<")) continue;
-
             foreach (var method in type.Methods.Where(m => m.HasBody))
             {
                 var body = method.Body;
@@ -59,7 +51,9 @@ public static class ObfuscationAnalyzerEngine
 
                 // 3. Detect String Encryption or Dynamic Proxy Method Invocation
                 var hasDynamicInvoke = instructions.Any(i => i.OpCode == OpCodes.Calli ||
-                    (i.Operand is MethodReference mr && mr.DeclaringType.FullName == "System.Reflection.MethodBase" && mr.Name == "Invoke"));
+                    (i.Operand is MethodReference mr &&
+                     ((mr.DeclaringType.FullName is "System.Reflection.MethodBase" or "System.Reflection.MethodInfo" && mr.Name == "Invoke") ||
+                      (mr.DeclaringType.FullName == "System.Delegate" && mr.Name == "DynamicInvoke"))));
 
                 if (hasDynamicInvoke)
                 {
@@ -88,7 +82,7 @@ public static class ObfuscationAnalyzerEngine
         var outDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
         if (!string.IsNullOrEmpty(outDir) && Directory.Exists(outDir))
         {
-            assembly.Write(outputPath);
+            CecilHelpers.WriteAssemblyAvoidingLock(assembly, assemblyPath, outputPath);
             sw.WriteLine($"Cleaned/Processed binary written to: {outputPath}");
         }
         else

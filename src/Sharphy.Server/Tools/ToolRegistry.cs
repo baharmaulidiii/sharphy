@@ -82,8 +82,12 @@ public sealed class ToolRegistry
                     return Task.FromResult(McpToolCallResult.CreateError("Parameter 'dumpPath' is required."));
 
                 var topObjects = 20;
-                if (args?.TryGetProperty("topObjects", out var top) == true && top.TryGetInt32(out var tVal))
+                if (args?.TryGetProperty("topObjects", out var top) == true)
                 {
+                    if (!top.TryGetInt32(out var tVal) || tVal < 1)
+                    {
+                        return Task.FromResult(McpToolCallResult.CreateError("Parameter 'topObjects' must be a positive integer (>= 1)."));
+                    }
                     topObjects = tVal;
                 }
 
@@ -308,7 +312,6 @@ public sealed class ToolRegistry
                 var asm = args?.TryGetProperty("assemblyPath", out var a) == true ? a.GetString() : null;
                 var type = args?.TryGetProperty("typeName", out var t) == true ? t.GetString() : null;
                 var method = args?.TryGetProperty("methodName", out var m) == true ? m.GetString() : null;
-                var offset = args?.TryGetProperty("instructionOffset", out var o) == true && o.TryGetInt32(out var off) ? off : 0;
                 var opCode = args?.TryGetProperty("newOpCode", out var op) == true ? op.GetString() : null;
                 var output = args?.TryGetProperty("outputPath", out var outP) == true ? outP.GetString() : null;
 
@@ -316,6 +319,11 @@ public sealed class ToolRegistry
                     string.IsNullOrWhiteSpace(opCode) || string.IsNullOrWhiteSpace(output))
                 {
                     return Task.FromResult(McpToolCallResult.CreateError("Missing required parameters for sharphy_patch_il."));
+                }
+
+                if (args?.TryGetProperty("instructionOffset", out var o) != true || !o.TryGetInt32(out var offset) || offset < 0)
+                {
+                    return Task.FromResult(McpToolCallResult.CreateError("Parameter 'instructionOffset' must be a non-negative integer."));
                 }
 
                 if (!File.Exists(asm))

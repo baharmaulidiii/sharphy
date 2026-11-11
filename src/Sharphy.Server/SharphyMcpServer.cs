@@ -14,7 +14,7 @@ public sealed class SharphyMcpServer
     private readonly TextWriter _output;
     private readonly TextWriter _error;
     private readonly JsonSerializerOptions _jsonOptions;
-    private bool _isRunning;
+    private volatile bool _isRunning;
 
     public SharphyMcpServer(
         ToolRegistry? toolRegistry = null,
@@ -102,10 +102,18 @@ public sealed class SharphyMcpServer
             return JsonRpcResponse.CreateError(request?.Id, JsonRpcErrorCodes.InvalidRequest, "Invalid request payload.");
         }
 
-        // Handle initialized notification (request without Id)
-        if (request.Method == "notifications/initialized")
+        // JSON-RPC 2.0 notifications (requests without an Id member) must not emit a response.
+        if (request.Id == null)
         {
-            LogDiagnostic("Client connection successfully initialized.");
+            if (request.Method == "notifications/initialized")
+            {
+                LogDiagnostic("Client connection successfully initialized.");
+            }
+            else if (request.Method.StartsWith("notifications/", StringComparison.Ordinal))
+            {
+                LogDiagnostic($"Received client notification '{request.Method}'.");
+            }
+
             return null;
         }
 

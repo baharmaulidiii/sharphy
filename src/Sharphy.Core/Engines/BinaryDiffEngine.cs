@@ -20,8 +20,8 @@ public static class BinaryDiffEngine
             throw new FileNotFoundException($"Updated assembly was not found at '{newAssemblyPath}'.", newAssemblyPath);
         }
 
-        using var oldAssembly = AssemblyDefinition.ReadAssembly(oldAssemblyPath);
-        using var newAssembly = AssemblyDefinition.ReadAssembly(newAssemblyPath);
+        using var oldAssembly = CecilHelpers.ReadAssemblyReadOnly(oldAssemblyPath);
+        using var newAssembly = CecilHelpers.ReadAssemblyReadOnly(newAssemblyPath);
 
         var sw = new StringWriter();
         sw.WriteLine($"=== Sharphy ECMA-335 Binary Diff Analysis ===");
@@ -29,12 +29,12 @@ public static class BinaryDiffEngine
         sw.WriteLine($"Updated : {Path.GetFileName(newAssemblyPath)} (v{newAssembly.Name.Version})");
         sw.WriteLine();
 
-        var oldTypes = oldAssembly.MainModule.Types.ToDictionary(t => t.FullName, t => t);
-        var newTypes = newAssembly.MainModule.Types.ToDictionary(t => t.FullName, t => t);
+        var oldTypes = ToSafeDictionary(CecilHelpers.EnumerateAllTypes(oldAssembly.MainModule), t => t.FullName);
+        var newTypes = ToSafeDictionary(CecilHelpers.EnumerateAllTypes(newAssembly.MainModule), t => t.FullName);
 
-        var removedTypes = oldTypes.Keys.Except(newTypes.Keys).Where(k => !k.StartsWith("<")).ToList();
-        var addedTypes = newTypes.Keys.Except(oldTypes.Keys).Where(k => !k.StartsWith("<")).ToList();
-        var commonTypes = oldTypes.Keys.Intersect(newTypes.Keys).Where(k => !k.StartsWith("<")).ToList();
+        var removedTypes = oldTypes.Keys.Except(newTypes.Keys).ToList();
+        var addedTypes = newTypes.Keys.Except(oldTypes.Keys).ToList();
+        var commonTypes = oldTypes.Keys.Intersect(newTypes.Keys).ToList();
 
         sw.WriteLine("--- Type Hierarchy Changes ---");
         sw.WriteLine($"Added Types   : {addedTypes.Count}");
@@ -61,8 +61,8 @@ public static class BinaryDiffEngine
             var oldT = oldTypes[typeName];
             var newT = newTypes[typeName];
 
-            var oldMethods = oldT.Methods.ToDictionary(m => GetMethodSignatureKey(m), m => m);
-            var newMethods = newT.Methods.ToDictionary(m => GetMethodSignatureKey(m), m => m);
+            var oldMethods = ToSafeDictionary(oldT.Methods, GetMethodSignatureKey);
+            var newMethods = ToSafeDictionary(newT.Methods, GetMethodSignatureKey);
 
             var removedMethods = oldMethods.Keys.Except(newMethods.Keys).ToList();
             var addedMethods = newMethods.Keys.Except(oldMethods.Keys).ToList();
@@ -150,38 +150,117 @@ public static class BinaryDiffEngine
 
     public static string GenerateUnifiedCilDiff(string typeName, MethodDefinition oldM, MethodDefinition newM)
     {
-        var oldLines = oldM.Body.Instructions.Select(FormatInstruction).ToList();
-        var newLines = newM.Body.Instructions.Select(FormatInstruction).ToList();
+        var oldInstrs = oldM.Body.Instructions;
+        var newInstrs = newM.Body.Instructions;
+
+        var oldKeys = oldInstrs.Select(FormatCanonicalInstruction).ToArray();
+        var newKeys = newInstrs.Select(FormatCanonicalInstruction).ToArray();
+        var oldLines = oldInstrs.Select(FormatInstruction).ToArray();
+        var newLines = newInstrs.Select(FormatInstruction).ToArray();
 
         var sb = new StringBuilder();
         sb.AppendLine($"--- Baseline: {typeName}::{oldM.Name}");
         sb.AppendLine($"+++ Updated : {typeName}::{newM.Name}");
-        sb.AppendLine($"@@ IL_0000,{Math.Max(oldLines.Count, newLines.Count)} @@");
+        sb.AppendLine($"@@ IL_0000,{Math.Max(oldLines.Length, newLines.Length)} @@");
 
-        int max = Math.Max(oldLines.Count, newLines.Count);
-        for (int i = 0; i < max; i++)
+        // Guard DP table memory on unusually large obfuscated methods
+        if ((long)oldLines.Length * newLines.Length <= 250_000)
         {
-            string? oldLine = i < oldLines.Count ? oldLines[i] : null;
-            string? newLine = i < newLines.Count ? newLines[i] : null;
+            EmitLcsUnifiedDiff(sb, oldKeys, newKeys, oldLines, newLines);
+        }
+        else
+        {
+            int max = Math.Max(oldLines.Length, newLines.Length);
+            for (int i = 0; i < max; i++)
+            {
+                string? oldLine = i < oldLines.Length ? oldLines[i] : null;
+                string? newLine = i < newLines.Length ? newLines[i] : null;
 
-            if (oldLine == newLine)
-            {
-                sb.AppendLine($"  {oldLine}");
-            }
-            else
-            {
-                if (oldLine != null)
+                if (oldLine == newLine)
                 {
-                    sb.AppendLine($"- {oldLine}");
+                    sb.AppendLine($"  {oldLine}");
                 }
-                if (newLine != null)
+                else
                 {
-                    sb.AppendLine($"+ {newLine}");
+                    if (oldLine != null) sb.AppendLine($"- {oldLine}");
+                    if (newLine != null) sb.AppendLine($"+ {newLine}");
                 }
             }
         }
 
         return sb.ToString().TrimEnd();
+    }
+
+    private static void EmitLcsUnifiedDiff(
+        StringBuilder sb,
+        string[] oldKeys,
+        string[] newKeys,
+        string[] oldLines,
+        string[] newLines)
+    {
+        int n = oldKeys.Length;
+        int m = newKeys.Length;
+        var dp = new int[n + 1, m + 1];
+
+        for (int i = n - 1; i >= 0; i--)
+        {
+            for (int j = m - 1; j >= 0; j--)
+            {
+                dp[i, j] = string.Equals(oldKeys[i], newKeys[j], StringComparison.Ordinal)
+                    ? dp[i + 1, j + 1] + 1
+                    : Math.Max(dp[i + 1, j], dp[i, j + 1]);
+            }
+        }
+
+        int a = 0;
+        int b = 0;
+        while (a < n && b < m)
+        {
+            if (string.Equals(oldKeys[a], newKeys[b], StringComparison.Ordinal))
+            {
+                sb.AppendLine($"  {newLines[b]}");
+                a++;
+                b++;
+            }
+            else if (dp[a + 1, b] >= dp[a, b + 1])
+            {
+                sb.AppendLine($"- {oldLines[a]}");
+                a++;
+            }
+            else
+            {
+                sb.AppendLine($"+ {newLines[b]}");
+                b++;
+            }
+        }
+
+        while (a < n)
+        {
+            sb.AppendLine($"- {oldLines[a]}");
+            a++;
+        }
+
+        while (b < m)
+        {
+            sb.AppendLine($"+ {newLines[b]}");
+            b++;
+        }
+    }
+
+    private static string FormatCanonicalInstruction(Mono.Cecil.Cil.Instruction inst)
+    {
+        var op = FormatOperand(inst);
+        return string.IsNullOrEmpty(op) ? inst.OpCode.Name : $"{inst.OpCode.Name} {op}";
+    }
+
+    private static Dictionary<string, T> ToSafeDictionary<T>(IEnumerable<T> items, Func<T, string> keySelector)
+    {
+        var dict = new Dictionary<string, T>(StringComparer.Ordinal);
+        foreach (var item in items)
+        {
+            dict.TryAdd(keySelector(item), item);
+        }
+        return dict;
     }
 
     private static string FormatInstruction(Mono.Cecil.Cil.Instruction inst)
@@ -204,7 +283,8 @@ public static class BinaryDiffEngine
 
     private static string GetMethodSignatureKey(MethodDefinition m)
     {
+        var genericArity = m.HasGenericParameters ? $"`{m.GenericParameters.Count}" : string.Empty;
         var paramTypes = string.Join(",", m.Parameters.Select(p => p.ParameterType.FullName));
-        return $"{m.ReturnType.FullName} {m.Name}({paramTypes})";
+        return $"{m.ReturnType.FullName} {m.Name}{genericArity}({paramTypes})";
     }
 }

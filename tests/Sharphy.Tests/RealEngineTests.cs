@@ -433,6 +433,174 @@ public class RealEngineTests
         Assert.Contains("AllocatePinnedLohBuffers", memoryLeakMeta);
     }
 
+    [Fact]
+    public void IlPatcherEngine_PreservesBranchesOnPatchAndRejectsInvalidOffsetsOrOperandOpcodes()
+    {
+        var tempDll = Path.Combine(Path.GetTempPath(), $"PatchBranch_{Guid.NewGuid():N}.dll");
+        var patchedDll = Path.Combine(Path.GetTempPath(), $"PatchBranchOut_{Guid.NewGuid():N}.dll");
+
+        try
+        {
+            using (var asm = Mono.Cecil.AssemblyDefinition.CreateAssembly(
+                new Mono.Cecil.AssemblyNameDefinition("PatchBranchTest", new Version(1, 0, 0, 0)),
+                "PatchBranchTest",
+                Mono.Cecil.ModuleKind.Dll))
+            {
+                var mod = asm.MainModule;
+                var type = new Mono.Cecil.TypeDefinition("PatchDemo", "Target", Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class, mod.TypeSystem.Object);
+                mod.Types.Add(type);
+
+                var method = new Mono.Cecil.MethodDefinition("Check", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, mod.TypeSystem.Int32);
+                var il = method.Body.GetILProcessor();
+                var targetRet = il.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_0);
+                il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_1));
+                il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Br_S, targetRet));
+                il.Append(targetRet);
+                il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Ret));
+                type.Methods.Add(method);
+
+                asm.Write(tempDll);
+            }
+
+            // Invalid offset must throw rather than silently patching IL_0000
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                IlPatcherEngine.PatchInstruction(tempDll, "PatchDemo.Target", "Check", 999, "Ldc_I4_1", patchedDll));
+
+            // Operand-requiring opcode must throw a clear ArgumentException
+            Assert.Throws<ArgumentException>(() =>
+                IlPatcherEngine.PatchInstruction(tempDll, "PatchDemo.Target", "Check", 3, "Ldstr", patchedDll));
+
+            // Patching a branch target instruction (offset 3) in-place must preserve branch target integrity & overwrite safely
+            var patchReport = IlPatcherEngine.PatchInstruction(tempDll, "PatchDemo.Target", "Check", 3, "Ldc_I4_1", tempDll);
+            Assert.Contains("IL offset 3", patchReport);
+
+            using var reloaded = Mono.Cecil.AssemblyDefinition.ReadAssembly(tempDll);
+            var reloadedMethod = reloaded.MainModule.GetType("PatchDemo.Target").Methods.Single(m => m.Name == "Check");
+            var brTarget = reloadedMethod.Body.Instructions[1].Operand as Mono.Cecil.Cil.Instruction;
+            Assert.NotNull(brTarget);
+            Assert.Equal(Mono.Cecil.Cil.OpCodes.Ldc_I4_1, brTarget!.OpCode);
+            Assert.Contains(brTarget, reloadedMethod.Body.Instructions);
+        }
+        finally
+        {
+            if (File.Exists(tempDll)) File.Delete(tempDll);
+            if (File.Exists(patchedDll)) File.Delete(patchedDll);
+        }
+    }
+
+    [Fact]
+    public void BinaryDiffEngine_HandlesGenericOverloadsAndLcsShiftedInstructions()
+    {
+        var v1Dll = Path.Combine(Path.GetTempPath(), $"DiffV1_{Guid.NewGuid():N}.dll");
+        var v2Dll = Path.Combine(Path.GetTempPath(), $"DiffV2_{Guid.NewGuid():N}.dll");
+
+        try
+        {
+            void BuildVersion(string path, bool insertNop)
+            {
+                using var asm = Mono.Cecil.AssemblyDefinition.CreateAssembly(
+                    new Mono.Cecil.AssemblyNameDefinition("DiffTest", new Version(1, 0, 0, 0)),
+                    "DiffTest",
+                    Mono.Cecil.ModuleKind.Dll);
+                var mod = asm.MainModule;
+                var type = new Mono.Cecil.TypeDefinition("DiffNs", "Service", Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class, mod.TypeSystem.Object);
+                mod.Types.Add(type);
+
+                var mNonGeneric = new Mono.Cecil.MethodDefinition("Execute", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, mod.TypeSystem.Int32);
+                var il = mNonGeneric.Body.GetILProcessor();
+                if (insertNop) il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Nop));
+                il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_1));
+                il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_2));
+                il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Add));
+                il.Append(il.Create(Mono.Cecil.Cil.OpCodes.Ret));
+                type.Methods.Add(mNonGeneric);
+
+                // Generic overload with same parameter count (0) and same Name
+                var mGeneric = new Mono.Cecil.MethodDefinition("Execute", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, mod.TypeSystem.Void);
+                mGeneric.GenericParameters.Add(new Mono.Cecil.GenericParameter("T", mGeneric));
+                mGeneric.Body.GetILProcessor().Emit(Mono.Cecil.Cil.OpCodes.Ret);
+                type.Methods.Add(mGeneric);
+
+                // Nested public type should be discovered
+                var nested = new Mono.Cecil.TypeDefinition("", "InnerConfig", Mono.Cecil.TypeAttributes.NestedPublic | Mono.Cecil.TypeAttributes.Class, mod.TypeSystem.Object);
+                if (insertNop)
+                {
+                    var addedNestedMethod = new Mono.Cecil.MethodDefinition("Ping", Mono.Cecil.TypeAttributes.Public is var _ ? Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static : 0, mod.TypeSystem.Void);
+                    addedNestedMethod.Body.GetILProcessor().Emit(Mono.Cecil.Cil.OpCodes.Ret);
+                    nested.Methods.Add(addedNestedMethod);
+                }
+                type.NestedTypes.Add(nested);
+
+                asm.Write(path);
+            }
+
+            BuildVersion(v1Dll, insertNop: false);
+            BuildVersion(v2Dll, insertNop: true);
+
+            var diff = BinaryDiffEngine.CompareAssemblies(v1Dll, v2Dll, includeCilDiff: true);
+            Assert.Contains("DiffNs.Service/InnerConfig::System.Void Ping()", diff);
+            Assert.Contains("+ IL_0000: nop", diff);
+            // LCS alignment must keep trailing unchanged instructions as context lines ('  IL_...'), not false removals
+            Assert.DoesNotContain("- IL_0000: ldc.i4.1", diff);
+            Assert.Contains("  IL_0001: ldc.i4.1", diff);
+        }
+        finally
+        {
+            if (File.Exists(v1Dll)) File.Delete(v1Dll);
+            if (File.Exists(v2Dll)) File.Delete(v2Dll);
+        }
+    }
+
+    [Fact]
+    public void WrapperGeneratorEngine_HandlesGlobalNamespaceAndSanitizesIdentifiers()
+    {
+        var tempDll = Path.Combine(Path.GetTempPath(), $"WrapGlobal_{Guid.NewGuid():N}.dll");
+        var tempCs = Path.Combine(Path.GetTempPath(), $"WrapGlobal_{Guid.NewGuid():N}.cs");
+
+        try
+        {
+            using (var asm = Mono.Cecil.AssemblyDefinition.CreateAssembly(
+                new Mono.Cecil.AssemblyNameDefinition("WrapTest", new Version(1, 0, 0, 0)),
+                "WrapTest",
+                Mono.Cecil.ModuleKind.Dll))
+            {
+                var mod = asm.MainModule;
+                var globalType = new Mono.Cecil.TypeDefinition("", "GlobalProgram", Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class, mod.TypeSystem.Object);
+                mod.Types.Add(globalType);
+
+                var backingField = new Mono.Cecil.FieldDefinition("<Secret>k__BackingField", Mono.Cecil.FieldAttributes.Private | Mono.Cecil.FieldAttributes.Static, mod.TypeSystem.Int32);
+                globalType.Fields.Add(backingField);
+
+                asm.Write(tempDll);
+            }
+
+            var code = WrapperGeneratorEngine.GenerateWrapper(tempDll, "GlobalProgram", tempCs);
+            Assert.Contains("namespace GeneratedWrappers;", code);
+            Assert.DoesNotContain("namespace .GeneratedWrappers;", code);
+            Assert.Contains("[UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = \"<Secret>k__BackingField\")]", code);
+            Assert.Contains("Get__Secret_k__BackingField", code);
+        }
+        finally
+        {
+            if (File.Exists(tempDll)) File.Delete(tempDll);
+            if (File.Exists(tempCs)) File.Delete(tempCs);
+        }
+    }
+
+    [Fact]
+    public void DecompilerEngine_ReleasesFileLockAndDecompilesOverloads()
+    {
+        var tempCopy = Path.Combine(Path.GetTempPath(), $"DecompLock_{Guid.NewGuid():N}.dll");
+        File.Copy(SampleAssemblyPath, tempCopy, overwrite: true);
+
+        var code = DecompilerEngine.DecompileMethod(tempCopy, "CrackmeDemo.Program", "Main");
+        Assert.Contains("Main", code);
+
+        // File must not be locked after DecompileMethod returns
+        File.Delete(tempCopy);
+        Assert.False(File.Exists(tempCopy));
+    }
+
     private static string ResolveSampleBinary(string sampleName)
     {
         var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));

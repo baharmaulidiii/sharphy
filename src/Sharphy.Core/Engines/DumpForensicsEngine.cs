@@ -13,12 +13,17 @@ public static class DumpForensicsEngine
     private static readonly string[] SyncBlockingSignatures =
     {
         "System.Threading.Tasks.Task.Wait",
-        "System.Threading.Tasks.Task.GetResult",
-        "System.Threading.Tasks.Task`1.GetResult",
-        "System.Threading.Tasks.ValueTask.GetResult",
+        "System.Runtime.CompilerServices.TaskAwaiter.GetResult",
+        "System.Runtime.CompilerServices.TaskAwaiter`1.GetResult",
+        "System.Runtime.CompilerServices.ConfiguredTaskAwaitable.ConfiguredTaskAwaiter.GetResult",
+        "System.Runtime.CompilerServices.ConfiguredTaskAwaitable`1.ConfiguredTaskAwaiter.GetResult",
+        "System.Runtime.CompilerServices.ValueTaskAwaiter.GetResult",
+        "System.Runtime.CompilerServices.ValueTaskAwaiter`1.GetResult",
         "System.Threading.Monitor.Enter",
         "System.Threading.Monitor.Wait",
         "System.Threading.ManualResetEventSlim.Wait",
+        "System.Threading.SemaphoreSlim.Wait",
+        "System.Threading.ReaderWriterLockSlim.Enter",
         "System.Threading.WaitHandle.WaitOne"
     };
 
@@ -61,6 +66,8 @@ public static class DumpForensicsEngine
 
     public static string InspectHeap(string dumpPath, int topObjects = 20)
     {
+        topObjects = Math.Clamp(topObjects, 1, 500);
+
         if (!File.Exists(dumpPath))
         {
             return $"[Sharphy Managed Heap] Target dump file was not found at '{dumpPath}'.";
@@ -94,7 +101,7 @@ public static class DumpForensicsEngine
                 sw.WriteLine($"=== Managed Heap Object Inspection (Top {topObjects}) ===");
                 sw.WriteLine($"Total Segments: {heap.Segments.Length}");
                 sw.WriteLine();
-                sw.WriteLine(string.Format("{0,-60} | {1,10} | {2,15}", "Type Name", "Count", "Total Bytes"));
+                sw.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0,-60} | {1,10} | {2,15}", "Type Name", "Count", "Total Bytes"));
                 sw.WriteLine(new string('-', 92));
 
                 foreach (var item in stats)
@@ -647,9 +654,12 @@ public static class DumpForensicsEngine
                         }
                     }
 
-                    if (!recordedBlocked && string.Equals(firstRuntimeFrame, "HelperMethodFrame_1OBJ", StringComparison.Ordinal))
+                    if (!recordedBlocked && firstRuntimeFrame != null &&
+                        (firstRuntimeFrame.Contains("HelperMethodFrame_1OBJ", StringComparison.OrdinalIgnoreCase) ||
+                         firstRuntimeFrame.Contains("JIT_MonEnter", StringComparison.OrdinalIgnoreCase) ||
+                         firstRuntimeFrame.Contains("JIT_MonReliableEnter", StringComparison.OrdinalIgnoreCase)))
                     {
-                        blockedThreads.Add((thread.ManagedThreadId, "System.Threading.Monitor.Enter", "HelperMethodFrame_1OBJ"));
+                        blockedThreads.Add((thread.ManagedThreadId, "System.Threading.Monitor.Enter", firstRuntimeFrame));
                     }
 
                     if (firstRuntimeFrame != null)

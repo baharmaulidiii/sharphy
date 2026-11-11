@@ -10,15 +10,8 @@ public static class WrapperGeneratorEngine
 {
     public static string GenerateWrapper(string assemblyPath, string typeName, string outputPath)
     {
-        if (!File.Exists(assemblyPath))
-        {
-            throw new FileNotFoundException($"Target assembly not found at '{assemblyPath}'.", assemblyPath);
-        }
-
-        using var assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
-        var type = assembly.MainModule.Types
-            .FirstOrDefault(t => t.FullName.Equals(typeName, StringComparison.OrdinalIgnoreCase) ||
-                                 t.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase));
+        using var assembly = CecilHelpers.ReadAssemblyReadOnly(assemblyPath);
+        var type = CecilHelpers.FindType(assembly.MainModule, typeName);
 
         if (type == null)
         {
@@ -34,21 +27,40 @@ public static class WrapperGeneratorEngine
         sb.AppendLine("using System;");
         sb.AppendLine("using System.Runtime.CompilerServices;");
         sb.AppendLine();
-        sb.AppendLine($"namespace {type.Namespace}.GeneratedWrappers;");
+
+        var rootNamespace = GetRootNamespace(type);
+        var wrapperNamespace = string.IsNullOrWhiteSpace(rootNamespace)
+            ? "GeneratedWrappers"
+            : $"{rootNamespace}.GeneratedWrappers";
+        var safeTypeName = CecilHelpers.SanitizeCSharpIdentifier(type.Name);
+        var fullTypeExpr = type.FullName.Replace('/', '.');
+
+        sb.AppendLine($"namespace {wrapperNamespace};");
         sb.AppendLine();
-        sb.AppendLine($"public static class {type.Name}Accessor");
+        sb.AppendLine($"public static class {safeTypeName}Accessor");
         sb.AppendLine("{");
+
+        var usedNames = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var method in type.Methods.Where(m => !m.IsPublic && !m.IsConstructor && !m.IsGetter && !m.IsSetter))
         {
             var isStatic = method.IsStatic;
             var kind = isStatic ? "UnsafeAccessorKind.StaticMethod" : "UnsafeAccessorKind.Method";
-            var targetParam = isStatic ? "" : $"{type.Name} target";
-            var otherParams = string.Join(", ", method.Parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"));
-            var allParams = string.IsNullOrEmpty(targetParam) ? otherParams : (string.IsNullOrEmpty(otherParams) ? targetParam : $"{targetParam}, {otherParams}");
+            var targetParam = isStatic ? "" : $"{fullTypeExpr} target";
+            var otherParams = string.Join(", ", method.Parameters.Select((p, idx) =>
+            {
+                var pName = string.IsNullOrWhiteSpace(p.Name) ? $"arg{idx}" : CecilHelpers.SanitizeCSharpIdentifier(p.Name);
+                return $"{FormatTypeName(p.ParameterType)} {pName}";
+            }));
+            var allParams = string.IsNullOrEmpty(targetParam)
+                ? otherParams
+                : (string.IsNullOrEmpty(otherParams) ? targetParam : $"{targetParam}, {otherParams}");
+
+            var candidateName = $"Call_{CecilHelpers.SanitizeCSharpIdentifier(method.Name)}";
+            var uniqueMethodName = MakeUniqueIdentifier(candidateName, usedNames);
 
             sb.AppendLine($"    [UnsafeAccessor({kind}, Name = \"{method.Name}\")]");
-            sb.AppendLine($"    public static extern {method.ReturnType.Name} Call_{method.Name}({allParams});");
+            sb.AppendLine($"    public static extern {FormatTypeName(method.ReturnType)} {uniqueMethodName}({allParams});");
             sb.AppendLine();
         }
 
@@ -56,10 +68,12 @@ public static class WrapperGeneratorEngine
         {
             var isStatic = field.IsStatic;
             var kind = isStatic ? "UnsafeAccessorKind.StaticField" : "UnsafeAccessorKind.Field";
-            var targetParam = isStatic ? "" : $"{type.Name} target";
+            var targetParam = isStatic ? "" : $"{fullTypeExpr} target";
+            var candidateName = $"Get_{CecilHelpers.SanitizeCSharpIdentifier(field.Name)}";
+            var uniqueFieldName = MakeUniqueIdentifier(candidateName, usedNames);
 
             sb.AppendLine($"    [UnsafeAccessor({kind}, Name = \"{field.Name}\")]");
-            sb.AppendLine($"    public static extern ref {field.FieldType.Name} Get_{field.Name}({targetParam});");
+            sb.AppendLine($"    public static extern ref {FormatTypeName(field.FieldType)} {uniqueFieldName}({targetParam});");
             sb.AppendLine();
         }
 
@@ -75,5 +89,43 @@ public static class WrapperGeneratorEngine
 
         File.WriteAllText(outputPath, code);
         return code;
+    }
+
+    private static string FormatTypeName(TypeReference typeRef)
+    {
+        if (typeRef.FullName == "System.Void") return "void";
+        if (typeRef.IsByReference && typeRef is ByReferenceType byRef)
+        {
+            return $"ref {FormatTypeName(byRef.ElementType)}";
+        }
+        if (typeRef is GenericInstanceType git)
+        {
+            var baseName = git.ElementType.Name;
+            var tickIdx = baseName.IndexOf('`');
+            if (tickIdx > 0) baseName = baseName[..tickIdx];
+            return $"{baseName}<{string.Join(", ", git.GenericArguments.Select(FormatTypeName))}>";
+        }
+        return typeRef.Name;
+    }
+
+    private static string GetRootNamespace(TypeDefinition type)
+    {
+        var current = type;
+        while (current.DeclaringType != null)
+        {
+            current = current.DeclaringType;
+        }
+        return current.Namespace;
+    }
+
+    private static string MakeUniqueIdentifier(string baseName, HashSet<string> used)
+    {
+        if (used.Add(baseName)) return baseName;
+        int suffix = 2;
+        while (!used.Add($"{baseName}_{suffix}"))
+        {
+            suffix++;
+        }
+        return $"{baseName}_{suffix}";
     }
 }

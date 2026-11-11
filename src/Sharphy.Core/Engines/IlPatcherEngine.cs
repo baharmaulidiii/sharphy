@@ -16,49 +16,37 @@ public static class IlPatcherEngine
         string newOpCodeName,
         string outputPath)
     {
-        if (!File.Exists(assemblyPath))
-        {
-            throw new FileNotFoundException($"Target assembly was not found at '{assemblyPath}'.", assemblyPath);
-        }
+        using var assembly = CecilHelpers.ReadAssemblyReadOnly(assemblyPath);
 
-        var readerParams = new ReaderParameters { ReadWrite = false };
-        using var assembly = AssemblyDefinition.ReadAssembly(assemblyPath, readerParams);
-
-        var type = assembly.MainModule.Types
-            .FirstOrDefault(t => t.FullName.Equals(typeName, StringComparison.OrdinalIgnoreCase) ||
-                                 t.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase));
-
+        var type = CecilHelpers.FindType(assembly.MainModule, typeName);
         if (type == null)
         {
             throw new InvalidOperationException($"Type '{typeName}' was not found in assembly.");
         }
 
         var method = type.Methods
-            .FirstOrDefault(m => m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(m => m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase) && m.HasBody)
+            ?? type.Methods.FirstOrDefault(m => m.Name.Equals(methodName, StringComparison.OrdinalIgnoreCase));
 
-        if (method == null || !method.HasBody)
+        if (method == null || !method.HasBody || method.Body.Instructions.Count == 0)
         {
             throw new InvalidOperationException($"Method '{methodName}' with body was not found in type '{type.FullName}'.");
         }
 
-        var ilProcessor = method.Body.GetILProcessor();
         var targetInstr = method.Body.Instructions
             .FirstOrDefault(i => i.Offset == instructionOffset);
 
         if (targetInstr == null)
         {
-            // Fallback to first instruction if exact offset is not matched
-            targetInstr = method.Body.Instructions.FirstOrDefault();
+            var maxOffset = method.Body.Instructions[^1].Offset;
+            throw new ArgumentOutOfRangeException(nameof(instructionOffset),
+                $"Instruction offset IL_{instructionOffset:x4} ({instructionOffset}) was not found in '{type.FullName}::{method.Name}' (valid offsets: 0..{maxOffset}).");
         }
 
-        if (targetInstr == null)
-        {
-            throw new InvalidOperationException("No IL instructions found in method body.");
-        }
-
-        // Resolve OpCode by name (e.g., Nop, Ret, Ldc_I4_1)
+        // Resolve OpCode by name (e.g., Nop, Ldc_I4_1, Ret)
+        var normalizedOpCode = newOpCodeName.Replace('.', '_');
         var opcodeField = typeof(OpCodes).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
-            .FirstOrDefault(f => f.Name.Equals(newOpCodeName, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(f => f.Name.Equals(normalizedOpCode, StringComparison.OrdinalIgnoreCase));
 
         if (opcodeField == null)
         {
@@ -66,17 +54,25 @@ public static class IlPatcherEngine
         }
 
         var newOpCode = (OpCode)opcodeField.GetValue(null)!;
-        var replacement = ilProcessor.Create(newOpCode);
-        ilProcessor.Replace(targetInstr, replacement);
-
-        var outDir = Path.GetDirectoryName(outputPath);
-        if (!string.IsNullOrEmpty(outDir) && !Directory.Exists(outDir))
+        if (newOpCode.OperandType != OperandType.InlineNone)
         {
-            Directory.CreateDirectory(outDir);
+            throw new ArgumentException($"OpCode '{newOpCode.Name}' requires an operand ({newOpCode.OperandType}) and cannot replace an instruction without operand metadata.");
         }
 
-        assembly.Write(outputPath);
+        // Mutate the Instruction instance in place so existing branch targets and ExceptionHandler bounds stay valid.
+        var originalOffset = targetInstr.Offset;
+        targetInstr.OpCode = newOpCode;
+        targetInstr.Operand = null;
 
-        return $"Successfully replaced instruction at IL offset {targetInstr.Offset} with OpCode '{newOpCode.Name}' and wrote patched assembly to '{outputPath}'.";
+        int runningOffset = 0;
+        foreach (var ins in method.Body.Instructions)
+        {
+            ins.Offset = runningOffset;
+            runningOffset += ins.GetSize();
+        }
+
+        CecilHelpers.WriteAssemblyAvoidingLock(assembly, assemblyPath, outputPath);
+
+        return $"Successfully replaced instruction at IL offset {originalOffset} with OpCode '{newOpCode.Name}' and wrote patched assembly to '{outputPath}'.";
     }
 }

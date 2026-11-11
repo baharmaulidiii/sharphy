@@ -7,15 +7,11 @@ namespace Sharphy.Core.Engines;
 /// </summary>
 public static class MetadataEngine
 {
+    private const int MaxTypesInReport = 150;
+
     public static string InspectMetadata(string assemblyPath)
     {
-        if (!File.Exists(assemblyPath))
-        {
-            throw new FileNotFoundException($"Assembly file was not found at '{assemblyPath}'.", assemblyPath);
-        }
-
-        var readerParams = new ReaderParameters { ReadSymbols = false };
-        using var assembly = AssemblyDefinition.ReadAssembly(assemblyPath, readerParams);
+        using var assembly = CecilHelpers.ReadAssemblyReadOnly(assemblyPath);
 
         var sw = new StringWriter();
         sw.WriteLine($"=== ECMA-335 Assembly Metadata: {assembly.Name.Name} ===");
@@ -27,24 +23,36 @@ public static class MetadataEngine
 
         sw.WriteLine("--- Defined Types ---");
         var pInvokeEntries = new List<(string DeclaringType, MethodDefinition Method, PInvokeInfo Info)>();
+        var allTypes = CecilHelpers.EnumerateAllTypes(assembly.MainModule)
+            .OrderBy(t => t.FullName)
+            .ToList();
 
-        foreach (var type in assembly.MainModule.Types.OrderBy(t => t.FullName))
+        int printedTypes = 0;
+        foreach (var type in allTypes)
         {
-            if (type.Name.StartsWith("<")) continue; // Skip compiler-generated special types
-
-            sw.WriteLine($"[Type] {type.FullName} (Base: {type.BaseType?.FullName ?? "None"})");
-            foreach (var m in type.Methods.Where(m => !m.IsGetter && !m.IsSetter))
+            if (printedTypes < MaxTypesInReport)
             {
-                var vis = m.IsPublic ? "public" : (m.IsPrivate ? "private" : "internal");
-                sw.WriteLine($"  └─ [Method] {vis} {m.ReturnType.Name} {m.Name}({string.Join(", ", m.Parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"))})");
+                sw.WriteLine($"[Type] {type.FullName} (Base: {type.BaseType?.FullName ?? "None"})");
+                foreach (var m in type.Methods.Where(m => !m.IsGetter && !m.IsSetter))
+                {
+                    var vis = m.IsPublic ? "public" : (m.IsPrivate ? "private" : "internal");
+                    sw.WriteLine($"  └─ [Method] {vis} {m.ReturnType.Name} {m.Name}({string.Join(", ", m.Parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"))})");
+                }
+                printedTypes++;
+            }
 
+            foreach (var m in type.Methods)
+            {
                 if (m.HasPInvokeInfo && m.PInvokeInfo != null)
                 {
                     pInvokeEntries.Add((type.FullName, m, m.PInvokeInfo));
                 }
             }
+        }
 
-            CollectNestedPInvokes(type, pInvokeEntries);
+        if (allTypes.Count > MaxTypesInReport)
+        {
+            sw.WriteLine($"  ... ({allTypes.Count - MaxTypesInReport} additional types omitted for token efficiency)");
         }
 
         if (pInvokeEntries.Count > 0)
@@ -78,28 +86,6 @@ public static class MetadataEngine
         }
 
         return sw.ToString();
-    }
-
-    private static void CollectNestedPInvokes(
-        TypeDefinition parentType,
-        List<(string DeclaringType, MethodDefinition Method, PInvokeInfo Info)> entries)
-    {
-        if (!parentType.HasNestedTypes) return;
-
-        foreach (var nested in parentType.NestedTypes)
-        {
-            if (nested.Name.StartsWith("<")) continue;
-
-            foreach (var m in nested.Methods)
-            {
-                if (m.HasPInvokeInfo && m.PInvokeInfo != null)
-                {
-                    entries.Add((nested.FullName, m, m.PInvokeInfo));
-                }
-            }
-
-            CollectNestedPInvokes(nested, entries);
-        }
     }
 
     private static string FormatCallingConvention(PInvokeInfo info)
