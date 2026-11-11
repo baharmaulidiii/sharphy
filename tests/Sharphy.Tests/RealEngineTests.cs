@@ -233,4 +233,185 @@ public class RealEngineTests
         Assert.InRange(critScore, 75, 100);
         Assert.Equal("CRITICAL", critSeverity);
     }
+
+    [Fact]
+    public void MetadataEngine_ExtractsPInvokeBoundaryImports()
+    {
+        var tempDll = Path.Combine(Path.GetTempPath(), $"PInvokeMeta_{Guid.NewGuid():N}.dll");
+        try
+        {
+            using (var assembly = Mono.Cecil.AssemblyDefinition.CreateAssembly(
+                new Mono.Cecil.AssemblyNameDefinition("PInvokeMetaTest", new Version(1, 0, 0, 0)),
+                "PInvokeMetaTest",
+                Mono.Cecil.ModuleKind.Dll))
+            {
+                var module = assembly.MainModule;
+                var interopType = new Mono.Cecil.TypeDefinition(
+                    "Demo.Interop",
+                    "NativeBridge",
+                    Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Abstract | Mono.Cecil.TypeAttributes.Sealed,
+                    module.TypeSystem.Object);
+                module.Types.Add(interopType);
+
+                var nativeModRef = new Mono.Cecil.ModuleReference("kernel32.dll");
+                module.ModuleReferences.Add(nativeModRef);
+
+                var pInvokeMethod = new Mono.Cecil.MethodDefinition(
+                    "GetTickCount64",
+                    Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static | Mono.Cecil.MethodAttributes.PInvokeImpl | Mono.Cecil.MethodAttributes.HideBySig,
+                    module.TypeSystem.UInt64);
+                pInvokeMethod.ImplAttributes = Mono.Cecil.MethodImplAttributes.PreserveSig;
+                pInvokeMethod.PInvokeInfo = new Mono.Cecil.PInvokeInfo(
+                    Mono.Cecil.PInvokeAttributes.CallConvWinapi | Mono.Cecil.PInvokeAttributes.CharSetUnicode | Mono.Cecil.PInvokeAttributes.SupportsLastError,
+                    "GetTickCount64",
+                    nativeModRef);
+                interopType.Methods.Add(pInvokeMethod);
+
+                assembly.Write(tempDll);
+            }
+
+            var report = MetadataEngine.InspectMetadata(tempDll);
+            Assert.Contains("Unmanaged P/Invoke Imports", report);
+            Assert.Contains("Demo.Interop.NativeBridge::GetTickCount64", report);
+            Assert.Contains("kernel32.dll!GetTickCount64", report);
+            Assert.Contains("SetLastError=true", report);
+        }
+        finally
+        {
+            if (File.Exists(tempDll)) File.Delete(tempDll);
+        }
+    }
+
+    [Fact]
+    public void ObfuscationAnalyzer_ClassifiesRotBitShiftAndBase64Decryptors()
+    {
+        using var assembly = Mono.Cecil.AssemblyDefinition.CreateAssembly(
+            new Mono.Cecil.AssemblyNameDefinition("DecryptorVariants", new Version(1, 0, 0, 0)),
+            "DecryptorVariants",
+            Mono.Cecil.ModuleKind.Dll);
+
+        var module = assembly.MainModule;
+        var voidType = module.TypeSystem.Void;
+
+        // 1. ROT/Arithmetic decryptor loop
+        var rotMethod = new Mono.Cecil.MethodDefinition("RotDecrypt", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, voidType);
+        var rotIl = rotMethod.Body.GetILProcessor();
+        var rotHead = rotIl.Create(Mono.Cecil.Cil.OpCodes.Ldelem_U1);
+        rotIl.Append(rotHead);
+        rotIl.Append(rotIl.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_S, (sbyte)13));
+        rotIl.Append(rotIl.Create(Mono.Cecil.Cil.OpCodes.Add));
+        rotIl.Append(rotIl.Create(Mono.Cecil.Cil.OpCodes.Conv_U1));
+        rotIl.Append(rotIl.Create(Mono.Cecil.Cil.OpCodes.Bne_Un, rotHead));
+        rotIl.Append(rotIl.Create(Mono.Cecil.Cil.OpCodes.Ret));
+        Assert.Equal("ROT/Arithmetic", ObfuscationAnalyzerEngine.ClassifyDecryptorPattern(rotMethod.Body.Instructions));
+
+        // 2. BitShift decryptor loop
+        var shiftMethod = new Mono.Cecil.MethodDefinition("ShiftDecrypt", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, voidType);
+        var shiftIl = shiftMethod.Body.GetILProcessor();
+        var shiftHead = shiftIl.Create(Mono.Cecil.Cil.OpCodes.Ldelem_U1);
+        shiftIl.Append(shiftHead);
+        shiftIl.Append(shiftIl.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_4));
+        shiftIl.Append(shiftIl.Create(Mono.Cecil.Cil.OpCodes.Shr_Un));
+        shiftIl.Append(shiftIl.Create(Mono.Cecil.Cil.OpCodes.Or));
+        shiftIl.Append(shiftIl.Create(Mono.Cecil.Cil.OpCodes.Conv_U1));
+        shiftIl.Append(shiftIl.Create(Mono.Cecil.Cil.OpCodes.Bne_Un, shiftHead));
+        shiftIl.Append(shiftIl.Create(Mono.Cecil.Cil.OpCodes.Ret));
+        Assert.Equal("BitShift", ObfuscationAnalyzerEngine.ClassifyDecryptorPattern(shiftMethod.Body.Instructions));
+
+        // 3. Base64 transform
+        var b64Method = new Mono.Cecil.MethodDefinition("Base64Decrypt", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, voidType);
+        var fromB64Ref = new Mono.Cecil.MethodReference("FromBase64String", module.ImportReference(typeof(byte[])), module.ImportReference(typeof(Convert)));
+        fromB64Ref.Parameters.Add(new Mono.Cecil.ParameterDefinition(module.TypeSystem.String));
+        var b64Il = b64Method.Body.GetILProcessor();
+        b64Il.Append(b64Il.Create(Mono.Cecil.Cil.OpCodes.Ldstr, "U2hhcnBoeQ=="));
+        b64Il.Append(b64Il.Create(Mono.Cecil.Cil.OpCodes.Call, fromB64Ref));
+        b64Il.Append(b64Il.Create(Mono.Cecil.Cil.OpCodes.Pop));
+        b64Il.Append(b64Il.Create(Mono.Cecil.Cil.OpCodes.Ret));
+        Assert.Equal("Base64/Lookup", ObfuscationAnalyzerEngine.ClassifyDecryptorPattern(b64Method.Body.Instructions));
+    }
+
+    [Fact]
+    public void ObfuscationAnalyzer_DetectsCffDispatcherAndStripsRedundantNopsSafely()
+    {
+        var inputDll = Path.Combine(Path.GetTempPath(), $"ObfInput_{Guid.NewGuid():N}.dll");
+        var outputDll = Path.Combine(Path.GetTempPath(), $"ObfCleaned_{Guid.NewGuid():N}.dll");
+        try
+        {
+            using (var assembly = Mono.Cecil.AssemblyDefinition.CreateAssembly(
+                new Mono.Cecil.AssemblyNameDefinition("ObfTest", new Version(1, 0, 0, 0)),
+                "ObfTest",
+                Mono.Cecil.ModuleKind.Dll))
+            {
+                var module = assembly.MainModule;
+                var testType = new Mono.Cecil.TypeDefinition("ObfDemo", "Protector", Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class, module.TypeSystem.Object);
+                module.Types.Add(testType);
+
+                // Method 1: CFF state-machine switch dispatcher
+                var cffMethod = new Mono.Cecil.MethodDefinition("Dispatch", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, module.TypeSystem.Void);
+                cffMethod.Body.InitLocals = true;
+                cffMethod.Body.Variables.Add(new Mono.Cecil.Cil.VariableDefinition(module.TypeSystem.Int32));
+                var cffIl = cffMethod.Body.GetILProcessor();
+                var case0 = cffIl.Create(Mono.Cecil.Cil.OpCodes.Nop);
+                var case1 = cffIl.Create(Mono.Cecil.Cil.OpCodes.Ret);
+                var loopHead = cffIl.Create(Mono.Cecil.Cil.OpCodes.Ldloc_0);
+                cffIl.Append(cffIl.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_0));
+                cffIl.Append(cffIl.Create(Mono.Cecil.Cil.OpCodes.Stloc_0));
+                cffIl.Append(loopHead);
+                cffIl.Append(cffIl.Create(Mono.Cecil.Cil.OpCodes.Switch, new[] { case0, case1 }));
+                cffIl.Append(case0);
+                cffIl.Append(cffIl.Create(Mono.Cecil.Cil.OpCodes.Ldc_I4_1));
+                cffIl.Append(cffIl.Create(Mono.Cecil.Cil.OpCodes.Stloc_0));
+                cffIl.Append(cffIl.Create(Mono.Cecil.Cil.OpCodes.Br, loopHead));
+                cffIl.Append(case1);
+                testType.Methods.Add(cffMethod);
+
+                // Method 2: 14 NOPs where 1 is branch target and 1 is ExceptionHandler TryStart
+                var nopMethod = new Mono.Cecil.MethodDefinition("NopBloat", Mono.Cecil.MethodAttributes.Public | Mono.Cecil.MethodAttributes.Static, module.TypeSystem.Void);
+                var nopIl = nopMethod.Body.GetILProcessor();
+                var branchTargetNop = nopIl.Create(Mono.Cecil.Cil.OpCodes.Nop);
+                var tryStartNop = nopIl.Create(Mono.Cecil.Cil.OpCodes.Nop);
+                var leaveTarget = nopIl.Create(Mono.Cecil.Cil.OpCodes.Ret);
+                var handlerStart = nopIl.Create(Mono.Cecil.Cil.OpCodes.Pop);
+                var handlerLeave = nopIl.Create(Mono.Cecil.Cil.OpCodes.Leave, leaveTarget);
+
+                nopIl.Append(nopIl.Create(Mono.Cecil.Cil.OpCodes.Br, branchTargetNop));
+                nopIl.Append(branchTargetNop);
+                for (int i = 0; i < 12; i++)
+                {
+                    nopIl.Append(nopIl.Create(Mono.Cecil.Cil.OpCodes.Nop));
+                }
+                nopIl.Append(tryStartNop);
+                nopIl.Append(nopIl.Create(Mono.Cecil.Cil.OpCodes.Leave, leaveTarget));
+                nopIl.Append(handlerStart);
+                nopIl.Append(handlerLeave);
+                nopIl.Append(leaveTarget);
+
+                nopMethod.Body.ExceptionHandlers.Add(new Mono.Cecil.Cil.ExceptionHandler(Mono.Cecil.Cil.ExceptionHandlerType.Catch)
+                {
+                    CatchType = module.ImportReference(typeof(Exception)),
+                    TryStart = tryStartNop,
+                    TryEnd = handlerStart,
+                    HandlerStart = handlerStart,
+                    HandlerEnd = leaveTarget
+                });
+                testType.Methods.Add(nopMethod);
+
+                assembly.Write(inputDll);
+            }
+
+            var report = ObfuscationAnalyzerEngine.AnalyzeAndCleanObfuscation(inputDll, outputDll);
+            Assert.Contains("Control Flow Flattening dispatcher detected in 'Protector::Dispatch'", report);
+            Assert.Contains("Stripped 12/14 redundant NOP instructions in 'Protector::NopBloat'", report);
+            Assert.True(File.Exists(outputDll));
+
+            using var cleaned = Mono.Cecil.AssemblyDefinition.ReadAssembly(outputDll);
+            var cleanedNopMethod = cleaned.MainModule.GetType("ObfDemo.Protector").Methods.Single(m => m.Name == "NopBloat");
+            Assert.Equal(2, cleanedNopMethod.Body.Instructions.Count(i => i.OpCode == Mono.Cecil.Cil.OpCodes.Nop));
+        }
+        finally
+        {
+            if (File.Exists(inputDll)) File.Delete(inputDll);
+            if (File.Exists(outputDll)) File.Delete(outputDll);
+        }
+    }
 }
