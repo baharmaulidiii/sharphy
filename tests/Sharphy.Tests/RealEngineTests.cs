@@ -414,4 +414,30 @@ public class RealEngineTests
             if (File.Exists(outputDll)) File.Delete(outputDll);
         }
     }
+
+    [Fact]
+    public void SampleTestbeds_DeadlockAndMemoryLeakDemos_AreInspectable()
+    {
+        var deadlockPath = ResolveSampleBinary("DeadlockDemo");
+        var memoryLeakPath = ResolveSampleBinary("MemoryLeakDemo");
+
+        Assert.True(File.Exists(deadlockPath), $"DeadlockDemo binary not found at: {deadlockPath}");
+        Assert.True(File.Exists(memoryLeakPath), $"MemoryLeakDemo binary not found at: {memoryLeakPath}");
+
+        var deadlockCode = DecompilerEngine.DecompileMethod(deadlockPath, "DeadlockDemo.Program", "RunDeadlockScenario");
+        Assert.Contains("Monitor.TryEnter", deadlockCode);
+
+        var memoryLeakMeta = MetadataEngine.InspectMetadata(memoryLeakPath);
+        Assert.Contains("Unmanaged P/Invoke Imports", memoryLeakMeta);
+        Assert.Contains("kernel32.dll!GetTickCount64", memoryLeakMeta);
+        Assert.Contains("AllocatePinnedLohBuffers", memoryLeakMeta);
+    }
+
+    private static string ResolveSampleBinary(string sampleName)
+    {
+        var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
+        var releasePath = Path.Combine(repoRoot, "samples", sampleName, "bin", "Release", "net8.0", $"{sampleName}.dll");
+        if (File.Exists(releasePath)) return releasePath;
+        return Path.Combine(repoRoot, "samples", sampleName, "bin", "Debug", "net8.0", $"{sampleName}.dll");
+    }
 }
