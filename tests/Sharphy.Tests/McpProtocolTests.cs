@@ -183,6 +183,18 @@ public class McpProtocolTests
         Assert.NotNull(legacyResp.Error);
         Assert.Equal(JsonRpcErrorCodes.InvalidRequest, legacyResp.Error.Code);
 
+        var missingVersionReq = """
+        {
+            "id": 14,
+            "method": "tools/list"
+        }
+        """;
+
+        var missingVersionResp = await server.ProcessMessageAsync(missingVersionReq);
+        Assert.NotNull(missingVersionResp);
+        Assert.NotNull(missingVersionResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.InvalidRequest, missingVersionResp.Error.Code);
+
         var badArgsReq = """
         {
             "jsonrpc": "2.0",

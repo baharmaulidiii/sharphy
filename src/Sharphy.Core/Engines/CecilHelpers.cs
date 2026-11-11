@@ -103,9 +103,9 @@ internal static class CecilHelpers
         return char.IsDigit(result[0]) ? "_" + result : result;
     }
 
-    private static IEnumerable<TypeDefinition> EnumerateNestedTypes(TypeDefinition parent, bool includeModuleType)
+    private static IEnumerable<TypeDefinition> EnumerateNestedTypes(TypeDefinition parent, bool includeModuleType, int depth = 0)
     {
-        if (!parent.HasNestedTypes) yield break;
+        if (depth > 64 || !parent.HasNestedTypes) yield break;
 
         foreach (var nested in parent.NestedTypes)
         {
@@ -113,7 +113,7 @@ internal static class CecilHelpers
 
             yield return nested;
 
-            foreach (var deep in EnumerateNestedTypes(nested, includeModuleType))
+            foreach (var deep in EnumerateNestedTypes(nested, includeModuleType, depth + 1))
             {
                 yield return deep;
             }

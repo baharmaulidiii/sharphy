@@ -164,7 +164,8 @@ public static class WrapperGeneratorEngine
     private static string GetRootNamespace(TypeDefinition type)
     {
         var current = type;
-        while (current.DeclaringType != null)
+        int depth = 0;
+        while (current.DeclaringType != null && depth++ < 64)
         {
             current = current.DeclaringType;
         }
