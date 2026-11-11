@@ -211,6 +211,37 @@ public class McpProtocolTests
         Assert.NotNull(badArgsResp);
         Assert.NotNull(badArgsResp.Error);
         Assert.Equal(JsonRpcErrorCodes.InvalidParams, badArgsResp.Error.Code);
+
+        var arrayParamsReq = """
+        {
+            "jsonrpc": "2.0",
+            "id": 15,
+            "method": "tools/call",
+            "params": [1, 2, 3]
+        }
+        """;
+
+        var arrayParamsResp = await server.ProcessMessageAsync(arrayParamsReq);
+        Assert.NotNull(arrayParamsResp);
+        Assert.NotNull(arrayParamsResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.InvalidParams, arrayParamsResp.Error.Code);
+
+        var nonStringNameReq = """
+        {
+            "jsonrpc": "2.0",
+            "id": 16,
+            "method": "tools/call",
+            "params": {
+                "name": 123,
+                "arguments": {}
+            }
+        }
+        """;
+
+        var nonStringNameResp = await server.ProcessMessageAsync(nonStringNameReq);
+        Assert.NotNull(nonStringNameResp);
+        Assert.NotNull(nonStringNameResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.InvalidParams, nonStringNameResp.Error.Code);
     }
 
     [Fact]

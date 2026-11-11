@@ -170,14 +170,14 @@ public sealed class SharphyMcpServer
 
     private async Task<JsonRpcResponse> HandleToolsCallAsync(JsonRpcRequest request)
     {
-        if (request.Params is not JsonElement paramsElement)
+        if (request.Params is not JsonElement paramsElement || paramsElement.ValueKind != JsonValueKind.Object)
         {
             return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidParams, "Parameter 'params' for tools/call must be an object.");
         }
 
-        if (!paramsElement.TryGetProperty("name", out var nameProp) || nameProp.GetString() is not string toolName)
+        if (!paramsElement.TryGetProperty("name", out var nameProp) || nameProp.ValueKind != JsonValueKind.String || nameProp.GetString() is not string toolName)
         {
-            return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidParams, "Parameter 'name' is required for tools/call.");
+            return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidParams, "Parameter 'name' must be a string for tools/call.");
         }
 
         JsonElement? arguments = null;

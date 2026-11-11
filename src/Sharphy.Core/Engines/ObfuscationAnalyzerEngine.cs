@@ -52,8 +52,8 @@ public static class ObfuscationAnalyzerEngine
                 // 3. Detect String Encryption or Dynamic Proxy Method Invocation
                 var hasDynamicInvoke = instructions.Any(i => i.OpCode == OpCodes.Calli ||
                     (i.Operand is MethodReference mr &&
-                     ((mr.DeclaringType.FullName is "System.Reflection.MethodBase" or "System.Reflection.MethodInfo" && mr.Name == "Invoke") ||
-                      (mr.DeclaringType.FullName == "System.Delegate" && mr.Name == "DynamicInvoke"))));
+                     ((mr.DeclaringType?.FullName is "System.Reflection.MethodBase" or "System.Reflection.MethodInfo" && mr.Name == "Invoke") ||
+                      (mr.DeclaringType?.FullName == "System.Delegate" && mr.Name == "DynamicInvoke"))));
 
                 if (hasDynamicInvoke)
                 {
@@ -273,7 +273,7 @@ public static class ObfuscationAnalyzerEngine
             }
             else if ((op == OpCodes.Call || op == OpCodes.Callvirt) &&
                      ins.Operand is MethodReference mr &&
-                     mr.DeclaringType.FullName == "System.Convert" &&
+                     mr.DeclaringType?.FullName == "System.Convert" &&
                      (mr.Name == "FromBase64String" || mr.Name == "FromBase64CharArray"))
             {
                 hasBase64Call = true;
