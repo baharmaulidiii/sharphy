@@ -133,18 +133,21 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path ./nupkgs
-          dotnet pack src/Sharphy.Core/Sharphy.Core.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
-          dotnet pack src/Sharphy.Server/Sharphy.Server.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
-          dotnet pack src/Sharphy.Cli/Sharphy.Cli.csproj -c Release -o ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
+          dotnet pack src/Sharphy.Core/Sharphy.Core.csproj -c Release -o ./nupkgs /p:PackageVersion=$($env:PACKAGE_VERSION)
+          dotnet pack src/Sharphy.Server/Sharphy.Server.csproj -c Release -o ./nupkgs /p:PackageVersion=$($env:PACKAGE_VERSION)
+          dotnet pack src/Sharphy.Cli/Sharphy.Cli.csproj -c Release -o ./nupkgs /p:PackageVersion=$($env:PACKAGE_VERSION)
           Get-ChildItem -Path ./nupkgs -Filter *.nupkg | Select-Object FullName, Length
 
       - name: Push Packages to GitHub Packages (GitHub NuGet Registry)
         shell: pwsh
+        env:
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $packages = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
           foreach ($pkg in $packages) {
             Write-Output "Pushing $($pkg.FullName) to GitHub Packages..."
-            dotnet nuget push $pkg.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+            dotnet nuget push $pkg.FullName --source "https://nuget.pkg.github.com/$($env:GITHUB_OWNER)/index.json" --api-key $env:GH_TOKEN --skip-duplicate
           }
 
       - name: NuGet Login via OIDC (Trusted Publishing)
@@ -155,10 +158,13 @@ jobs:
 
       - name: Push Packages to NuGet.org (Trusted Publishing / OIDC)
         shell: pwsh
+        env:
+          OIDC_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          FALLBACK_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          $apiKey = "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          $apiKey = $env:OIDC_API_KEY
           if ([string]::IsNullOrWhiteSpace($apiKey)) {
-            $apiKey = "${{ secrets.NUGET_API_KEY }}"
+            $apiKey = $env:FALLBACK_API_KEY
           }
 
           if ([string]::IsNullOrWhiteSpace($apiKey)) {
@@ -374,8 +380,8 @@ jobs:
       - name: Wait for NuGet package indexing propagation
         shell: bash
         run: |
-          echo "Polling NuGet.org flatcontainer API until package version ${{ env.PACKAGE_VERSION }} is indexed..."
-          VERSION="${{ env.PACKAGE_VERSION }}"
+          echo "Polling NuGet.org flatcontainer API until package version ${PACKAGE_VERSION} is indexed..."
+          VERSION="${PACKAGE_VERSION}"
           MAX_RETRIES=20
           RETRY_COUNT=0
           INDEXED=false

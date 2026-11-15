@@ -108,76 +108,108 @@ public sealed class SharphyMcpServer
             return JsonRpcResponse.CreateError(null, JsonRpcErrorCodes.InvalidRequest, $"Request exceeds maximum frame size of {MaxMessageSizeChars} characters.");
         }
 
-        JsonRpcRequest? request;
+        JsonDocument doc;
         try
         {
-            request = JsonSerializer.Deserialize<JsonRpcRequest>(messageJson, _jsonOptions);
+            doc = JsonDocument.Parse(messageJson);
         }
         catch (JsonException ex)
         {
             return JsonRpcResponse.CreateError(null, JsonRpcErrorCodes.ParseError, $"JSON Parse error: {ex.Message}");
         }
 
-        if (request == null || string.IsNullOrWhiteSpace(request.Method))
+        using (doc)
         {
-            return JsonRpcResponse.CreateError(request?.Id, JsonRpcErrorCodes.InvalidRequest, "Invalid request payload.");
-        }
-
-        if (!string.Equals(request.JsonRpc, "2.0", StringComparison.Ordinal))
-        {
-            return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidRequest, $"Unsupported JSON-RPC version '{request.JsonRpc}'. Expected '2.0'.");
-        }
-
-        // JSON-RPC 2.0 notifications (requests without an Id member) must not emit a response.
-        if (request.Id == null)
-        {
-            if (request.Method == "notifications/initialized")
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
             {
-                LogDiagnostic("Client connection successfully initialized.");
-            }
-            else if (request.Method.StartsWith("notifications/", StringComparison.Ordinal))
-            {
-                LogDiagnostic($"Received client notification '{request.Method}'.");
+                return JsonRpcResponse.CreateError(null, JsonRpcErrorCodes.InvalidRequest, "Invalid JSON-RPC request payload.");
             }
 
-            return null;
-        }
+            object? requestId = null;
+            if (root.TryGetProperty("id", out var idProp) && idProp.ValueKind != JsonValueKind.Null && idProp.ValueKind != JsonValueKind.Undefined)
+            {
+                if (idProp.ValueKind is not (JsonValueKind.String or JsonValueKind.Number))
+                {
+                    return JsonRpcResponse.CreateError(null, JsonRpcErrorCodes.InvalidRequest, "JSON-RPC 'id' must be a string, number, or null.");
+                }
 
-        return request.Method switch
-        {
-            "initialize" => HandleInitialize(request),
-            "tools/list" => HandleToolsList(request),
-            "tools/call" => await HandleToolsCallAsync(request).ConfigureAwait(false),
-            "ping" => JsonRpcResponse.Success(request.Id, new { }),
-            _ => JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.MethodNotFound, $"Method '{request.Method}' is not supported.")
-        };
+                requestId = idProp.Clone();
+            }
+
+            if (!root.TryGetProperty("jsonrpc", out var versionProp) ||
+                versionProp.ValueKind != JsonValueKind.String ||
+                !string.Equals(versionProp.GetString(), "2.0", StringComparison.Ordinal))
+            {
+                var provided = versionProp.ValueKind == JsonValueKind.Undefined ? null : versionProp.ToString();
+                return JsonRpcResponse.CreateError(requestId, JsonRpcErrorCodes.InvalidRequest, $"Unsupported JSON-RPC version '{provided}'. Expected '2.0'.");
+            }
+
+            if (!root.TryGetProperty("method", out var methodProp) ||
+                methodProp.ValueKind != JsonValueKind.String)
+            {
+                return JsonRpcResponse.CreateError(requestId, JsonRpcErrorCodes.InvalidRequest, "Invalid request payload: 'method' must be a string.");
+            }
+
+            var method = methodProp.GetString();
+            if (string.IsNullOrWhiteSpace(method))
+            {
+                return JsonRpcResponse.CreateError(requestId, JsonRpcErrorCodes.InvalidRequest, "Invalid request payload.");
+            }
+
+            // JSON-RPC 2.0 notifications (requests without an Id member) must not emit a response.
+            if (requestId == null)
+            {
+                if (method == "notifications/initialized")
+                {
+                    LogDiagnostic("Client connection successfully initialized.");
+                }
+                else if (method.StartsWith("notifications/", StringComparison.Ordinal))
+                {
+                    LogDiagnostic($"Received client notification '{method}'.");
+                }
+
+                return null;
+            }
+
+            JsonElement? paramsElement = root.TryGetProperty("params", out var pElem) ? pElem.Clone() : null;
+
+            return method switch
+            {
+                "initialize" => HandleInitialize(requestId),
+                "tools/list" => HandleToolsList(requestId),
+                "tools/call" => await HandleToolsCallAsync(requestId, paramsElement).ConfigureAwait(false),
+                "ping" => JsonRpcResponse.Success(requestId, new { }),
+                _ => JsonRpcResponse.CreateError(requestId, JsonRpcErrorCodes.MethodNotFound, $"Method '{method}' is not supported.")
+            };
+        }
     }
 
-    private JsonRpcResponse HandleInitialize(JsonRpcRequest request)
+    private JsonRpcResponse HandleInitialize(object requestId)
     {
         var result = new McpInitializeResult();
-        return JsonRpcResponse.Success(request.Id, result);
+        return JsonRpcResponse.Success(requestId, result);
     }
 
-    private JsonRpcResponse HandleToolsList(JsonRpcRequest request)
+    private JsonRpcResponse HandleToolsList(object requestId)
     {
         var result = new McpToolListResult
         {
             Tools = _toolRegistry.GetToolDefinitions().ToList()
         };
-        return JsonRpcResponse.Success(request.Id, result);
+        return JsonRpcResponse.Success(requestId, result);
     }
 
-    private async Task<JsonRpcResponse> HandleToolsCallAsync(JsonRpcRequest request)
+    private async Task<JsonRpcResponse> HandleToolsCallAsync(object requestId, JsonElement? rawParams)
     {
-        if (request.Params is not JsonElement paramsElement || paramsElement.ValueKind != JsonValueKind.Object)
+        if (rawParams is not JsonElement paramsElement || paramsElement.ValueKind != JsonValueKind.Object)
         {
-            return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidParams, "Parameter 'params' for tools/call must be an object.");
+            return JsonRpcResponse.CreateError(requestId, JsonRpcErrorCodes.InvalidParams, "Parameter 'params' for tools/call must be an object.");
         }
 
         if (!paramsElement.TryGetProperty("name", out var nameProp) || nameProp.ValueKind != JsonValueKind.String || nameProp.GetString() is not string toolName)
         {
-            return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidParams, "Parameter 'name' must be a string for tools/call.");
+            return JsonRpcResponse.CreateError(requestId, JsonRpcErrorCodes.InvalidParams, "Parameter 'name' must be a string for tools/call.");
         }
 
         JsonElement? arguments = null;
@@ -189,12 +221,12 @@ public sealed class SharphyMcpServer
             }
             else if (argsProp.ValueKind != JsonValueKind.Null && argsProp.ValueKind != JsonValueKind.Undefined)
             {
-                return JsonRpcResponse.CreateError(request.Id, JsonRpcErrorCodes.InvalidParams, "Parameter 'arguments' must be an object.");
+                return JsonRpcResponse.CreateError(requestId, JsonRpcErrorCodes.InvalidParams, "Parameter 'arguments' must be an object.");
             }
         }
 
         var callResult = await _toolRegistry.DispatchAsync(toolName, arguments).ConfigureAwait(false);
-        return JsonRpcResponse.Success(request.Id, callResult);
+        return JsonRpcResponse.Success(requestId, callResult);
     }
 
     private async Task<(string? Line, bool ExceededLimit)> ReadLineBoundedAsync(int maxChars, CancellationToken cancellationToken)

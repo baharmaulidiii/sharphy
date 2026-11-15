@@ -53,9 +53,8 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var dumpPath = args?.TryGetProperty("dumpPath", out var p) == true ? p.GetString() : null;
-                if (string.IsNullOrWhiteSpace(dumpPath))
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameter 'dumpPath' is required."));
+                if (!TryGetRequiredString(args, "dumpPath", out var dumpPath, out var err))
+                    return Task.FromResult(err!);
 
                 var report = DumpForensicsEngine.AnalyzeCrashDump(dumpPath);
                 return Task.FromResult(McpToolCallResult.CreateSuccess(report));
@@ -77,14 +76,13 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var dumpPath = args?.TryGetProperty("dumpPath", out var p) == true ? p.GetString() : null;
-                if (string.IsNullOrWhiteSpace(dumpPath))
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameter 'dumpPath' is required."));
+                if (!TryGetRequiredString(args, "dumpPath", out var dumpPath, out var err))
+                    return Task.FromResult(err!);
 
                 var topObjects = 20;
                 if (args?.TryGetProperty("topObjects", out var top) == true)
                 {
-                    if (!top.TryGetInt32(out var tVal) || tVal < 1)
+                    if (top.ValueKind != JsonValueKind.Number || !top.TryGetInt32(out var tVal) || tVal < 1)
                     {
                         return Task.FromResult(McpToolCallResult.CreateError("Parameter 'topObjects' must be a positive integer (>= 1)."));
                     }
@@ -110,9 +108,8 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var dumpPath = args?.TryGetProperty("dumpPath", out var p) == true ? p.GetString() : null;
-                if (string.IsNullOrWhiteSpace(dumpPath))
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameter 'dumpPath' is required."));
+                if (!TryGetRequiredString(args, "dumpPath", out var dumpPath, out var err))
+                    return Task.FromResult(err!);
 
                 var report = DumpForensicsEngine.DetectDeadlocks(dumpPath);
                 return Task.FromResult(McpToolCallResult.CreateSuccess(report));
@@ -135,13 +132,11 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var asm = args?.TryGetProperty("assemblyPath", out var a) == true ? a.GetString() : null;
-                var type = args?.TryGetProperty("typeName", out var t) == true ? t.GetString() : null;
-                var method = args?.TryGetProperty("methodName", out var m) == true ? m.GetString() : null;
-
-                if (string.IsNullOrWhiteSpace(asm) || string.IsNullOrWhiteSpace(type) || string.IsNullOrWhiteSpace(method))
+                if (!TryGetRequiredString(args, "assemblyPath", out var asm, out var err) ||
+                    !TryGetRequiredString(args, "typeName", out var type, out err) ||
+                    !TryGetRequiredString(args, "methodName", out var method, out err))
                 {
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameters 'assemblyPath', 'typeName', and 'methodName' are required."));
+                    return Task.FromResult(err!);
                 }
 
                 if (!File.Exists(asm))
@@ -171,12 +166,10 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var oldP = args?.TryGetProperty("oldAssemblyPath", out var o) == true ? o.GetString() : null;
-                var newP = args?.TryGetProperty("newAssemblyPath", out var n) == true ? n.GetString() : null;
-
-                if (string.IsNullOrWhiteSpace(oldP) || string.IsNullOrWhiteSpace(newP))
+                if (!TryGetRequiredString(args, "oldAssemblyPath", out var oldP, out var err) ||
+                    !TryGetRequiredString(args, "newAssemblyPath", out var newP, out err))
                 {
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameters 'oldAssemblyPath' and 'newAssemblyPath' are required."));
+                    return Task.FromResult(err!);
                 }
 
                 if (!File.Exists(oldP) || !File.Exists(newP))
@@ -209,11 +202,8 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var asm = args?.TryGetProperty("assemblyPath", out var a) == true ? a.GetString() : null;
-                if (string.IsNullOrWhiteSpace(asm))
-                {
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameter 'assemblyPath' is required."));
-                }
+                if (!TryGetRequiredString(args, "assemblyPath", out var asm, out var err))
+                    return Task.FromResult(err!);
 
                 if (!File.Exists(asm))
                 {
@@ -241,12 +231,10 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var asm = args?.TryGetProperty("assemblyPath", out var a) == true ? a.GetString() : null;
-                var output = args?.TryGetProperty("outputPath", out var o) == true ? o.GetString() : null;
-
-                if (string.IsNullOrWhiteSpace(asm) || string.IsNullOrWhiteSpace(output))
+                if (!TryGetRequiredString(args, "assemblyPath", out var asm, out var err) ||
+                    !TryGetRequiredString(args, "outputPath", out var output, out err))
                 {
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameters 'assemblyPath' and 'outputPath' are required."));
+                    return Task.FromResult(err!);
                 }
 
                 if (!File.Exists(asm))
@@ -273,11 +261,8 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var asm = args?.TryGetProperty("assemblyPath", out var a) == true ? a.GetString() : null;
-                if (string.IsNullOrWhiteSpace(asm))
-                {
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameter 'assemblyPath' is required."));
-                }
+                if (!TryGetRequiredString(args, "assemblyPath", out var asm, out var err))
+                    return Task.FromResult(err!);
 
                 if (!File.Exists(asm))
                 {
@@ -309,19 +294,16 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var asm = args?.TryGetProperty("assemblyPath", out var a) == true ? a.GetString() : null;
-                var type = args?.TryGetProperty("typeName", out var t) == true ? t.GetString() : null;
-                var method = args?.TryGetProperty("methodName", out var m) == true ? m.GetString() : null;
-                var opCode = args?.TryGetProperty("newOpCode", out var op) == true ? op.GetString() : null;
-                var output = args?.TryGetProperty("outputPath", out var outP) == true ? outP.GetString() : null;
-
-                if (string.IsNullOrWhiteSpace(asm) || string.IsNullOrWhiteSpace(type) || string.IsNullOrWhiteSpace(method) ||
-                    string.IsNullOrWhiteSpace(opCode) || string.IsNullOrWhiteSpace(output))
+                if (!TryGetRequiredString(args, "assemblyPath", out var asm, out var err) ||
+                    !TryGetRequiredString(args, "typeName", out var type, out err) ||
+                    !TryGetRequiredString(args, "methodName", out var method, out err) ||
+                    !TryGetRequiredString(args, "newOpCode", out var opCode, out err) ||
+                    !TryGetRequiredString(args, "outputPath", out var output, out err))
                 {
-                    return Task.FromResult(McpToolCallResult.CreateError("Missing required parameters for sharphy_patch_il."));
+                    return Task.FromResult(err!);
                 }
 
-                if (args?.TryGetProperty("instructionOffset", out var o) != true || !o.TryGetInt32(out var offset) || offset < 0)
+                if (args?.TryGetProperty("instructionOffset", out var o) != true || o.ValueKind != JsonValueKind.Number || !o.TryGetInt32(out var offset) || offset < 0)
                 {
                     return Task.FromResult(McpToolCallResult.CreateError("Parameter 'instructionOffset' must be a non-negative integer."));
                 }
@@ -353,13 +335,11 @@ public sealed class ToolRegistry
             },
             handler: args =>
             {
-                var asm = args?.TryGetProperty("assemblyPath", out var a) == true ? a.GetString() : null;
-                var type = args?.TryGetProperty("typeName", out var t) == true ? t.GetString() : null;
-                var output = args?.TryGetProperty("outputPath", out var o) == true ? o.GetString() : null;
-
-                if (string.IsNullOrWhiteSpace(asm) || string.IsNullOrWhiteSpace(type) || string.IsNullOrWhiteSpace(output))
+                if (!TryGetRequiredString(args, "assemblyPath", out var asm, out var err) ||
+                    !TryGetRequiredString(args, "typeName", out var type, out err) ||
+                    !TryGetRequiredString(args, "outputPath", out var output, out err))
                 {
-                    return Task.FromResult(McpToolCallResult.CreateError("Parameters 'assemblyPath', 'typeName', and 'outputPath' are required."));
+                    return Task.FromResult(err!);
                 }
 
                 if (!File.Exists(asm))
@@ -372,6 +352,34 @@ public sealed class ToolRegistry
                 return Task.FromResult(McpToolCallResult.CreateSuccess(
                     $"Generated strongly-typed wrapper for {type} into '{output}':\n\n{generatedCode}"));
             });
+    }
+
+    private static bool TryGetRequiredString(JsonElement? args, string paramName, out string value, out McpToolCallResult? error)
+    {
+        value = string.Empty;
+        error = null;
+
+        if (args is not JsonElement obj || obj.ValueKind != JsonValueKind.Object || !obj.TryGetProperty(paramName, out var prop))
+        {
+            error = McpToolCallResult.CreateError($"Parameter '{paramName}' is required.");
+            return false;
+        }
+
+        if (prop.ValueKind != JsonValueKind.String)
+        {
+            error = McpToolCallResult.CreateError($"Parameter '{paramName}' must be a string.");
+            return false;
+        }
+
+        var parsed = prop.GetString();
+        if (string.IsNullOrWhiteSpace(parsed))
+        {
+            error = McpToolCallResult.CreateError($"Parameter '{paramName}' is required.");
+            return false;
+        }
+
+        value = parsed;
+        return true;
     }
 
     private void Register(string name, string description, object schema, Func<JsonElement?, Task<McpToolCallResult>> handler)

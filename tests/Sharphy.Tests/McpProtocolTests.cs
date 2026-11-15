@@ -264,5 +264,79 @@ public class McpProtocolTests
         Assert.Contains("\"id\":77", lines[1]);
         Assert.DoesNotContain("\"error\"", lines[1]);
     }
+
+    [Fact]
+    public async Task ProcessMessage_RejectsNonStringMethodAndNonObjectRootWithInvalidRequest()
+    {
+        var server = new SharphyMcpServer();
+
+        var arrayRootResp = await server.ProcessMessageAsync("[1, 2, 3]");
+        Assert.NotNull(arrayRootResp);
+        Assert.NotNull(arrayRootResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.InvalidRequest, arrayRootResp.Error.Code);
+
+        var numericMethodResp = await server.ProcessMessageAsync("{\"jsonrpc\":\"2.0\",\"id\":21,\"method\":123}");
+        Assert.NotNull(numericMethodResp);
+        Assert.NotNull(numericMethodResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.InvalidRequest, numericMethodResp.Error.Code);
+
+        var numericVersionResp = await server.ProcessMessageAsync("{\"jsonrpc\":2.0,\"id\":22,\"method\":\"ping\"}");
+        Assert.NotNull(numericVersionResp);
+        Assert.NotNull(numericVersionResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.InvalidRequest, numericVersionResp.Error.Code);
+
+        var malformedJsonResp = await server.ProcessMessageAsync("{not valid json");
+        Assert.NotNull(malformedJsonResp);
+        Assert.NotNull(malformedJsonResp.Error);
+        Assert.Equal(JsonRpcErrorCodes.ParseError, malformedJsonResp.Error.Code);
+    }
+
+    [Fact]
+    public async Task ProcessMessage_ToolsCall_RejectsNonStringArgumentsCleanly()
+    {
+        var server = new SharphyMcpServer();
+
+        var numericDumpPathReq = """
+        {
+            "jsonrpc": "2.0",
+            "id": 31,
+            "method": "tools/call",
+            "params": {
+                "name": "sharphy_analyze_dump",
+                "arguments": {
+                    "dumpPath": 123
+                }
+            }
+        }
+        """;
+
+        var numericDumpResp = await server.ProcessMessageAsync(numericDumpPathReq);
+        Assert.NotNull(numericDumpResp);
+        Assert.Null(numericDumpResp.Error);
+        var numericDumpResult = Assert.IsType<McpToolCallResult>(numericDumpResp.Result);
+        Assert.True(numericDumpResult.IsError);
+        Assert.Equal("Parameter 'dumpPath' must be a string.", numericDumpResult.Content[0].Text);
+
+        var objectAsmPathReq = """
+        {
+            "jsonrpc": "2.0",
+            "id": 32,
+            "method": "tools/call",
+            "params": {
+                "name": "sharphy_inspect_metadata",
+                "arguments": {
+                    "assemblyPath": {}
+                }
+            }
+        }
+        """;
+
+        var objectAsmResp = await server.ProcessMessageAsync(objectAsmPathReq);
+        Assert.NotNull(objectAsmResp);
+        Assert.Null(objectAsmResp.Error);
+        var objectAsmResult = Assert.IsType<McpToolCallResult>(objectAsmResp.Result);
+        Assert.True(objectAsmResult.IsError);
+        Assert.Equal("Parameter 'assemblyPath' must be a string.", objectAsmResult.Content[0].Text);
+    }
 }
 
